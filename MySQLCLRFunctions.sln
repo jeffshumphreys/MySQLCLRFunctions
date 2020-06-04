@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.29827.131
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MySQLCLRFunctions", "MySQLCLRFunctions.csproj", "{6AEAE0BF-82E7-4793-8E9D-E649ABD0A807}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestMySQLCLRFunctions", "..\TestMySQLCLRFunctions\TestMySQLCLRFunctions.csproj", "{A084D459-BEE6-46BB-BB2C-4756879B2599}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestMySQLCLRFunctions", "TestMySQLCLRFunctions\TestMySQLCLRFunctions.csproj", "{A084D459-BEE6-46BB-BB2C-4756879B2599}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

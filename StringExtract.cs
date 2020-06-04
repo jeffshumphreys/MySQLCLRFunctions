@@ -113,6 +113,13 @@ namespace MySQLCLRFunctions
             return input.Substring(i + 1);
         }
 
+        /// <summary>
+        /// 
+        /// Client-specific.  But a good sampling of how Active Directory data can be pulled.
+        /// 
+        /// </summary>
+        /// <param name="FullName"></param>
+        /// <returns></returns>
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
         public static SqlString GetFirstName(SqlString FullName)
         {

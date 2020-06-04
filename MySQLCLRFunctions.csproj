@@ -43,10 +43,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ActiveDirectory.cs" />
     <Compile Include="Adaptors.cs" />
     <Compile Include="Compares.cs" />
     <Compile Include="Environmental.cs" />
     <Compile Include="FileNameExtract.cs" />
+    <Compile Include="Files.cs" />
     <Compile Include="Humanization.cs" />
     <Compile Include="NetworkCollect.cs" />
     <Compile Include="NetworkTest.cs" />

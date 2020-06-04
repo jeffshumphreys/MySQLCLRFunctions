@@ -15,6 +15,13 @@ namespace MySQLCLRFunctions
 {
     public static class Adaptors
     {
+        /// <summary>
+        /// 
+        /// Converts a hex string to a VARBINARY string, I think.
+        /// 
+        /// </summary>
+        /// <param name="InputAsHex"></param>
+        /// <returns></returns>
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
         public static string VarBin2Hex(SqlBytes InputAsHex)
         {

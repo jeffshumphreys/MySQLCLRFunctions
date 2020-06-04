@@ -30,5 +30,12 @@ namespace MySQLCLRFunctions
             Console.Beep(frequencyHz, durationMs);
             return 0;
         }
+
+        // TODO: UpSince a date, humanize
+        // TODO: Crashed?
+        // TODO: Did SQL Server properly restart?
+        // TODO: What account is SQL Server running as?
+        // TODO: Mount points and their size
+
     }
 }

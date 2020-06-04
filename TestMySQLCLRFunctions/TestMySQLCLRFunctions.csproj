@@ -50,7 +50,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MySQLCLRFunctions\MySQLCLRFunctions.csproj">
+    <ProjectReference Include="..\MySQLCLRFunctions.csproj">
       <Project>{6aeae0bf-82e7-4793-8e9d-e649abd0a807}</Project>
       <Name>MySQLCLRFunctions</Name>
     </ProjectReference>
