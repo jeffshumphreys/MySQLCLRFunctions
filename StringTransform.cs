@@ -13,6 +13,14 @@ using System.Xml.Schema;
 
 namespace MySQLCLRFunctions
 {
+    /*
+     * 
+     * Naming conventions for regex parameters
+     * - find is for flat string
+     * - regexmatchpattern when a matching process
+     * - regexcapturepattern when it has to capture something
+     * - match is a noun, what was matched to the pattern
+     */
     public static class StringTransform
     {
         /***************************************************************************************************************************************************************************************************
@@ -51,10 +59,10 @@ namespace MySQLCLRFunctions
          * 
          **************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true, FillRowMethodName = "FillRowWithStrPieces")]
-        public static IEnumerable Pieces(String stringtosplitintopieces, String regexsplitterpattern)
+        public static IEnumerable Pieces(String stringtosplitintopieces, String regexmatchpattern)
         {
             returnpieceorderno = 1;
-            string[] stringpieces = Regex.Split(stringtosplitintopieces, regexsplitterpattern, RegexOptions.IgnoreCase, TimeSpan.FromSeconds(2));
+            string[] stringpieces = Regex.Split(stringtosplitintopieces, regexmatchpattern, RegexOptions.IgnoreCase, TimeSpan.FromSeconds(2));
             return stringpieces;
         }
 
@@ -65,7 +73,86 @@ namespace MySQLCLRFunctions
             pieceorderNo = returnpieceorderno++;
         }
 
+
+        // Extensions for internal use and simpler Fluent design, but not for SQL to call
+        internal static string ReplaceMatchExt(this string input, string regexmatchpattern, string replacement)
+        {
+            return ReplaceMatch(input, regexmatchpattern, replacement);
+        }
+
+        /***************************************************************************************************************************************************************************************************
+         * 
+         * ReplaceMatch    Similar to REPLACE in SQL Server, except it has .NET regex
+         * 
+         * Note parameter naming convention: find is for flat string, regexmatchpattern when a matching process, regexcapturepattern when it has to capture something
+         **************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
+        public static string ReplaceMatch(string input, string regexmatchpattern, string replacement)
+        {
+            return Regex.Replace(input, regexmatchpattern, replacement);
+        }
+
+        // Extensions for internal use and simpler Fluent design, but not for SQL to call
+        internal unsafe static string ReplaceRecursiveExt(this string input, string find, string replacement)
+        {
+            return ReplaceRecursive(input, find, replacement);
+        }
+
+        unsafe public static string ReplaceRecursive(string input, string find, string replacement)
+        {
+            if (find == replacement) return input;
+            if (replacement.Contains(find))
+            {
+                throw new ArgumentOutOfRangeException(nameof(replacement), "the replacement string contains the sought string, so recursion would cause a blowup.");
+            }
+
+            if (find.Length != replacement.Length)
+            {
+                StringBuilder sb = new StringBuilder(input);
+                while (true)
+                {
+                    int formersize = sb.Length;
+                    sb.Replace(find, replacement);
+                    int newsize = sb.Length;
+                    if (formersize == newsize)
+                    {
+                        return sb.ToString();
+                    }
+                }
+            }
+            else if (find.Length == replacement.Length)
+            {
+                int findlen = find.Length;
+                var findchars = find.ToCharArray();
+                int len = input.Length;
+                fixed (char* pointer = input)
+                {
+                    // Add one to each of the characters.
+                    for (int i = 0; i <= len - findlen; i++)
+                    {
+                        int j2 = 0;
+                        for (int j = i; j < len; j++)
+                        {
+                            if (pointer[j + j2] != findchars[j2]) goto outerloop;
+                            j2++;
+                            if (j2 == findlen)
+                            {
+                                // Replace!!!!!!!!
+
+                                pointer[j] = findchars[0];
+                            }
+                        }
+                    outerloop:
+                        ;
+                    }
+                    // Return the mutated string.
+                    return new string(pointer);
+                }
+            }
+
+            return input;
+        }
+
         /***************************************************************************************************************************************************************************************************
          * 
          * Trim repeating bunches of character off right of string
@@ -73,11 +160,22 @@ namespace MySQLCLRFunctions
          * - Created for trimming "1.3930000000" off floating point number in sql which REFUSES to round.
          * 
          **************************************************************************************************************************************************************************************/
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
         public static string RTrimChar(string input, string trimAllOccFromRight)
         {
             if (input == null) return null;
             if (string.IsNullOrWhiteSpace(input)) return input;
             return input.TrimEnd(trimAllOccFromRight.ToCharArray());
+        }
+
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
+        public static string RTrimN(string input, int howmanycharactersoffend)
+        {
+            if (input == null) return null;
+            if (string.IsNullOrWhiteSpace(input) || howmanycharactersoffend == 0) return input;
+            if (input.Length <= howmanycharactersoffend) return string.Empty;
+            if (howmanycharactersoffend < 0) throw new ArgumentOutOfRangeException(nameof(howmanycharactersoffend), howmanycharactersoffend, "Cannot have negate remove characters.");
+            return input.Substring(0, input.Length - howmanycharactersoffend);
         }
 
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
@@ -113,15 +211,19 @@ namespace MySQLCLRFunctions
             }
             return input;
         }
+        /***************************************************************************************************************************************************************************************************
+         * 
+         * Title    Like "UPPER" in SQL Server, as opposed to ToUpper in C#/.NET
+         * 
+         **************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static string RemoveSQLServerNameDelimiters(string input)
+        public static string Title(string input)
         {
-            if (string.IsNullOrWhiteSpace(input)) return input;
-            if (string.IsNullOrEmpty(input)) return input;
-
-            input = input.Trim().Trim(new char[] { '[', ']' }).Replace("]]", "]");
-            return input;
+            return Regex.Replace(input, @"\b[a-z]\w+", delegate (Match match)
+            {
+                string v = match.ToString();
+                return char.ToUpper(v[0]) + v.Substring(1);
+            });
         }
-
     }
 }

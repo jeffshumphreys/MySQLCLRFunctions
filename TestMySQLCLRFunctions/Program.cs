@@ -67,8 +67,64 @@ namespace TestMySQLCLRFunctions
             Debug.Print($"MySQLCLRFunctions.StringExtract.LeftOfAny(\"{input}\", \"{markerchars}\";=>{output}<=");
 
             input = "[xxx]]y]";
-            output = MySQLCLRFunctions.StringTransform.RemoveSQLServerNameDelimiters($"{input}"); if (output == null) output = "{null}";
+            output = MySQLCLRFunctions.StringTransformTSQLSpecific.RemoveSQLServerNameDelimiters($"{input}"); if (output == null) output = "{null}";
             Debug.Print($"MySQLCLRFunctions.StringTransform.RemoveSQLServerNameDelimiters(\"{input}\");=>{output}<=");
+
+            input = @"
+--===================================================================================================
+
+-----------------------------------------------------------------------------------------------------
+CREATE trigger [dbo].[JRS_apx_core_r_CT]
+	on [dbo].[apx_core_r]
+	for delete, insert, update
+as
+begin
+	declare 
+		@Operation nchar(1) = N'I'
+
+	set nocount on
+
+	-- Insert deletes and before updates into change table
+	insert into jrs.apx_core_r_CT
+		(Change_Operation,
+		Change_Datetime,
+		r_object_id,
+		i_position)
+	select
+		N'D' as Change_Operation,
+		sysdatetime() as Change_Datetime,
+		r_object_id,
+		i_position
+	from Deleted
+
+	if @@rowcount > 0
+	begin
+		set @Operation = N'U'
+	end
+
+	-- Insert inserts and after updates into change table
+	insert into jrs.apx_core_r_CT 
+		(Change_Operation,
+		Change_Datetime,
+		r_object_id,
+		i_position)
+	select
+		@Operation as Change_Operation,
+		sysdatetime() as Change_Datetime,
+		r_object_id,
+		i_position
+	from Inserted
+end
+";
+            output = MySQLCLRFunctions.StringTransformTSQLSpecific.StripDownSQLModule(input, toSingleLine:true, dropFullLineComments:true);
+            Debug.Print($"MySQLCLRFunctions.StringTransformStripDownCustomizations.StripDownSQLModule(\"{input}\", toSingleLine:true, dropFullLineComments:true);=>{output}<=");
+            output = MySQLCLRFunctions.StringTransformTSQLSpecific.StripDownSQLModule(input, toSingleLine: false, dropFullLineComments: false);
+            Debug.Print($"MySQLCLRFunctions.StringTransformStripDownCustomizations.StripDownSQLModule(\"{input}\", toSingleLine:false, dropFullLineComments:false);=>{output}<=");
+            input = @"
+                SET NOCOUNT ON 
+        BEGIN x end ";
+            output = MySQLCLRFunctions.StringTransformTSQLSpecific.StripDownSQLModule(input, toSingleLine: true, dropFullLineComments: true);
+            Debug.Print($"MySQLCLRFunctions.StringTransformStripDownCustomizations.StripDownSQLModule(\"{input}\", toSingleLine:true, dropFullLineComments:true);=>{output}<=");
         }
     }
 }
