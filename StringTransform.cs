@@ -10,6 +10,7 @@ using System.Net.Sockets;
 using System.Linq;
 using System.IO;
 using System.Xml.Schema;
+using System.Collections.Generic;
 
 namespace MySQLCLRFunctions
 {
@@ -31,7 +32,6 @@ namespace MySQLCLRFunctions
          * - No need to add "Exp" since always pull out by expression.  Can't think of how else.
          * 
          **************************************************************************************************************************************************************************************/
-
         // This attribute is used only by Microsoft Visual Studio to automatically register the specified method as a TVF. It is not used by SQL Server.
         // For table-valued functions, the columns of the return table type cannot include timestamp columns or non-Unicode string data type columns (such as char, varchar, and text). The NOT NULL constraint is not supported.
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true, FillRowMethodName = "FillRowWithCapStrs")]
@@ -47,6 +47,41 @@ namespace MySQLCLRFunctions
             match = new SqlString(((Match)matchObject).Captures[0].Value);
             match = new SqlString(((Match)matchObject).Groups[1].Value);
             matchat = ((Match)matchObject).Captures[0].Index;
+        }
+
+        public class PieceContext {
+            public int pieceOrderNo;  public string previousPiece; public string piece; public string nextPiece; 
+            public PieceContext(int lpieceOrderNo, string lpreviousPiece, string lpiece, string lnextPiece) 
+            { pieceOrderNo = lpieceOrderNo; previousPiece = lpreviousPiece; piece = lpiece; nextPiece = lnextPiece; }
+        }
+
+        private static int returnpieceordernowithcontext = 0;
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true, FillRowMethodName = "FillRowWithStrPiecesWithContext")]
+        public static IEnumerable PiecesWithContext(String stringtosplitintopieces, String regexmatchpattern)
+        {
+            returnpieceordernowithcontext = 1;
+            string[] stringpieces = Regex.Split(stringtosplitintopieces, regexmatchpattern, RegexOptions.IgnoreCase, TimeSpan.FromSeconds(2));
+
+            var pieces = new List<PieceContext>(stringpieces.Length);
+            for (int i=0;i < stringpieces.Length; i++)
+            {
+                string nextPiece = null;
+                if (i < stringpieces.Length - 1) nextPiece = stringpieces[i + 1];
+                string previousPiece = null;
+                if (i > 0) previousPiece = stringpieces[i - 1];
+                pieces.Add(new PieceContext(i + 1,previousPiece, stringpieces[i], nextPiece));
+            }
+            return pieces.ToArray();
+        }
+
+        //------------------------------------------------------------------------------------------------------
+        private static void FillRowWithStrPiecesWithContext(Object obj, out SqlInt32 pieceorderNo, out SqlString previousPiece, out SqlString piece, out SqlString nextPiece)
+        {
+            var pieceContext = obj as PieceContext;
+            pieceorderNo = pieceContext.pieceOrderNo;
+            previousPiece = pieceContext.previousPiece;
+            piece = pieceContext.piece;
+            nextPiece = pieceContext.nextPiece;
         }
 
         /***************************************************************************************************************************************************************************************************
@@ -67,12 +102,54 @@ namespace MySQLCLRFunctions
         }
 
         private static int returnpieceorderno = 0;
+        //------------------------------------------------------------------------------------------------------
         private static void FillRowWithStrPieces(Object obj, out SqlString piece, out SqlInt32 pieceorderNo)
         {
             piece = obj.ToString();
             pieceorderNo = returnpieceorderno++;
         }
 
+        /***************************************************************************************************************************************************************************************************
+         * 
+         * Return a specific piece by its index.
+         * 
+         **************************************************************************************************************************************************************************************/
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true, FillRowMethodName = "FillRowWithStrPieces")]
+        public static string PieceNumber(String stringtosplitintopieces, String regexmatchpattern, int piecenumbertoreturn)
+        {
+            returnpieceorderno = 1;
+            string[] stringpieces = Regex.Split(stringtosplitintopieces, regexmatchpattern, RegexOptions.IgnoreCase, TimeSpan.FromSeconds(2));
+            if (stringpieces != null && stringpieces.Length >= piecenumbertoreturn)
+                return stringpieces[piecenumbertoreturn - 1];
+            else
+                return null;
+        }
+
+        /***************************************************************************************************************************************************************************************************
+         * 
+         * Convenience function to return the last piece
+         * 
+         **************************************************************************************************************************************************************************************/
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true, FillRowMethodName = "FillRowWithStrPieces")]
+        public static string LastPiece(String stringtosplitintopieces, String regexmatchpattern)
+        {
+            returnpieceorderno = 1;
+            string[] stringpieces = Regex.Split(stringtosplitintopieces, regexmatchpattern, RegexOptions.IgnoreCase, TimeSpan.FromSeconds(2));
+            if (stringpieces != null && stringpieces.Length > 0)
+            {
+                string laststring = stringpieces[stringpieces.Length - 1];
+                if (string.IsNullOrWhiteSpace(laststring))
+                {
+                    if (stringpieces != null && stringpieces.Length > 1)
+                    {
+                        laststring = stringpieces[stringpieces.Length - 2];
+                    }
+                }
+                return laststring;
+            }
+            else
+                return null;
+        }
 
         // Extensions for internal use and simpler Fluent design, but not for SQL to call
         internal static string ReplaceMatchExt(this string input, string regexmatchpattern, string replacement)
@@ -82,7 +159,7 @@ namespace MySQLCLRFunctions
 
         /***************************************************************************************************************************************************************************************************
          * 
-         * ReplaceMatch    Similar to REPLACE in SQL Server, except it has .NET regex
+         * Similar to REPLACE in SQL Server, except it has .NET regex for matching
          * 
          * Note parameter naming convention: find is for flat string, regexmatchpattern when a matching process, regexcapturepattern when it has to capture something
          **************************************************************************************************************************************************************************************/
@@ -98,6 +175,11 @@ namespace MySQLCLRFunctions
             return ReplaceRecursive(input, find, replacement);
         }
 
+       /***************************************************************************************************************************************************************************************************
+        * 
+        * Replace again and again.  This is for when I want to remove all but one of spaces, or all the "*******" in a SQL proc header except one.
+        * 
+        **************************************************************************************************************************************************************************************/
         unsafe public static string ReplaceRecursive(string input, string find, string replacement)
         {
             if (find == replacement) return input;
@@ -168,6 +250,15 @@ namespace MySQLCLRFunctions
             return input.TrimEnd(trimAllOccFromRight.ToCharArray());
         }
 
+        /***************************************************************************************************************************************************************************************************
+         * 
+         * Trim a specified number of characters off the right.  Much simpler than IIF(LEN(s) > 0 AND s IS NOT NULL), SUBSTRING(s, LEN(s) - 1), s)
+         * 
+         * - Created for trimming "1.3930000000" off floating point number in sql which REFUSES to round.
+         * 
+         * - Example of function that always returns a value that would fit inplace, and so does NOT need to copy string!
+         * 
+         **************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
         public static string RTrimN(string input, int howmanycharactersoffend)
         {
@@ -178,30 +269,55 @@ namespace MySQLCLRFunctions
             return input.Substring(0, input.Length - howmanycharactersoffend);
         }
 
+        /***************************************************************************************************************************************************************************************************
+        * 
+        * Prepend spaces on the left so that the text is right-justified.
+        * 
+        **************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
         public static string LPad(string input, int padToLen)
         {
             return input.PadLeft(padToLen);
         }
 
+        /***************************************************************************************************************************************************************************************************
+        * 
+        * Append spaces on the right out to a fixed point.  This is for displaying to a text output.
+        * 
+        **************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
         public static string RPad(string input, int padToLen)
         {
             return input.PadRight(padToLen);
         }
 
-        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static string RPadChar(string input, int padToLen, char padCh)
-        {
-            return input.PadRight(padToLen, padCh);
-        }
-
+        /***************************************************************************************************************************************************************************************************
+        * 
+        * Prepend spaces on the left so that the text is right-justified.  Could be zeroes, or X's.
+        * 
+        **************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
         public static string LPadChar(string input, int padToLen, char padCh)
         {
             return input.PadLeft(padToLen, padCh);
         }
 
+        /***************************************************************************************************************************************************************************************************
+        * 
+        * Append a specific character on the right out to a fixed point.
+        * 
+        **************************************************************************************************************************************************************************************/
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
+        public static string RPadChar(string input, int padToLen, char padCh)
+        {
+            return input.PadRight(padToLen, padCh);
+        }
+
+        /***************************************************************************************************************************************************************************************************
+         * 
+         * Remove any of instances of any of the list of strings given.
+         * 
+         **************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
         public static string BlankOut(string input, string blankanyofthese, string sep)
         {
@@ -213,7 +329,7 @@ namespace MySQLCLRFunctions
         }
         /***************************************************************************************************************************************************************************************************
          * 
-         * Title    Like "UPPER" in SQL Server, as opposed to ToUpper in C#/.NET
+         * Like "UPPER" in SQL Server, as opposed to ToUpper in C#/.NET.  I'm trying to avoid "To-" naming since I already use "Is-" naming and these are for SQL use.
          * 
          **************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]

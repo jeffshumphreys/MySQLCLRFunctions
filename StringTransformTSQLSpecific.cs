@@ -35,6 +35,12 @@ namespace MySQLCLRFunctions
             return sqlwithparametersembedded;
         }
 
+        public static string ExpandSQLParameter(string sqlwithparametersembedded, int paramno, string newvalue)
+        {
+            // https://docs.microsoft.com/en-us/dotnet/standard/base-types/character-escapes-in-regular-expressions
+            sqlwithparametersembedded = Regex.Replace(sqlwithparametersembedded, @"\$\d+(^\d|$)", newvalue);
+            return sqlwithparametersembedded;
+        }
         /***************************************************************************************************************************************************************************************************
          * 
          * StripDownSQLModule SQL Modules are hard to read as a single line with all the header junk.

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -13,6 +14,21 @@ namespace TestMySQLCLRFunctions
         static void Main(string[] args)
         {
             string output; string input; string marker; string markerchars; string markers; int markerno; int howmanyback;
+            DateTime nd1, nd2, nd3, nd4, ndoutput;
+            DateTime? d1, d2, d3, d4, doutput;
+
+            d1 = DateTime.Now; DateTime.TryParse("01/01/1976", out nd2); d2 = nd2;
+            doutput = MySQLCLRFunctions.Compares.Max2DateTimes(d1, d2);
+            Debug.Print($"MySQLCLRFunctions.Compares.Max2DateTimes(\"{d1}\", \"{d2}\");=>{doutput}<=");
+
+            d1 = DateTime.Now; DateTime.TryParse("01/01/1976", out nd2); d2 = nd2;  DateTime.TryParse("1999-01-02", out nd3); d3 = nd3;
+            doutput = MySQLCLRFunctions.Compares.Max3DateTimes(d1, d2, d3);
+            Debug.Print($"MySQLCLRFunctions.Compares.Max2DateTimes(\"{d1}\", \"{d2}\", \"{d3}\");=>{doutput}<=");
+
+            // Must be between 1/1/1753 12:00:00 AM and 12/31/9999 
+            d1 = DateTime.MinValue; DateTime.TryParse("01/01/1976", out nd2); d2 = nd2;
+            doutput = MySQLCLRFunctions.Compares.Max2DateTimes(d1, d2);
+            Debug.Print($"MySQLCLRFunctions.Compares.Max2DateTimes(\"{d1}\", \"{d2}\");=>{doutput}<=");
 
             input = "EDWPROD.UserData.x.y"; marker = "."; markerno = 2; howmanyback = 1;
             output = MySQLCLRFunctions.StringExtract.LeftOfNth(input, marker, markerno); if (output == null) output = "{null}";
@@ -70,6 +86,14 @@ namespace TestMySQLCLRFunctions
             output = MySQLCLRFunctions.StringTransformTSQLSpecific.RemoveSQLServerNameDelimiters($"{input}"); if (output == null) output = "{null}";
             Debug.Print($"MySQLCLRFunctions.StringTransform.RemoveSQLServerNameDelimiters(\"{input}\");=>{output}<=");
 
+            input = "CN=SyncState,CN=Varney\\, Dennis M,OU=People,OU=Enterprise,DC=na,DC=simplot,DC=com";
+            marker = ",";
+            var outputarray = MySQLCLRFunctions.StringTransform.PiecesWithContext($"{input}", ",");
+            foreach (StringTransform.PieceContext row in outputarray)
+            {
+                Debug.Print($"MySQLCLRFunctions.StringTransform.PiecesWithContext(\"{input}\");=>{row.previousPiece}..{row.piece}..{row.nextPiece}<=");
+            }
+            
             input = @"
 --===================================================================================================
 
@@ -125,6 +149,7 @@ end
         BEGIN x end ";
             output = MySQLCLRFunctions.StringTransformTSQLSpecific.StripDownSQLModule(input, toSingleLine: true, dropFullLineComments: true);
             Debug.Print($"MySQLCLRFunctions.StringTransformStripDownCustomizations.StripDownSQLModule(\"{input}\", toSingleLine:true, dropFullLineComments:true);=>{output}<=");
+
         }
     }
 }
