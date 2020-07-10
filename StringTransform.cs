@@ -49,17 +49,24 @@ namespace MySQLCLRFunctions
             matchat = ((Match)matchObject).Captures[0].Index;
         }
 
-        public class PieceContext {
-            public int pieceOrderNo;  public string previousPiece; public string piece; public string nextPiece; 
+        //-----------------------------------------------------------------------------------------------------------
+        // Helper class for the PiecesWithContext only. The FillRowMethod only takes an object, so you can't send multiple
+        // values to it.  So we compile
+        //-----------------------------------------------------------------------------------------------------------
+        protected class PieceContext {
+            public int pieceOrderNo; public string previousPiece; public string piece; public string nextPiece; 
             public PieceContext(int lpieceOrderNo, string lpreviousPiece, string lpiece, string lnextPiece) 
             { pieceOrderNo = lpieceOrderNo; previousPiece = lpreviousPiece; piece = lpiece; nextPiece = lnextPiece; }
         }
 
-        private static int returnpieceordernowithcontext = 0;
+        /***************************************************************************************************************************************************************************************************
+         * 
+         * Pull Out Matches by Regex and include the pieces before and after, making it easier to detect patterns.
+         * 
+         **************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true, FillRowMethodName = "FillRowWithStrPiecesWithContext")]
         public static IEnumerable PiecesWithContext(String stringtosplitintopieces, String regexmatchpattern)
         {
-            returnpieceordernowithcontext = 1;
             string[] stringpieces = Regex.Split(stringtosplitintopieces, regexmatchpattern, RegexOptions.IgnoreCase, TimeSpan.FromSeconds(2));
 
             var pieces = new List<PieceContext>(stringpieces.Length);
@@ -177,7 +184,7 @@ namespace MySQLCLRFunctions
 
        /***************************************************************************************************************************************************************************************************
         * 
-        * Replace again and again.  This is for when I want to remove all but one of spaces, or all the "*******" in a SQL proc header except one.
+        * Replace again and again.  This is for when I want to remove all but one of spaces, or all the "             " in a SQL proc header except one.
         * 
         **************************************************************************************************************************************************************************************/
         unsafe public static string ReplaceRecursive(string input, string find, string replacement)
