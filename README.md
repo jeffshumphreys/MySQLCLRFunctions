@@ -10,12 +10,14 @@ Another bug I have with SQL# is that their names are overly precious.  They will
 I also have less arguments on functions than SQL#.  SQL Server does not support optional arguments on functions, and so these are annoying to have to fill out. Also, I forget what they are supposed to be, and I don't recall their documentation telling me if using DEFAULT will work.
 Rather than every possible argument under the sun, I do it the old fashion way: I make a new function.
 For example, hypothetically, I would do this:
-> CompareThese(a,b)
-> BestOf3(a,b,3)
-> BestOf4(a,b,c,d)
-> Or make an agg or a TVF.
+<li> CompareThese(a,b) </li>
+<li> BestOf3(a,b,3) </li>
+<li> BestOf4(a,b,c,d) </li>
+<li> Or make an agg or a TVF. </li>
 
-For reduced maintenance, I pass everything NVARCHAR(MAX).  Speed is not my main problem.  The main problem is that SQL Server functions are severely lacking and new functions are added every third decade.  STRING_AGG is great, but a SQLCLR function can go back to at least 2012.
+For reduced maintenance, I pass everything as NVARCHAR(MAX) as well as return NVARCHAR(MAX).  Speed is not my main problem.  The main problem is that SQL Server functions are severely lacking and new functions are added every third decade.  STRING_AGG is great, but a SQLCLR function can go back to at least 2012.
+
+I do suspect that their may be memory allocation issues with this design, and so I may come up with a generative way to make VARCHAR(8000) or NVARCHAR(4000) clones.  Due to the way SQL Server pre-allocates memory, it may be even better to support smaller sizes.  Not really sure.
 
 If it's possible to think of a logical algorithm that can easily be described and understood, and there's no confusion about what to expect in the output, then it's worth being a function.
 
