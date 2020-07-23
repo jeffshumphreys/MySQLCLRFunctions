@@ -19,59 +19,39 @@ namespace MySQLCLRFunctions
         private const int CHARACTER_AFTER_MARKER = 1;
         private const int BACKSET_FOR_ZEROBASED = -1;
 
-        /// <summary>
-        /// 
-        ///   IsNullWhiteSpaceOrEmpty - Simple expanding name to avoid constant confusion I have with what this function does.
-        ///   Because most people don't equivocate white space with an empty space, which is the opposite of space.  It is non-space.
-        ///   
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static bool IsNullOrWhiteSpaceOrEmpty(string input)
-        {
-            return (string.IsNullOrWhiteSpace(input));
-        }
-
-        /// <summary>
-        /// 
-        ///   LeftOf - Find the marker, and pull the entire string before that marker first appears, not including that marker.
-        /// 
-        /// </summary>
-        /// <param name="input">input possibly containing the marker, at least one instance of that marker.</param>
-        /// <param name="marker">the string to find.</param>
-        /// <usecase>null or empty string as a marker returns that input.  Think of use case: Running column values through a "LeftOf(',')"  Null input should not magically
-        /// change into a value, i.e., a set of blanks or empty string!  By returning input, we say, "Nevermind, just pass thru."</usecase>
-        /// <returns></returns>
+        /***************************************************************************************************************************************************************************************************
+         * 
+         *  Find the marker, and pull the entire string before that marker first appears, not including that marker.
+         *  null or empty string as a marker returns that input.  Think of use case: Running column values through a "LeftOf(',')"  Null input should not magically
+         *  change into a value, i.e., a set of blanks or empty string!  By returning input, we say, "Nevermind, just pass thru
+         * 
+         ***************************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
         public static string LeftOf(string input, string marker)
         {
-            if (IsNullOrWhiteSpaceOrEmpty(input)) return input;
-            if (marker == null) return null;  // The test is invalid!  null is NOT a valid search value, so the result must represent INVALID parameter!
+            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
+            if (StringTest.IsNullOrWhiteSpaceOrEmpty(marker)) return null;  // The test is invalid!  null is NOT a valid search value, so the result must represent INVALID parameter!
 
             var i = input.IndexOf(marker);
             if (i == NOT_FOUND) return string.Empty;  // Why?  So, "LeftOf('x', 'y') is '', because empty string represents NOTHING, where as null represents INVALID INPUTS. This may help chaining functions.  A null from a valid test will force any expression to null.  Is that what is desired?
 
             return input.Substring(0, i);
         }
-        private static int IndexOfLastChar(this String str)
+
+        private static int IndexOfLastChar(this String input)
         {
-            if (IsNullOrWhiteSpaceOrEmpty(str)) return NOT_FOUND;
-            return str.Length - 1;
+            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return NOT_FOUND;
+            return input.Length - 1;
         }
 
-        /// <summary>
-        /// 
-        ///   LeftOfNth - Find anything left of the nth found marker - TO THE PREVIOUS MARKER AND NOT INCLUDING THE PREVIOUS MARKER
-        ///   
-        /// </summary>
-        /// <param name="input"></param>
-        /// <param name="marker"></param>
-        /// <param name="n"></param>
-        /// <flaws>May need a better name. LeftOfNthFromPrevious?</flaws>
-        /// <example>LeftOfNth("EDWPROD.UserData.x.y", ".", 2);=> UserData</example>
-        /// <example>LeftOfNth("EDWPROD.UserData.x.y", ".", 3);=> x</example>
-        /// <returns></returns>
+        /***************************************************************************************************************************************************************************************************
+         * 
+         *  Find anything left of the nth found marker - TO THE PREVIOUS MARKER AND NOT INCLUDING THE PREVIOUS MARKER
+         *  May need a better name. LeftOfNthFromPrevious?
+         *  LeftOfNth("EDWPROD.UserData.x.y", ".", 2);=> UserData
+         *  LeftOfNth("EDWPROD.UserData.x.y", ".", 3);=> x
+         * 
+         ***************************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
         public static string LeftOfNth(string input, string marker, int n)
         {
@@ -94,21 +74,15 @@ namespace MySQLCLRFunctions
             return input.Substring(previous_i + marker.Length, seglen);
         }
 
-        /// <summary>
-        /// 
-        ///   LeftMOfNth - Pull m pieces back from the nth finding of a marker.
-        ///   
-        /// </summary>
-        /// <param name="input"></param>
-        /// <param name="marker"></param>
-        /// <param name="n"></param>
-        /// <param name="howmany"></param>
-        /// <example>LeftMOfNth("EDWPROD.UserData.x.y", ".", 1, 1);=> EDWPROD</example>
-        /// <example>LeftMOfNth("EDWPROD.UserData.x.y", ".", 2, 2);=> EDWPROD.UserData</example>
-        /// <example>LeftMOfNth("EDWPROD.UserData.x.y", ".", 1, 2);=> </example>
-        /// <example>LeftMOfNth("EDWPROD.UserData.x.y", ".", 2, 4);=> </example>
-        /// <bug>LeftMOfNth("..", ".", 1, 1);=> .</bug>
-        /// <returns></returns>
+        /***************************************************************************************************************************************************************************************************
+         * 
+         *  Pull m pieces back from the nth finding of a marker.
+         *  LeftMOfNth("EDWPROD.UserData.x.y", ".", 1, 1);=> EDWPROD
+         *  LeftMOfNth("EDWPROD.UserData.x.y", ".", 2, 2);=> EDWPROD.UserData
+         *  LeftMOfNth("EDWPROD.UserData.x.y", ".", 1, 2);=> 
+         *  LeftMOfNth("EDWPROD.UserData.x.y", ".", 2, 4);=> .   (bug)
+         * 
+         ***************************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
         public static string LeftMOfNth(string input, string marker, int n, int howmany)
         {
@@ -135,18 +109,15 @@ namespace MySQLCLRFunctions
             return string.Empty;
         }
 
-        /// <summary>
-        /// 
-        ///   LeftOfAny - Any of the characters in marker, any string before any of those.
-        ///   
-        /// </summary>
-        /// <param name="input"></param>
-        /// <param name="markerchars"></param>
-        /// <returns></returns>
+        /***************************************************************************************************************************************************************************************************
+         * 
+         *  Any of the characters in marker, any string before any of those.
+         * 
+         ***************************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
         public static string LeftOfAny(string input, string markerchars)
         {
-            if (IsNullOrWhiteSpaceOrEmpty(input)) return input;
+            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
 
             var i = input.IndexOfAny(markerchars.ToCharArray());
             if (i == NOT_FOUND) return string.Empty;
@@ -166,7 +137,7 @@ namespace MySQLCLRFunctions
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
         public static string RightOfAny(string input, string markers)
         {
-            if (IsNullOrWhiteSpaceOrEmpty(input)) return input;
+            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
 
             var i = input.IndexOfAny(markers.ToCharArray());
             if (i == NOT_FOUND) return string.Empty;
@@ -175,9 +146,9 @@ namespace MySQLCLRFunctions
 
         /***************************************************************************************************************************************************************************************************
          * 
-         * Extract a snippet of a string given a starting and ending position, rather than substring with starting and length to return
+         * Extract a snippet of a string given a starting and ending position, rather than substring with starting and length to return.
          * 
-         **************************************************************************************************************************************************************************************/
+         ***************************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
         public static string Cut(string input, int from, int to)
         {
@@ -187,17 +158,16 @@ namespace MySQLCLRFunctions
             return input.Substring(from, to - from);
         }
 
-        /// <summary>
-        /// 
-        /// Client-specific.  But a good sampling of how Active Directory data can be pulled.
-        /// 
-        /// </summary>
-        /// <param name="FullName"></param>
-        /// <returns></returns>
+        /***************************************************************************************************************************************************************************************************
+         * 
+         * Client-specific.  But a good sampling of how Active Directory data can be pulledExtract a snippet of a string given a starting and ending position, rather than substring with starting 
+         * and length to return.
+         * 
+         ***************************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
         public static string GetFirstName(string FullName)
         {
-            if (IsNullOrWhiteSpaceOrEmpty(FullName)) return FullName;
+            if (StringTest.IsNullOrWhiteSpaceOrEmpty(FullName)) return FullName;
 
             string workingFullName = FullName.Trim();
             string firstName;
@@ -227,5 +197,17 @@ namespace MySQLCLRFunctions
 
             return firstName.Trim();
         }
+
+        /***************************************************************************************************************************************************************************************************
+        * 
+        * Extract the first word using regex word semantics.
+        * 
+        ***************************************************************************************************************************************************************************************************/
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
+        public static string FirstWord(string input)
+        {
+            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
+            return input.Split(@"\W")[0];
+         }
     }
 }

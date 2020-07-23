@@ -1,16 +1,12 @@
 ﻿using System;
 using System.Collections;
-using Microsoft.SqlServer.Server;
-using System.Data.SqlTypes;
-using System.Text.RegularExpressions;
-using System.Text;
-using System.Net.NetworkInformation;
-using System.Net;
-using System.Net.Sockets;
-using System.Linq;
-using System.IO;
-using System.Xml.Schema;
 using System.Collections.Generic;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Linq;
+using System.Data.SqlTypes;
+using Microsoft.SqlServer.Server;
+using NUnit.Framework;
 
 namespace MySQLCLRFunctions
 {
@@ -86,7 +82,7 @@ namespace MySQLCLRFunctions
 
         //-----------------------------------------------------------------------------------------------------------
         // Helper class for the PiecesWithContext only. The FillRowMethod only takes an object, so you can't send multiple
-        // values to it.  This has to be public for tester to use to parse out
+        // values to it.  This has to be public for tester to use to parse out.  SQL Server may need it too?
         //-----------------------------------------------------------------------------------------------------------
         public class PieceContext
         {
@@ -121,7 +117,7 @@ namespace MySQLCLRFunctions
 
         //-----------------------------------------------------------------------------------------------------------
         // Helper class for the PiecesWithContext only. The FillRowMethod only takes an object, so you can't send multiple
-        // values to it.  So we compile a class instance.
+        // values to it.  So we compile a class instance and send it as an object.
         //-----------------------------------------------------------------------------------------------------------
         public class PieceMatchContext
         {
@@ -134,7 +130,7 @@ namespace MySQLCLRFunctions
          * 
          * Split into Pieces by Regex match function, and capture what was matched, and even the match function in each returned row!
          * 
-         * - Created to support splitting out a message string for formatting into a RAISERROR format, but letting the caller use SQL_VARIANT.
+         * Created to support splitting out a message string for formatting into a RAISERROR format, but letting the caller use SQL_VARIANT for genericity.
          * 
          **************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true, FillRowMethodName = "FillRowWithStrPiecesWithContextAndMatch")]
@@ -240,6 +236,8 @@ namespace MySQLCLRFunctions
          * Similar to REPLACE in SQL Server, except it has .NET regex for matching
          * 
          * Note parameter naming convention: find is for flat string, regexmatchpattern when a matching process, regexcapturepattern when it has to capture something
+         * TODO: Many examples of how it can be used effectively.
+         * 
          **************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
         public static string ReplaceMatch(string input, string regexmatchpattern, string replacement)
@@ -352,8 +350,10 @@ namespace MySQLCLRFunctions
         /***************************************************************************************************************************************************************************************************
          * 
          * Removing those annoying brackets of any kind, BUT only when they're matching. This came up when an input domain column contained '(domain.com)'.  It's easy enough to write something inline,
-         * but what if you mess up?  Do it safely, where the function name says what you're intent is, not some SUBSTRING(s, 2, len(s)-2).  That's not easy to read, and what about '(domain.xyz' where they are not paired?
-         * My function just skips if they do not match.
+         * but what if you mess up?  Do it safely, where the function name says what you're intent is.
+         * This is instead of SUBSTRING(s, 2, len(s)-2) (Note that this will blow up on 0 or 1 character strings).  
+         * It's not as easy to skim-read, and corner-cases always eventually work their way back in to the expression. What about '(domain.xyz' where they are not paired?
+         * My function just skips if they do not match, but it could be enhanced to throw an error, perhaps on a context setting "throw error if function not effected"
          * 
          **************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
@@ -387,8 +387,9 @@ namespace MySQLCLRFunctions
 
         /***************************************************************************************************************************************************************************************************
          * 
-         * Microsoft, and language/compiler designers in general, are very reductive.  "Just use substring!"  That's not the point.  Methods are language.  Don't use a screwdriver as a hammer just to save walking back
-         * to your truck.  Do it right!  And in a way that is readable to other humans!
+         * Microsoft, and language/compiler designers in general, are very reductive.  "Just use substring!"  
+         * But that's not the point of these tiny functions.  
+         * Methods are language.  Don't use a screwdriver as a hammer just to save walking back to your truck.  Do it right!  And in a way that is readable to other humans!
          * 
          **************************************************************************************************************************************************************************************/
         public static string Left(this string input, int howmany)
@@ -400,7 +401,7 @@ namespace MySQLCLRFunctions
 
         /***************************************************************************************************************************************************************************************************
          * 
-         * Overloading where others fear to tread.  ints, character arrays.  This isn't C though, so we won't get them confused.  int doesn't implicitly become a 4-character array!
+         * Overloading where others fear to tread.  ints, character arrays.  This isn't C though, so we won't get them confused.  In C#, int doesn't implicitly become a 4-character array!
          * 
          **************************************************************************************************************************************************************************************/
         public static string TrimEnd(this string input, int howmanycharactersofftheend)
@@ -410,9 +411,19 @@ namespace MySQLCLRFunctions
             return input.Left(input.Length - howmanycharactersofftheend);
         }
 
+        public static string TrimLeftN(string input, int nofChar2Remove)
+        {
+            if (input == null) return null;
+            if (string.IsNullOrWhiteSpace(input)) return input;
+
+            if (input.Length <= nofChar2Remove) return string.Empty;
+
+            return input.Substring(nofChar2Remove);
+        }
+
         /***************************************************************************************************************************************************************************************************
          * 
-         * Not at all the BASIC function Mid, but what the hey.  I need a piece from a string, and I want the cleverness of supporting negatives as it's intuitive.
+         * This is not at all the BASIC function Mid, but what the hey.  I need a snippet from a string, and I want the cleverness of supporting negatives as it's intuitive.
          * Matter of fact, I need substring to be a little smarter too.
          * 
          **************************************************************************************************************************************************************************************/
@@ -433,8 +444,7 @@ namespace MySQLCLRFunctions
         /***************************************************************************************************************************************************************************************************
          * 
          * Trim repeating bunches of character off right of string
-         * 
-         * - Created for trimming "1.3930000000" off floating point number in sql which REFUSES to round.
+         * Created for trimming "1.3930000000" off floating point number in sql which REFUSES to round.
          * 
          **************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
@@ -472,6 +482,8 @@ namespace MySQLCLRFunctions
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
         public static string LPad(string input, int padToLen)
         {
+            if (input == null) return null;
+            if (string.IsNullOrWhiteSpace(input)) return input;
             return input.PadLeft(padToLen);
         }
 
@@ -483,6 +495,8 @@ namespace MySQLCLRFunctions
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
         public static string RPad(string input, int padToLen)
         {
+            if (input == null) return null;
+            if (string.IsNullOrWhiteSpace(input)) return input;
             return input.PadRight(padToLen);
         }
 
@@ -494,6 +508,8 @@ namespace MySQLCLRFunctions
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
         public static string LPadChar(string input, int padToLen, char padCh)
         {
+            if (input == null) return null;
+            if (string.IsNullOrWhiteSpace(input)) return input;
             return input.PadLeft(padToLen, padCh);
         }
 
@@ -505,36 +521,76 @@ namespace MySQLCLRFunctions
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
         public static string RPadChar(string input, int padToLen, char padCh)
         {
+            if (input == null) return null;
+            if (string.IsNullOrWhiteSpace(input)) return input;
             return input.PadRight(padToLen, padCh);
         }
 
         /***************************************************************************************************************************************************************************************************
          * 
-         * Remove any of instances of any of the list of strings given.
+         * This removes any of substrings in the input that in the list of strings given.
          * 
          **************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
         public static string BlankOut(string input, string blankanyofthese, string sep)
         {
+            if (input == null) return null;
+            if (string.IsNullOrWhiteSpace(input)) return input;
+            if (blankanyofthese == null) return null;
+            if (string.IsNullOrWhiteSpace(blankanyofthese)) return blankanyofthese;
+            if (sep == null) return null;
+            if (string.IsNullOrWhiteSpace(sep)) return sep;
+
             foreach (string i in blankanyofthese.Split(new string[] { sep }, StringSplitOptions.RemoveEmptyEntries))
             {
                 input.Replace(i, String.Empty);
             }
             return input;
         }
+
         /***************************************************************************************************************************************************************************************************
          * 
-         * Like "UPPER" in SQL Server, as opposed to ToUpper in C#/.NET.  I'm trying to avoid "To-" naming since I already use "Is-" naming and these are for SQL use.
+         * For name-style, this is like "UPPER" in SQL Server, as opposed to ToUpper in C#/.NET.  I'm trying to avoid "To-" naming since I already use "Is-" naming and these are for SQL use.
          * 
          **************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
         public static string Title(string input)
         {
+            if (input == null) return null;
+            if (string.IsNullOrWhiteSpace(input)) return input;
+
             return Regex.Replace(input, @"\b[a-z]\w+", delegate (Match match)
             {
                 string v = match.ToString();
                 return char.ToUpper(v[0]) + v.Substring(1);
             });
+        }
+
+        /***************************************************************************************************************************************************************************************************
+         * 
+         * For building CSV lines in a loop.
+         * 
+         **************************************************************************************************************************************************************************************/
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
+        public static string AppendWithSeparator(string input, string newfield, string sep = ", ")
+        {
+            if (input == null) input = "";
+            if (string.IsNullOrWhiteSpace(input)) input = "";
+
+            // No sense adding the same value
+            if (input == string.Empty) input = newfield;
+            else input = input + sep + newfield;
+            return input;
+        }
+
+        public static string[] GetWords(this string value)
+        {
+            return value.Split(@"\W");
+        }
+
+        public static string[] Split(this string value, string regexPattern)
+        {
+            return Regex.Split(value, regexPattern, RegexOptions.None);
         }
     }
 }

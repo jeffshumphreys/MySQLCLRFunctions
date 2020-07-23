@@ -20,28 +20,34 @@ namespace MySQLCLRFunctions
     /// </summary>
     public static class StringTest
     {
-        /// <summary>
-        /// 
-        /// Returns true if the input string starts with the sought string.
-        /// 
-        /// </summary>
-        /// <param name="input">String to search in</param>
-        /// <param name="searchFor">String to search for</param>
-        /// <returns></returns>
+        /***************************************************************************************************************************************************************************************************
+         * 
+         *  Simple expanding name to avoid constant confusion I have with what this function does.
+         *  Because most people don't equivocate white space with an empty space, which is the opposite of space.  It is non-space.
+         * 
+         **************************************************************************************************************************************************************************************/
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
+        public static bool IsNullOrWhiteSpaceOrEmpty(string input)
+        {
+            return (string.IsNullOrWhiteSpace(input));
+        }
+
+        /***************************************************************************************************************************************************************************************************
+         * 
+         * Returns true if the input string starts with the sought string.
+         * 
+         **************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
         public static bool StartsWith(string input, string searchFor)
         {
             return input.StartsWith(searchFor);
         }
 
-        /// <summary>
-        /// 
-        /// Returns true if the input string ends with the sought string.
-        /// 
-        /// </summary>
-        /// <param name="input"></param>
-        /// <param name="searchFor"></param>
-        /// <returns></returns>
+        /***************************************************************************************************************************************************************************************************
+         * 
+         * Returns true if the input string ends with the sought string.
+         * 
+         **************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
         public static bool EndsWith(string input, string searchFor)
         {
@@ -63,16 +69,12 @@ namespace MySQLCLRFunctions
 
             return true;
         }
-        /// <summary>
-        /// AnyOfTheseAreAnyOfThose
-        /// 
-        /// Any of these delimited substrings are in the delimited list of sought substrings.
-        /// 
-        /// </summary>
-        /// <param name="inputstrings"></param>
-        /// <param name="stringsitmightcontain"></param>
-        /// <param name="sep"></param>
-        /// <returns></returns>
+
+        /***************************************************************************************************************************************************************************************************
+         * 
+         * Any of these substrings are in the delimited list of sought substrings.  I would default the delimiter, but SQL Server doesn't care for optional parameters.
+         * 
+         **************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
         public static bool AnyOfTheseAreAnyOfThose(string inputstrings, string stringsitmightcontain, string sep)
         {
@@ -87,5 +89,54 @@ namespace MySQLCLRFunctions
 
             return false;
         }
+        /***************************************************************************************************************************************************************************************************
+         * 
+         * SQL style like for multiple strings.  So "Car%;%X[0-9]%;"  Probably just regex strings, but I don't know.  But caller will have to put "^" and "$" around string if they want exact matches.
+         * Need working examples.  Haven't tested.
+         * 
+         * Idea is: SELECT * FROM x where dbo.LikeAny(FullName, '%Humphreys;Humphrey%;JSH;%Jeff%Hum%;Jeff%H;(Jeff|Jeffrey|Jeffry);') = 1
+         * 
+         **************************************************************************************************************************************************************************************/
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
+        public static bool LikeAny(string input, string patternsitmightcontain, string patternsseparatedby)
+        {
+            throw new NotImplementedException("Copied from old code. Great idea, but needs to be written.");
+
+#pragma warning disable CS0162 // Unreachable code detected
+            foreach (string pattern in patternsitmightcontain.Split(new string[] { patternsseparatedby }, StringSplitOptions.RemoveEmptyEntries))
+#pragma warning restore CS0162 // Unreachable code detected
+            {
+                if (Regex.IsMatch(input, pattern)) return true;
+            }
+
+            return false;
+        }
+
+        /*
+         *
+         *          var str = "White Red Blue Green Yellow Black Gray";
+         *          var achromaticColors = new[] {"White", "Black", "Gray"};
+         *          var exquisiteColors = new[] {"FloralWhite", "Bistre", "DavyGrey"};
+         *          str = str.ReplaceAll(achromaticColors, exquisiteColors);
+         *          // str == "FloralWhite Red Blue Green Yellow Bistre DavyGrey"
+         *
+         *      public static string ReplaceAll(this string value, IEnumerable<string> oldValues, IEnumerable<string> newValues)
+         *      {
+         *       var sbStr = new StringBuilder(value);
+         *       var newValueEnum = newValues.GetEnumerator();
+         *       foreach (var old in oldValues)
+         *       {
+         *           if (!newValueEnum.MoveNext())
+         *               throw new ArgumentOutOfRangeException("newValues", "newValues sequence is shorter than oldValues sequence");
+         *           sbStr.Replace(old, newValueEnum.Current);
+         *       }
+         *       if (newValueEnum.MoveNext())
+         *           throw new ArgumentOutOfRangeException("newValues", "newValues sequence is longer than oldValues sequence");
+         *      
+         *       return sbStr.ToString();
+         *       }
+         */
     }
+
+
 }
