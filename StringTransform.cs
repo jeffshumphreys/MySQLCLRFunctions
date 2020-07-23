@@ -255,7 +255,9 @@ namespace MySQLCLRFunctions
 
        /***************************************************************************************************************************************************************************************************
         * 
-        * Replace again and again.  This is for when I want to remove all but one of spaces, or all the "             " in a SQL proc header except one.
+        * Replace again and again.  This is for when I want to remove all but one of the spaces, or all the "             " wide open spaces in a SQL proc header except for one space.
+        * 
+        * This is good as part of a series of "fluent" methods to reduce a proc to an easily read header string.  For quick review of a million modules.
         * 
         **************************************************************************************************************************************************************************************/
         unsafe public static string ReplaceRecursive(string input, string find, string replacement)
@@ -314,12 +316,19 @@ namespace MySQLCLRFunctions
         }
         /***************************************************************************************************************************************************************************************************
          * 
-         * Garbage characters in massive text fields are hard to deal with and see
+         * Garbage characters in massive text fields are hard to deal with and see if they're invisible to the naked eye, but they waste space and confuse comparisons.
          * 
-         * This is very helpful. The string snippet ".com                  There are 3"  becomes ".com131016013101601310There are 3"  Notice the "16" in there.  what is that?  Doesn't matter, I can just strip it.
-         * Here's an example of stripping:
+         * This is very helpful. 
+         * 
+         *    The string snippet 
+         *              ".com                  There are 3"  becomes ".com131016013101601310There are 3"  
+         *              
+         *    Notice the "160" in there.  what is that?  Doesn't matter, I can just strip it. This is a real example, and that "160" has made many an analysts' life difficult.
+         *    
+         * Here's an example of this used in conjunction with multispace stripping:
          * Comment = REPLACE(dbo.ReplaceRecursive(REPLACE(SUBSTRING(Input, LEN('2020-01-22T07:41:40 by ')+2, 32000), CHAR(160), ''), CHAR(13) + CHAR(10) + CHAR(13) + CHAR(10), CHAR(13) + CHAR(10)), ' ' + CHAR(13) + CHAR(10), CHAR(13) + CHAR(10))
-         * It's not pretty, and there's another level of simplification/generalization, but first things first. Notice that I stripped the "160" out first, then the NLs are easier to manage.
+         * 
+         * It's not pretty, and that's another level of simplification/generalization, but first things first. Notice that I stripped the "160" out first, then the NLs are easier to manage because they line up.
          * 
          **************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
@@ -376,6 +385,12 @@ namespace MySQLCLRFunctions
             return input;
         }
 
+        /***************************************************************************************************************************************************************************************************
+         * 
+         * Microsoft, and language/compiler designers in general, are very reductive.  "Just use substring!"  That's not the point.  Methods are language.  Don't use a screwdriver as a hammer just to save walking back
+         * to your truck.  Do it right!  And in a way that is readable to other humans!
+         * 
+         **************************************************************************************************************************************************************************************/
         public static string Left(this string input, int howmany)
         {
             if (input == null) return null;
@@ -383,12 +398,24 @@ namespace MySQLCLRFunctions
             return input.Substring(0, howmany);
         }
 
-        public static string TrimEnd(this string input, int howmany)
+        /***************************************************************************************************************************************************************************************************
+         * 
+         * Overloading where others fear to tread.  ints, character arrays.  This isn't C though, so we won't get them confused.  int doesn't implicitly become a 4-character array!
+         * 
+         **************************************************************************************************************************************************************************************/
+        public static string TrimEnd(this string input, int howmanycharactersofftheend)
         {
             if (input == null) return null;
             if (string.IsNullOrWhiteSpace(input)) return input;
-            return input.Left(input.Length - howmany);
+            return input.Left(input.Length - howmanycharactersofftheend);
         }
+
+        /***************************************************************************************************************************************************************************************************
+         * 
+         * Not at all the BASIC function Mid, but what the hey.  I need a piece from a string, and I want the cleverness of supporting negatives as it's intuitive.
+         * Matter of fact, I need substring to be a little smarter too.
+         * 
+         **************************************************************************************************************************************************************************************/
         public static string Mid(this string input, int from, int to)
         {
             if (input == null) return null;
