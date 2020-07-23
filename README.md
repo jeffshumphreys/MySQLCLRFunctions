@@ -1,23 +1,29 @@
 # MySQLCLRFunctions
-Free SQLCLR functions tested on SQL Server 2019
+## Free SQLCLR functions tested on SQL Server 2019
 
-Simple stuff to avoid spending $500 for a two year license (https://sqlsharp.com/full/)
-It hasn't been updated in 2 years, so not very cool.
-I use UNSAFE assemblies, because me likey.
-Their names are a bit taxing.  I call things StartsWith rather than SQL#.string_Is_A_BEGINNIN_WITH
-Less parameters.  These are annoying to have to fill out.  Rather, do it the old fashion way:  Make a new function!
-CompareThese(a,b)
-BestOf3(a,b,3)
-Or make an agg.
-Pass everything NVARCHAR(MAX) for now.  Speed isn't the main problem.  The main problem is that SQL Server functions are severely lacking.
+These are simple functions I've written in order to avoid spending $500 for a two year license (https://sqlsharp.com/full/) of SQL#. For one, the product hasn't been updated in 2 years, and that's not very cool for a pay product.
 
-If it's possible to think of a logical algorithm that can easily be described, then it's worth being a function.
+FYI, warning, buyer beware on my stuff: I use UNSAFE assemblies, because half the reason to use SQLCLR is to get to functions that are not in SQL Server already, which is where the safe stuff is.
 
-For instance, AnyOneOfTheseIsInThose, or something like that.  If have a set.  Are any of these items in this other list?
+Another bug I have with SQL# is that their names are overly precious.  They will name a function SQL#.string_Is_BEGINNING_WITH whereas I call it StartsWith, which is not coincidentally the same as the C# method.  I try to align my names with C# when the functionality aligns.  Less to remember.
 
-To pass in lists, I just use delimited strings.
+I also have less arguments on functions than SQL#.  SQL Server does not support optional arguments on functions, and so these are annoying to have to fill out. Also, I forget what they are supposed to be, and I don't recall their documentation telling me if using DEFAULT will work.
+Rather than every possible argument under the sun, I do it the old fashion way: I make a new function.
+For example, hypothetically, I would do this:
+> CompareThese(a,b)
+> BestOf3(a,b,3)
+> BestOf4(a,b,c,d)
+> Or make an agg or a TVF.
 
-Structure or class organization:
+For reduced maintenance, I pass everything NVARCHAR(MAX).  Speed is not my main problem.  The main problem is that SQL Server functions are severely lacking and new functions are added every third decade.  STRING_AGG is great, but a SQLCLR function can go back to at least 2012.
+
+If it's possible to think of a logical algorithm that can easily be described and understood, and there's no confusion about what to expect in the output, then it's worth being a function.
+
+For instance, I have a function called AnyOneOfTheseIsInThose, or something like that.  It is for when I to know if there is a non-empty intersection of a list of values that I don't want to stuff into tables.  It answers the simple question: Are any of these items in this other list?
+
+To pass in lists, I use delimited strings, but I usually have an argument for the separating string.  SPLIT_STRING from Microsoft, and most home-grown SQLCLR splitters seem to think all splitting is based on single characters.  I support the string for the cases that come up.
+
+## Structure or class organization, namespaces in other words:
 <li>
   Adaptors - Converts something to something else as an electronic power adaptor would.  It's not a transformation, and it's reversible.
 </li>
@@ -70,13 +76,13 @@ Structure or class organization:
 <li>
   StringTransform - Actual change being made, new information by structural abruption.
 </li>
-
+<br/>
 My favorites have to be Matches, Ping, StartsWith, EndsWith, AnyOfTheseeAreAnyOfThose, HowMany, LeftOf, LeftOfNth, LeftOfNth, IndexOfLast
 Also GetFirstName, Pieces, RTrimChar.
 
 I have a bunch somewhere, and I need to add more.
 
-Some ideas:
+<h1>Some ideas:</h1>
 - Better captures
 - Escape for multi-level dynamic SQL generation
 - A UNIX cut command for fixed-width
@@ -88,7 +94,7 @@ Some ideas:
 - Some default formatters, like LogFileTimeStamp = "YYYYmmDDhh24missffffff" or some such.  So I don't have to remember.
 
 - Possibly push SQL work down?  Like a TRUNCATE TABLE that pre-strips FKs, truncates, reloads, and tries to add the FKs back.
-- Unix to/from for Active Directory columns
+- Unix to/from for Active Directory columns.
 - Natural language extraction of patterned speech.
 
   
