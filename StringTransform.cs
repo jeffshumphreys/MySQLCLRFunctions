@@ -38,30 +38,21 @@ namespace MySQLCLRFunctions
         public static IEnumerable Matches(String stringtoextractmatchesintorows, String regexcapturepattern)
         {
             Regex stringsplitCompiledRegex = new Regex(regexcapturepattern);
-            MatchCollection matches = stringsplitCompiledRegex.Matches(stringtoextractmatchesintorows);
-            return matches;
+            string[] piece = stringsplitCompiledRegex.Split(stringtoextractmatchesintorows);
+            return piece;
         }
 
-        private static void FillRowWithCapStrs(Object matchObject, out SqlString match, out SqlInt32 matchat)
+        private static void FillRowWithCapStrs(Object matchObject, out SqlString piece, out SqlInt32 matchat)
         {
-            match = new SqlString(((Match)matchObject).Captures[0].Value);
-            match = new SqlString(((Match)matchObject).Groups[1].Value);
+            piece = new SqlString(((Match)matchObject).Captures[0].Value);
+            piece = new SqlString(((Match)matchObject).Groups[1].Value);
             matchat = ((Match)matchObject).Captures[0].Index;
-        }
-
-        //-----------------------------------------------------------------------------------------------------------
-        // Helper class for the PiecesWithContext only. The FillRowMethod only takes an object, so you can't send multiple
-        // values to it.  So we compile
-        //-----------------------------------------------------------------------------------------------------------
-        protected class PieceContext {
-            public int pieceOrderNo; public string previousPiece; public string piece; public string nextPiece; 
-            public PieceContext(int lpieceOrderNo, string lpreviousPiece, string lpiece, string lnextPiece) 
-            { pieceOrderNo = lpieceOrderNo; previousPiece = lpreviousPiece; piece = lpiece; nextPiece = lnextPiece; }
         }
 
         /***************************************************************************************************************************************************************************************************
          * 
          * Pull Out Matches by Regex and include the pieces before and after, making it easier to detect patterns.
+         * 
          * 
          **************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true, FillRowMethodName = "FillRowWithStrPiecesWithContext")]
@@ -69,14 +60,16 @@ namespace MySQLCLRFunctions
         {
             string[] stringpieces = Regex.Split(stringtosplitintopieces, regexmatchpattern, RegexOptions.IgnoreCase, TimeSpan.FromSeconds(2));
 
-            var pieces = new List<PieceContext>(stringpieces.Length);
-            for (int i=0;i < stringpieces.Length; i++)
+            int nofpieces = stringpieces.Length;
+            var pieces = new List<PieceContext>(nofpieces);
+            for (int i=0;i < nofpieces; i++)
             {
+                string piece = stringpieces[i];
                 string nextPiece = null;
-                if (i < stringpieces.Length - 1) nextPiece = stringpieces[i + 1];
+                if (i < nofpieces - 1) nextPiece = stringpieces[i + 1];
                 string previousPiece = null;
                 if (i > 0) previousPiece = stringpieces[i - 1];
-                pieces.Add(new PieceContext(i + 1,previousPiece, stringpieces[i], nextPiece));
+                pieces.Add(new PieceContext(lpieceOrderNo: i + 1, lpreviousPiece: previousPiece, lpiece: piece, lnextPiece: nextPiece));
             }
             return pieces.ToArray();
         }
@@ -91,19 +84,29 @@ namespace MySQLCLRFunctions
             nextPiece = pieceContext.nextPiece;
         }
 
+        //-----------------------------------------------------------------------------------------------------------
+        // Helper class for the PiecesWithContext only. The FillRowMethod only takes an object, so you can't send multiple
+        // values to it.  This has to be public for tester to use to parse out
+        //-----------------------------------------------------------------------------------------------------------
+        public class PieceContext
+        {
+            public int pieceOrderNo; public string previousPiece; public string piece; public string nextPiece;
+            public PieceContext(int lpieceOrderNo, string lpreviousPiece, string lpiece, string lnextPiece)
+            { pieceOrderNo = lpieceOrderNo; previousPiece = lpreviousPiece; piece = lpiece; nextPiece = lnextPiece; }
+        }
+
         /***************************************************************************************************************************************************************************************************
          * 
-         * Split into Pieces by Regex
+         * Split into Pieces by Regex match function
          * 
          * - Very useful function, and simplified down from anything PAID SQL Sharp has.
-         * - Trying to simplify and shorten names without over complicating.  "Exp" short for expression.  
-         * - Not much else I can think of that I would split other than strings, so drop the "String".  DateTime_Split?  Numeric_Split?  Bit_Split?
+         * - Trying to simplify and shorten names without over complicating, so I call it Pieces rather than RegExMatch.
+         * - Not much else I can think of that I would split other than strings, so drop the "String" suffix.  DateTime_Split?  Numeric_Split?  Bit_Split?  Maybe.
          * 
          **************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true, FillRowMethodName = "FillRowWithStrPieces")]
         public static IEnumerable Pieces(String stringtosplitintopieces, String regexmatchpattern)
         {
-            returnpieceorderno = 1;
             string[] stringpieces = Regex.Split(stringtosplitintopieces, regexmatchpattern, RegexOptions.IgnoreCase, TimeSpan.FromSeconds(2));
             return stringpieces;
         }
@@ -114,6 +117,74 @@ namespace MySQLCLRFunctions
         {
             piece = obj.ToString();
             pieceorderNo = returnpieceorderno++;
+        }
+
+        //-----------------------------------------------------------------------------------------------------------
+        // Helper class for the PiecesWithContext only. The FillRowMethod only takes an object, so you can't send multiple
+        // values to it.  So we compile a class instance.
+        //-----------------------------------------------------------------------------------------------------------
+        public class PieceMatchContext
+        {
+            public int pieceOrderNo; public string previousPiece; public string matchAtStartOfPiece; public string piece; public string matchAtEndOfPiece; public string nextPiece;
+            public PieceMatchContext(int lpieceOrderNo, string lpreviousPiece, string lmatchAtStartOfPiece, string lpiece, string lmatchAtEndOfPiece, string lnextPiece)
+            { pieceOrderNo = lpieceOrderNo; previousPiece = lpreviousPiece; matchAtStartOfPiece = lmatchAtStartOfPiece;  piece = lpiece; matchAtEndOfPiece = lmatchAtEndOfPiece; nextPiece = lnextPiece; }
+        }
+
+        /***************************************************************************************************************************************************************************************************
+         * 
+         * Split into Pieces by Regex match function, and capture what was matched, and even the match function in each returned row!
+         * 
+         * - Created to support splitting out a message string for formatting into a RAISERROR format, but letting the caller use SQL_VARIANT.
+         * 
+         **************************************************************************************************************************************************************************************/
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true, FillRowMethodName = "FillRowWithStrPiecesWithContextAndMatch")]
+        public static IEnumerable PiecesWithMatches(String stringtosplitintopieces, String regexmatchpattern)
+        {
+            MatchCollection stringpieces = Regex.Matches(stringtosplitintopieces, regexmatchpattern, RegexOptions.None, TimeSpan.FromSeconds(3)); // Must be case sensitive due to variations in type specification
+
+            int nofpieces = stringpieces.Count;
+            var pieces = new List<PieceMatchContext>(nofpieces);
+            int nextpiecestartsat = 0;
+            string matchAtStartOfPiece = null;
+
+            for (int i = 0; i < nofpieces; i++)
+            {
+                string matchAtEndOfPiece = stringpieces[i].Value;
+                int matchAtEndOfPieceAt = stringpieces[i].Index;
+                string piece = StringExtract.Cut(stringtosplitintopieces, nextpiecestartsat, matchAtEndOfPieceAt);
+                nextpiecestartsat = matchAtEndOfPieceAt + matchAtEndOfPiece.Length;
+                pieces.Add(new PieceMatchContext(lpieceOrderNo: i + 1, lpreviousPiece: null, lmatchAtStartOfPiece: matchAtStartOfPiece, lpiece: piece, lmatchAtEndOfPiece: matchAtEndOfPiece, lnextPiece: null)); ;
+            }
+
+            // Fill in the context information from previous and next pieces and matches.  This makes function use in SQL easier.
+
+            for (int i = 0; i < pieces.Count; i++)
+            {
+                if (i < pieces.Count-1)
+                {
+                    pieces[i].nextPiece = pieces[i+1].piece;
+                }
+
+                if (i > 0)
+                {
+                    pieces[i].previousPiece = pieces[i - 1].piece;
+                    pieces[i].matchAtStartOfPiece = pieces[i-1].matchAtEndOfPiece;
+                }
+            }    
+
+            return pieces.ToArray();
+        }
+
+        //------------------------------------------------------------------------------------------------------
+        private static void FillRowWithStrPiecesWithContextAndMatch(Object obj, out SqlInt32 pieceorderNo, out SqlString previousPiece, out SqlString matchAtStartOfPiece, out SqlString piece, out SqlString matchAtEndOfPiece, out SqlString nextPiece)
+        {
+            var pieceContext = obj as PieceMatchContext;
+            pieceorderNo = pieceContext.pieceOrderNo;
+            previousPiece = pieceContext.previousPiece;
+            matchAtStartOfPiece = pieceContext.matchAtStartOfPiece;
+            piece = pieceContext.piece;
+            matchAtEndOfPiece = pieceContext.matchAtEndOfPiece;
+            nextPiece = pieceContext.nextPiece;
         }
 
         /***************************************************************************************************************************************************************************************************
@@ -241,7 +312,97 @@ namespace MySQLCLRFunctions
 
             return input;
         }
+        /***************************************************************************************************************************************************************************************************
+         * 
+         * Garbage characters in massive text fields are hard to deal with and see
+         * 
+         * This is very helpful. The string snippet ".com                  There are 3"  becomes ".com131016013101601310There are 3"  Notice the "16" in there.  what is that?  Doesn't matter, I can just strip it.
+         * Here's an example of stripping:
+         * Comment = REPLACE(dbo.ReplaceRecursive(REPLACE(SUBSTRING(Input, LEN('2020-01-22T07:41:40 by ')+2, 32000), CHAR(160), ''), CHAR(13) + CHAR(10) + CHAR(13) + CHAR(10), CHAR(13) + CHAR(10)), ' ' + CHAR(13) + CHAR(10), CHAR(13) + CHAR(10))
+         * It's not pretty, and there's another level of simplification/generalization, but first things first. Notice that I stripped the "160" out first, then the NLs are easier to manage.
+         * 
+         **************************************************************************************************************************************************************************************/
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
+        public static string RevealNonPrintables(string input)
+        {
+            if (input == null) return null;
+            if (string.IsNullOrWhiteSpace(input)) return input;
+            StringBuilder sb = new StringBuilder(input.Length+10);
+            foreach (char c in input.ToCharArray())
+            {
+                double i = (int)c;
+                if (i < 32 || i > 127) 
+                    sb.Append(i.ToString());
+                else
+                    sb.Append(c);
+            }
 
+            return sb.ToString();
+        }
+
+        /***************************************************************************************************************************************************************************************************
+         * 
+         * Removing those annoying brackets of any kind, BUT only when they're matching. This came up when an input domain column contained '(domain.com)'.  It's easy enough to write something inline,
+         * but what if you mess up?  Do it safely, where the function name says what you're intent is, not some SUBSTRING(s, 2, len(s)-2).  That's not easy to read, and what about '(domain.xyz' where they are not paired?
+         * My function just skips if they do not match.
+         * 
+         **************************************************************************************************************************************************************************************/
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
+        public static string StripBracketing(string input)
+        {
+            // https://en.wikipedia.org/wiki/Bracket
+            if (input == null) return null;
+            if (string.IsNullOrWhiteSpace(input)) return input;
+            if (input.Last() == ']' && input.First() == '[') return input.Mid(1, -1);
+            if (input.Last() == '⦌' && input.First() == '⦋') return input.Mid(1, -1);
+            if (input.Last() == '}' && input.First() == '{') return input.Mid(1, -1);
+            if (input.Last() == '⟭' && input.First() == '⟬') return input.Mid(1, -1);//white tortoise shell brackets
+            if (input.Last() == ')' && input.First() == '(') return input.Mid(1, -1);
+            if (input.Last() == ':' && input.First() == ':') return input.Mid(1, -1);
+            if (input.Last() == '⟧' && input.First() == '⟦') return input.Mid(1, -1);
+            if (input.Last() == '>' && input.First() == '<') return input.Mid(1, -1);
+            if (input.Last() == '⟩' && input.First() == '⟨') return input.Mid(1, -1);
+            if (input.Last() == '⟫' && input.First() == '⟪') return input.Mid(1, -1);
+            // Also, <<, >>
+            // Les Guillemets
+            if (input.Last() == '»' && input.First() == '«') return input.Mid(1, -1);
+
+            if (input.Last() == '"' && input.First() == '"') return input.Mid(1, -1);
+            if (input.Last() == '\'' && input.First() == '\'') return input.Mid(1, -1);
+            if (input.Last() == '’' && input.First() == '‘') return input.Mid(1, -1); // opening/closing quote
+            if (input.Last() == '”' && input.First() == '“') return input.Mid(1, -1); // opening/closing quote
+            // HTML: &lsquo; &rsquo; &ldquo; &rdquo;
+            // — (tiret)
+            return input;
+        }
+
+        public static string Left(this string input, int howmany)
+        {
+            if (input == null) return null;
+            if (string.IsNullOrWhiteSpace(input)) return input;
+            return input.Substring(0, howmany);
+        }
+
+        public static string TrimEnd(this string input, int howmany)
+        {
+            if (input == null) return null;
+            if (string.IsNullOrWhiteSpace(input)) return input;
+            return input.Left(input.Length - howmany);
+        }
+        public static string Mid(this string input, int from, int to)
+        {
+            if (input == null) return null;
+            if (string.IsNullOrWhiteSpace(input)) return input;
+            if (to < 0)
+            {
+                string x = input.Substring(from);
+                int i = -to;
+                x = x.TrimEnd((int)i);
+                return x;
+            }
+            if (to > from) return input.Substring(from, input.Length - (from + to));
+            return input;
+        }
         /***************************************************************************************************************************************************************************************************
          * 
          * Trim repeating bunches of character off right of string

@@ -43,7 +43,7 @@ namespace MySQLCLRFunctions
         }
         /***************************************************************************************************************************************************************************************************
          * 
-         * StripDownSQLModule SQL Modules are hard to read as a single line with all the header junk.
+         * SQL Modules are hard to read as a single line with all the header junk.
          * Unsafe because uses pointers to improve performance the old fashioned C way for replacements that are 1 to 1 in length.
          * 
          **************************************************************************************************************************************************************************************/
@@ -84,6 +84,28 @@ namespace MySQLCLRFunctions
                 return temps;
             }
             return String.Join(Environment.NewLine, cleanlines);
+        }
+        /***************************************************************************************************************************************************************************************************
+         * 
+         * SQL Modules are hard to read as a single line with all the header junk.
+         * Unsafe because uses pointers to improve performance the old fashioned C way for replacements that are 1 to 1 in length.
+         * 
+         **************************************************************************************************************************************************************************************/
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
+        public static string BuildRaiserrorMessage(string message, string Param1 = null, string Param2 = null, string Param3 = null, string Param4 = null, string Param5 = null
+            , string Param6 = null, string Param7 = null, string Param8 = null, string Param9 = null, string Param10 = null)
+        {
+            StringBuilder cmd = new StringBuilder(2048);
+            cmd.Append("RAISERROR('").Append(message).Append("',");
+
+            if (Param1 != null)
+            {
+                string[] param1parts = Param1.Split(':');
+                string param1val = param1parts[0];
+                string param1type = param1parts[1];
+                //if (param1type == "string")
+            }
+            return null;
         }
     }
 }

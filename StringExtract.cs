@@ -173,6 +173,20 @@ namespace MySQLCLRFunctions
             return input.Substring(i + 1);
         }
 
+        /***************************************************************************************************************************************************************************************************
+         * 
+         * Extract a snippet of a string given a starting and ending position, rather than substring with starting and length to return
+         * 
+         **************************************************************************************************************************************************************************************/
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
+        public static string Cut(string input, int from, int to)
+        {
+            if (to - from <= 0) { return String.Empty; }
+            if (to > input.Length) return input;
+
+            return input.Substring(from, to - from);
+        }
+
         /// <summary>
         /// 
         /// Client-specific.  But a good sampling of how Active Directory data can be pulled.

@@ -17,6 +17,10 @@ namespace TestMySQLCLRFunctions
             DateTime nd1, nd2, nd3, nd4, ndoutput;
             DateTime? d1, d2, d3, d4, doutput;
 
+            input = "[test]";
+            output = MySQLCLRFunctions.StringTransform.StripBracketing(input);
+            Debug.Print($"MySQLCLRFunctions.StringTransform.StripBracketing(\"{input}\");=>{output}<=");
+/*
             d1 = DateTime.Now; DateTime.TryParse("01/01/1976", out nd2); d2 = nd2;
             doutput = MySQLCLRFunctions.Compares.Max2DateTimes(d1, d2);
             Debug.Print($"MySQLCLRFunctions.Compares.Max2DateTimes(\"{d1}\", \"{d2}\");=>{doutput}<=");
@@ -88,12 +92,20 @@ namespace TestMySQLCLRFunctions
 
             input = "CN=SyncState,CN=Varney\\, Dennis M,OU=People,OU=Enterprise,DC=na,DC=simplot,DC=com";
             marker = ",";
-            var outputarray = MySQLCLRFunctions.StringTransform.PiecesWithContext($"{input}", ",");
-            foreach (StringTransform.PieceContext row in outputarray)
+            var pieceswithcontext1 = MySQLCLRFunctions.StringTransform.PiecesWithContext($"{input}", ",");
+            foreach (StringTransform.PieceContext row in pieceswithcontext1)
             {
                 Debug.Print($"MySQLCLRFunctions.StringTransform.PiecesWithContext(\"{input}\");=>{row.previousPiece}..{row.piece}..{row.nextPiece}<=");
             }
-            
+*/
+            input = "Hi %s the %s";
+            marker = "\\%(.?[diosuxX])";
+            var pieceswithcontextandmatches = MySQLCLRFunctions.StringTransform.PiecesWithMatches($"{input}", $"{marker}");
+            foreach (StringTransform.PieceMatchContext row in pieceswithcontextandmatches)
+            {
+                Debug.Print($"MySQLCLRFunctions.StringTransform.PiecesWithMatches(\"{input}\");=>{row.previousPiece}..{row.matchAtStartOfPiece}..{row.piece}..{row.matchAtEndOfPiece}..{row.nextPiece}<=");
+            }
+/*
             input = @"
 --===================================================================================================
 
@@ -149,7 +161,7 @@ end
         BEGIN x end ";
             output = MySQLCLRFunctions.StringTransformTSQLSpecific.StripDownSQLModule(input, toSingleLine: true, dropFullLineComments: true);
             Debug.Print($"MySQLCLRFunctions.StringTransformStripDownCustomizations.StripDownSQLModule(\"{input}\", toSingleLine:true, dropFullLineComments:true);=>{output}<=");
-
+*/
         }
     }
 }
