@@ -1,15 +1,6 @@
-﻿using System;
-using System.Collections;
-using Microsoft.SqlServer.Server;
-using System.Data.SqlTypes;
+﻿using Microsoft.SqlServer.Server;
+using System;
 using System.Text.RegularExpressions;
-using System.Text;
-using System.Net.NetworkInformation;
-using System.Net;
-using System.Net.Sockets;
-using System.Linq;
-using System.IO;
-using System.Xml.Schema;
 
 namespace MySQLCLRFunctions
 {
@@ -91,6 +82,7 @@ namespace MySQLCLRFunctions
             if (n < 0) throw new ArgumentOutOfRangeException(nameof(n));
             if (n == 0) return null;
             if (howmany > n) return null;
+
             int i = 0;
             for (int j = 1; j <= n; j++)
             {
@@ -118,28 +110,41 @@ namespace MySQLCLRFunctions
         public static string LeftOfAny(string input, string markerchars)
         {
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
+            if (StringTest.IsNullOrWhiteSpaceOrEmpty(markerchars)) return input;
 
-            var i = input.IndexOfAny(markerchars.ToCharArray());
+            var i = input.IndexOfAny(markerchars.ToCharArray()); // What about dups?
             if (i == NOT_FOUND) return string.Empty;
             return input.Substring(0, i);
         }
 
+        /***************************************************************************************************************************************************************************************************
+         * 
+         *  Any string after this string is found.
+         * 
+         ***************************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
         public static string RightOf(string input, string marker)
         {
-            if (string.IsNullOrEmpty(input)) return input;
+            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
+            if (StringTest.IsNullOrWhiteSpaceOrEmpty(marker)) return input;
 
             var i = input.IndexOf(marker);
             if (i == NOT_FOUND) return string.Empty;
             return input.Substring(i + marker.Length);
         }
 
+        /***************************************************************************************************************************************************************************************************
+         * 
+         *  Any of the characters in marker, any string after any of those.
+         * 
+         ***************************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static string RightOfAny(string input, string markers)
+        public static string RightOfAny(string input, string markercharacters)
         {
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
+            if (StringTest.IsNullOrWhiteSpaceOrEmpty(markercharacters)) return input;
 
-            var i = input.IndexOfAny(markers.ToCharArray());
+            var i = input.IndexOfAny(markercharacters.ToCharArray());
             if (i == NOT_FOUND) return string.Empty;
             return input.Substring(i + 1);
         }
@@ -152,7 +157,7 @@ namespace MySQLCLRFunctions
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
         public static string Cut(string input, int from, int to)
         {
-            if (to - from <= 0) { return String.Empty; }
+            if (to - from <= 0)  return String.Empty; 
             if (to > input.Length) return input;
 
             return input.Substring(from, to - from);
@@ -199,6 +204,20 @@ namespace MySQLCLRFunctions
         }
 
         /***************************************************************************************************************************************************************************************************
+           * 
+           * Microsoft, and language/compiler designers in general, are very reductive.  "Just use substring!"  
+           * But that's not the point of these tiny functions.  
+           * Methods are language.  Don't use a screwdriver as a hammer just to save walking back to your truck.  Do it right!  And in a way that is readable to other humans!
+           * 
+           **************************************************************************************************************************************************************************************/
+        public static string Left(this string input, int howmany)
+        {
+            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
+
+            return input.Substring(0, howmany);
+        }
+
+        /***************************************************************************************************************************************************************************************************
         * 
         * Extract the first word using regex word semantics.
         * 
@@ -209,5 +228,124 @@ namespace MySQLCLRFunctions
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
             return input.Split(@"\W")[0];
          }
+
+        /***************************************************************************************************************************************************************************************************
+         * 
+         * Return a specific piece by its index.
+         * 
+         **************************************************************************************************************************************************************************************/
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true, FillRowMethodName = "FillRowWithStrPieces")]
+        public static string PieceNumber(String input, String pattern, int piecenumbertoreturn)
+        {
+            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
+            string[] stringpieces = Regex.Split(input, pattern, RegexOptions.IgnoreCase, TimeSpan.FromSeconds(2));
+            if (stringpieces != null && stringpieces.Length >= piecenumbertoreturn)
+                return stringpieces[piecenumbertoreturn - 1];
+            else
+                return null;
+        }
+
+        /***************************************************************************************************************************************************************************************************
+         * 
+         * Convenience function to return the last piece
+         * 
+         **************************************************************************************************************************************************************************************/
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true, FillRowMethodName = "FillRowWithStrPieces")]
+        public static string LastPiece(string input, string pattern)
+        {
+            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
+            if (StringTest.IsNullOrWhiteSpaceOrEmpty(pattern)) return input;
+
+            string[] stringpieces = Regex.Split(input, pattern, RegexOptions.IgnoreCase, TimeSpan.FromSeconds(2));
+            if (stringpieces != null && stringpieces.Length > 0)
+            {
+                string laststring = stringpieces[stringpieces.Length - 1];
+                if (string.IsNullOrWhiteSpace(laststring))
+                {
+                    if (stringpieces != null && stringpieces.Length > 1)
+                    {
+                        laststring = stringpieces[stringpieces.Length - 2];
+                    }
+                }
+                return laststring;
+            }
+            else
+                return null;
+        }
+
+        private static string[] SingleStringAsArray(string element1)
+        {
+            var arr = new string[1];
+            arr[0] = element1;
+            return arr;
+        }
+        /***************************************************************************************************************************************************************************************************
+        * 
+        * Extract the first word before a specific string
+        * 
+        ***************************************************************************************************************************************************************************************************/
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
+        public static string FirstWordBefore(string input, string marker)
+        {
+            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
+            return input.Split(SingleStringAsArray(marker), StringSplitOptions.None)[0];
+        }
+
+        /***************************************************************************************************************************************************************************************************
+        * 
+        * Extract the first word before any of the characters in the passed string.  Smallest word returned.
+        * 
+        ***************************************************************************************************************************************************************************************************/
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
+        public static string FirstWordBeforeAnyChar(string input, string markerchars)
+        {
+            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
+            int firstindex = input.IndexOfAny(markerchars.ToCharArray());
+            if (firstindex < 1) return null;
+            return input.Left(firstindex);
+        }
+
+        private static int FindIndexOf(this string input, string marker)
+        {
+            return input.IndexOf(marker);
+        }
+        /***************************************************************************************************************************************************************************************************
+        * 
+        * Extract everything after a specific string
+        * 
+        ***************************************************************************************************************************************************************************************************/
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
+        public static string EverythingAfter(string input, string marker)
+        {
+            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
+            int i = input.FindIndexOf(marker);
+            if (i == -1) return string.Empty;
+            if (i + marker.Length > input.Length) return string.Empty;
+            return input.Substring(i + marker.Length);
+        }
+
+        /***************************************************************************************************************************************************************************************************
+         * 
+         * This is not at all the BASIC function Mid, but what the hey.  I need a snippet from a string, and I want the cleverness of supporting negatives as it's intuitive.
+         * Matter of fact, I need substring to be a little smarter too.
+         * 
+         **************************************************************************************************************************************************************************************/
+        public static string Mid(this string input, int from, int to)
+        {
+            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
+            if (from < 0) return input;
+            if (from >= 0 && to >= 0 && from > to) return input;
+
+            if (to < 0)
+            {
+                string x = input.Substring(from);
+                int i = -to;
+                x = x.TrimEnd((int)i);
+                return x;
+            }
+            if (to > from) return input.Substring(from, input.Length - (from + to));
+
+            return input;
+        }
     }
 }

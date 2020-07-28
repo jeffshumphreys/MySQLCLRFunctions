@@ -25,7 +25,7 @@ namespace MySQLCLRFunctions
          *  Simple expanding name to avoid constant confusion I have with what this function does.
          *  Because most people don't equivocate white space with an empty space, which is the opposite of space.  It is non-space.
          * 
-         **************************************************************************************************************************************************************************************/
+         ***************************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
         public static bool IsNullOrWhiteSpaceOrEmpty(string input)
         {
@@ -34,26 +34,72 @@ namespace MySQLCLRFunctions
 
         /***************************************************************************************************************************************************************************************************
          * 
+         *  Computer (Host) names vs. IP4 in the same columns.
+         * 
+         ***************************************************************************************************************************************************************************************************/
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
+        public static bool IsIP4(string input)
+        {
+            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return false;
+
+            IPAddress address;
+            if (IPAddress.TryParse(input, out address))
+            {
+                if (address.AddressFamily is System.Net.Sockets.AddressFamily.InterNetwork) return true;
+            }
+
+            return false;
+        }
+
+        /***************************************************************************************************************************************************************************************************
+         * 
+         *  Computer (Host) names vs. IP6 in the same columns.  I'm not using this yet.
+         * 
+         ***************************************************************************************************************************************************************************************************/
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
+        public static bool IsIP6(string input)
+        {
+            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return false;
+
+            IPAddress address;
+            if (IPAddress.TryParse(input, out address))
+            {
+                if (address.AddressFamily is System.Net.Sockets.AddressFamily.InterNetworkV6) return true;
+            }
+
+            return false;
+        }
+        /***************************************************************************************************************************************************************************************************
+         * 
          * Returns true if the input string starts with the sought string.
          * 
-         **************************************************************************************************************************************************************************************/
+         ***************************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static bool StartsWith(string input, string searchFor)
+        public static bool StartsWith(string input, string marker)
         {
-            return input.StartsWith(searchFor);
+            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return false;
+
+            return input.StartsWith(marker);
         }
 
         /***************************************************************************************************************************************************************************************************
          * 
          * Returns true if the input string ends with the sought string.
          * 
-         **************************************************************************************************************************************************************************************/
+         ***************************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static bool EndsWith(string input, string searchFor)
+        public static bool EndsWith(string input, string marker)
         {
-            return input.EndsWith(searchFor);
+            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return false;
+
+            return input.EndsWith(marker);
         }
 
+        /***************************************************************************************************************************************************************************************************
+         * 
+         * Stub.  There are significant rules around server names.
+         * 
+         ***************************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
         public static bool LegalName(string input, string characterrule)
         {
@@ -74,12 +120,14 @@ namespace MySQLCLRFunctions
          * 
          * Any of these substrings are in the delimited list of sought substrings.  I would default the delimiter, but SQL Server doesn't care for optional parameters.
          * 
-         **************************************************************************************************************************************************************************************/
+         ***************************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static bool AnyOfTheseAreAnyOfThose(string inputstrings, string stringsitmightcontain, string sep)
+        public static bool AnyOfTheseAreAnyOfThose(string input, string marker, string sep)
         {
-            var inputsasarray = inputstrings.Split(new string[] { sep }, StringSplitOptions.RemoveEmptyEntries);
-            foreach (string i in stringsitmightcontain.Split(new string[] { sep }, StringSplitOptions.RemoveEmptyEntries))
+            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return false;
+
+            var inputsasarray = input.Split(new string[] { sep }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (string i in marker.Split(new string[] { sep }, StringSplitOptions.RemoveEmptyEntries))
             {
                 if (inputsasarray.Contains(i))
                 {
@@ -96,7 +144,7 @@ namespace MySQLCLRFunctions
          * 
          * Idea is: SELECT * FROM x where dbo.LikeAny(FullName, '%Humphreys;Humphrey%;JSH;%Jeff%Hum%;Jeff%H;(Jeff|Jeffrey|Jeffry);') = 1
          * 
-         **************************************************************************************************************************************************************************************/
+         ***************************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
         public static bool LikeAny(string input, string patternsitmightcontain, string patternsseparatedby)
         {

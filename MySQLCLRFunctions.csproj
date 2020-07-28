@@ -60,8 +60,13 @@
     <Compile Include="Humanization.cs" />
     <Compile Include="NetworkCollect.cs" />
     <Compile Include="NetworkTest.cs" />
+    <Compile Include="StringBuildOut.cs" />
+    <Compile Include="StringDecode.cs" />
     <Compile Include="StringExtract.cs" />
+    <Compile Include="StringFormat.cs" />
     <Compile Include="StringMeasure.cs" />
+    <Compile Include="StringPivot.cs" />
+    <Compile Include="StringReduce.cs" />
     <Compile Include="StringTest.cs" />
     <Compile Include="StringTransform.cs" />
     <Compile Include="StringTransformStripDownCustomizations.cs" />

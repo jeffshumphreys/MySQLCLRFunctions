@@ -1,6 +1,6 @@
-﻿-- Time to execute: 5 sec
-:SETVAR svr "xxxx"
-:SETVAR db "yyyy"
+﻿-- Time to execute: 8 sec
+:SETVAR svr "*******"
+:SETVAR db "*******"
 USE $(db)
 :ON ERROR EXIT
 SELECT ThisServer = @@servername, ThisDatabase = DB_NAME(), ThisUser = ORIGINAL_LOGIN()                 
@@ -63,8 +63,15 @@ DROP FUNCTION IF EXISTS ExpandSQLParameterString
 DROP FUNCTION IF EXISTS ExpandSQLParameter
 DROP FUNCTION IF EXISTS BuildRaiserrorMessage
 DROP FUNCTION IF EXISTS RevealNonPrintables
-DROP FUNCTION IF EXISTS StripBracketing
+DROP FUNCTION IF EXISTS TrimBracketing
 DROP FUNCTION IF EXISTS FirstWord
+DROP FUNCTION IF EXISTS FirstWordBefore
+DROP FUNCTION IF EXISTS FirstWordBeforeAnyChar
+DROP FUNCTION IF EXISTS EverythingAfter
+DROP FUNCTION IF EXISTS TrimIfStartsWith
+DROP FUNCTION IF EXISTS TrimEnd
+
+DROP FUNCTION IF EXISTS IsIP4
 /*
     Embedded in Table Def!!!
 */
@@ -82,6 +89,13 @@ BEGIN TRY
 END TRY
 BEGIN CATCH
     IF ERROR_NUMBER() = 6285 PRINT 'MVID? Says assembly identical'
+    ELSE
+    BEGIN
+        DECLARE @errmsg NVARCHAR(2048) = CONCAT('Error: CANNOT ', ERROR_MESSAGE())
+         PRINT @errmsg
+         ;THROW 51000, @errmsg, 1
+         
+    END
 END CATCH
 GO
 /**************************************************************************************************************************************************************************************************
@@ -124,7 +138,7 @@ CREATE OR ALTER FUNCTION PingGetReturnBuffer(@Machine NVARCHAR(257)) RETURNS VAR
 WITH RETURNS NULL ON NULL INPUT
 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.NetworkCollect].PingGetReturnBuffer;  
 GO  
-SELECT PingGetReturnBuffer = CAST(dbo.PingGetReturnBuffer('EDWPROD') AS VARCHAR(400))        -->abcdefghijklmnopqrstuvwabcdefghi<--
+SELECT PingGetReturnBuffer = CAST(dbo.PingGetReturnBuffer('*****') AS VARCHAR(400))        -->abcdefghijklmnopqrstuvwabcdefghi<--
 GO
 CREATE OR ALTER FUNCTION GetHostNames(@Machine NVARCHAR(257)) RETURNS NVARCHAR(600) 
 WITH RETURNS NULL ON NULL INPUT
@@ -144,14 +158,14 @@ CREATE OR ALTER FUNCTION GetHostAliases(@Machine NVARCHAR(257)) RETURNS NVARCHAR
 WITH RETURNS NULL ON NULL INPUT
 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.NetworkCollect].GetHostAliases;  
 GO  
-SELECT GetHostAliases = CAST(dbo.GetHostAliases('EDWPROD') AS VARCHAR(400))
+SELECT GetHostAliases = CAST(dbo.GetHostAliases('****') AS VARCHAR(400))
 GO
 CREATE OR ALTER FUNCTION GetHostRealName(@Machine NVARCHAR(257)) RETURNS NVARCHAR(600) 
 WITH RETURNS NULL ON NULL INPUT
 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.NetworkCollect].GetHostRealName;  
 GO  
-SELECT GetHostRealName = dbo.GetHostRealName('STANDARDCOSTPRD\CA_PROD')
-SELECT GetHostRealName = dbo.GetHostRealName('STANDARDCOSTPRD')
+SELECT GetHostRealName = dbo.GetHostRealName('***\***')
+SELECT GetHostRealName = dbo.GetHostRealName('***')
 GO
 /**************************************************************************************************************************************************************************************************
  *
@@ -289,17 +303,18 @@ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTest].EndsWith;
 GO
 SELECT dbo.EndsWith('x', 'x') -- 1
 GO
+CREATE OR ALTER FUNCTION IsIP4(@input NVARCHAR(256)) RETURNS BIT
+WITH RETURNS NULL ON NULL INPUT
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTest].IsIP4;  
+GO
+SELECT IsIP4_______________________________________________________________ = dbo.IsIP4('10.10.10.218')
+SELECT IsIP4_______________________________________________________________ = dbo.IsIP4('*****.10.in-addr.arpa')
+GO
 CREATE OR ALTER FUNCTION LegalName(@input NVARCHAR(MAX), @searchFor NVARCHAR(MAX)) RETURNS BIT
 WITH RETURNS NULL ON NULL INPUT
 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTest].LegalName;  
 GO
 SELECT LegalName_______________________________________________________________ = dbo.LegalName('HOSTNAMEUSUALLY\R12345678901234567', 'SQL Server Server Name')
-GO
-CREATE OR ALTER FUNCTION FirstWord(@input NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTest].FirstWord;  
-GO
-SELECT FirstWord_______________________________________________________________ = dbo.FirstWord('126.334.333 Hi!')
 GO
 
 /**************************************************************************************************************************************************************************************************
@@ -321,6 +336,20 @@ GO
  *       T-SQL String Extractions (sort of a transformation)
  *
 /***************************************************************************************************************************************************************************************************/*/
+CREATE OR ALTER FUNCTION PieceNumber(@stringtosplitintopieces NVARCHAR(MAX), @regexsplitterpattern NVARCHAR(4000), @piecenumbertoreturn INT) RETURNS NVARCHAR(MAX) 
+WITH RETURNS NULL ON NULL INPUT
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].PieceNumber;  
+GO  
+SELECT dbo.PieceNumber('this is 100 times, or maybe 1503', '(\d+)', 1) AS PieceNumber1     --> 2 rows match:100, matchat: 8, match:1503, matchat:28
+SELECT dbo.PieceNumber('this is 100 times, or maybe 1503', '(\d+)', 100) AS PieceNumber1
+SELECT dbo.PieceNumber('this is 100 times, or maybe 1503', '(\d+)', 2) AS PieceNumber1
+GO
+CREATE OR ALTER FUNCTION LastPiece(@stringtosplitintopieces NVARCHAR(MAX), @regexsplitterpattern NVARCHAR(4000)) RETURNS NVARCHAR(MAX) 
+WITH RETURNS NULL ON NULL INPUT
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].LastPiece;  
+GO  
+SELECT dbo.LastPiece('this is 100 times, or maybe 1503', '(\d+)') AS LastPiecex
+GO
 CREATE OR ALTER FUNCTION GetFirstName(@FullName NVARCHAR(500)) RETURNS NVARCHAR(500) 
 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].GetFirstName;  
 GO  
@@ -349,54 +378,126 @@ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].RightOf;
 GO
 SELECT RightOf_______________________________________________________________ = dbo.RightOf('Test\x', '\')  -->x<--
 GO
+CREATE OR ALTER FUNCTION FirstWord(@input NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
+WITH RETURNS NULL ON NULL INPUT
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].FirstWord;  
+GO
+SELECT FirstWord_______________________________________________________________ = dbo.FirstWord('126.334.333 Hi!')
+GO
+CREATE OR ALTER FUNCTION FirstWordBefore(@input NVARCHAR(MAX), @marker NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
+WITH RETURNS NULL ON NULL INPUT
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].FirstWordBefore;  
+GO
+SELECT FirstWordBefore_______________________________________________________________ = dbo.FirstWordBefore('c7efb5be-9007-4fa4-9f21-6d7944769868._msdcs.na.simplot.com', '.')
+GO
+CREATE OR ALTER FUNCTION FirstWordBeforeAnyChar(@input NVARCHAR(MAX), @marker NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
+WITH RETURNS NULL ON NULL INPUT
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].FirstWordBeforeAnyChar;  
+GO
+SELECT FirstWordBeforeAnyChar___________________________________________________________ = dbo.FirstWordBeforeAnyChar('cULVHST81.SIMNETAD.SIMPLOT.COM.AU\CITECTHISTORIAN', '.\')
+GO
+CREATE OR ALTER FUNCTION EverythingAfter(@input NVARCHAR(MAX), @marker NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
+WITH RETURNS NULL ON NULL INPUT
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].EverythingAfter;  
+GO
+SELECT EverythingAfter_______________________________________________________________ = dbo.EverythingAfter('c7efb5be-9007-4fa4-9f21-6d7944769868._msdcs.na.simplot.com', '.')
+GO
 /**************************************************************************************************************************************************************************************************
  *
- *       T-SQL String transformations
+ *       Pivot substrings into rows and metadata.
  *
 /***************************************************************************************************************************************************************************************************/*/
 CREATE OR ALTER FUNCTION Pieces(@stringtosplitintopieces NVARCHAR(MAX), @regexsplitterpattern NVARCHAR(4000)) RETURNS TABLE (piece NVARCHAR(MAX), pieceorderno INT) 
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTransform].Pieces;  
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringPivot].Pieces;  
 GO  
 SELECT ssore.piece, ssore.pieceorderno FROM Pieces('this is 100 times, or maybe 1503', '(\d+)') AS ssore
 GO
 CREATE OR ALTER FUNCTION PiecesWithContext(@stringtosplitintopieces NVARCHAR(MAX), @regexsplitterpattern NVARCHAR(4000)) RETURNS TABLE (pieceorderno INT, previousPiece NVARCHAR(MAX), piece NVARCHAR(MAX), nextPiece NVARCHAR(MAX)) 
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTransform].PiecesWithContext;  
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringPivot].PiecesWithContext;  
 GO  
 SELECT ssore.piece, ssore.pieceorderno FROM PiecesWithContext('this is 100 times, or maybe 1503', '(\d+)') AS ssore
 GO
-CREATE OR ALTER FUNCTION PieceNumber(@stringtosplitintopieces NVARCHAR(MAX), @regexsplitterpattern NVARCHAR(4000), @piecenumbertoreturn INT) RETURNS NVARCHAR(MAX) 
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTransform].PieceNumber;  
+CREATE OR ALTER FUNCTION PiecesWithMatches(@stringtoextractmatchesintorows NVARCHAR(MAX), @pattern NVARCHAR(4000)) RETURNS TABLE(pieceorderNo INT, previousPiece NVARCHAR(MAX), matchAtStartOfPiece NVARCHAR(MAX), piece NVARCHAR(MAX), matchAtEndOfPiece NVARCHAR(MAX), nextPiece NVARCHAR(MAX)) 
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringPivot].PiecesWithMatches;  
 GO  
-SELECT dbo.PieceNumber('this is 100 times, or maybe 1503', '(\d+)', 1) AS PieceNumber1     --> 2 rows match:100, matchat: 8, match:1503, matchat:28
-SELECT dbo.PieceNumber('this is 100 times, or maybe 1503', '(\d+)', 100) AS PieceNumber1
-SELECT dbo.PieceNumber('this is 100 times, or maybe 1503', '(\d+)', 2) AS PieceNumber1
+SELECT * FROM PiecesWithMatches('this is 100 times, or maybe 1503', '(\d+)') AS ssore
 GO
-CREATE OR ALTER FUNCTION LastPiece(@stringtosplitintopieces NVARCHAR(MAX), @regexsplitterpattern NVARCHAR(4000)) RETURNS NVARCHAR(MAX) 
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTransform].LastPiece;  
+CREATE OR ALTER FUNCTION Matches(@stringtoextractmatchesintorows NVARCHAR(MAX), @capturepattern NVARCHAR(4000)) RETURNS TABLE(matchorderno INT, capturedMatch NVARCHAR(MAX), capturedmatchstartsat INT) 
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringPivot].Matches;  
 GO  
-SELECT dbo.LastPiece('this is 100 times, or maybe 1503', '(\d+)') AS LastPiecex
+SELECT matchorderno, ssore.capturedMatch, ssore.capturedmatchstartsat FROM Matches('this is 100 times, or maybe 1503', '(\d+)') AS ssore
+SELECT * FROM Matches('this is 100 times, or maybe 1503', '(\d+)') AS ssore
 GO
-CREATE OR ALTER FUNCTION Matches(@stringtoextractmatchesintorows NVARCHAR(MAX), @regexcapturepattern NVARCHAR(4000)) RETURNS TABLE(match NVARCHAR(MAX), matchat INT) 
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTransform].Matches;  
-GO  
-SELECT ssore.match, ssore.matchat FROM Matches('this is 100 times, or maybe 1503', '(\d+)') AS ssore
+/**************************************************************************************************************************************************************************************************
+ *
+ *       String decoding.
+ *
+/***************************************************************************************************************************************************************************************************/*/
+CREATE OR ALTER FUNCTION RevealNonPrintables(@input NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)                -->                                                                                                test<--
+WITH RETURNS NULL ON NULL INPUT
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringDecode].RevealNonPrintables;  
+GO
+SELECT RevealNonprintables_______________________________________________________________ = dbo.RevealNonPrintables('test'+ CHAR(10) + CHAR(13))     -->test1013                                                                                               <--
+GO
+/**************************************************************************************************************************************************************************************************
+ *
+ *       String reductions, actions that will always result in the same or shorter string.
+ *
+/***************************************************************************************************************************************************************************************************/*/
+CREATE OR ALTER FUNCTION BlankOut(@input NVARCHAR(MAX), @blankanyofthese NVARCHAR(MAX), @sep NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) 
+WITH RETURNS NULL ON NULL INPUT
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringReduce].BlankOut;  
 GO
 CREATE OR ALTER FUNCTION RTrimChar(@input NVARCHAR(MAX), @trimAllOccFromRight NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
 WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTransform].RTrimChar;  
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringReduce].RTrimChar;  
 GO  
 SELECT RTrimChar = CAST(dbo.RTrimChar('100.20000000', '0') AS DECIMAL(10,2))     --> 100.20
 GO
-CREATE OR ALTER FUNCTION BlankOut(@input NVARCHAR(MAX), @blankanyofthese NVARCHAR(MAX), @sep NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) 
+CREATE OR ALTER FUNCTION TrimBracketing(@input NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)                -->                                                                                                test<--
 WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTransform].BlankOut;  
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringReduce].TrimBracketing;  
+GO
+SELECT TrimBracketing_______________________________________________________________ = dbo.TrimBracketing('[test]')-->test<--               dbo.TrimIfStartsWith(PingableAddress, '\032')
+GO
+CREATE OR ALTER FUNCTION TrimIfStartsWith(@input NVARCHAR(MAX), @marker NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
+WITH RETURNS NULL ON NULL INPUT
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringReduce].TrimIfStartsWith; 
+GO
+SELECT TrimIfStartsWith_______________________________________________________________ = dbo.TrimIfStartsWith('\032occ00ap000.na.simplot.com', '\032')-->occ00ap000.na.simplot.com<--
+GO
+CREATE OR ALTER FUNCTION TrimEnd(@input NVARCHAR(MAX), @howmanycharactersofftheend INT) RETURNS NVARCHAR(MAX)
+WITH RETURNS NULL ON NULL INPUT
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringReduce].TrimEnd; 
+GO
+SELECT TrimEnd_______________________________________________________________ = dbo.TrimEnd('occ00ap000.na.simplot.com.', 1)-->occ00ap000.na.simplot.com
+GO
+/**************************************************************************************************************************************************************************************************
+ *
+ *       String formatting
+ *
+/***************************************************************************************************************************************************************************************************/*/
+CREATE OR ALTER FUNCTION LPad(@input NVARCHAR(MAX), @padToLen INT) RETURNS NVARCHAR(MAX) 
+WITH RETURNS NULL ON NULL INPUT
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringFormat].LPad;  
+GO
+SELECT LPad_______________________________________________________________ = dbo.LPad('test', 100)
+GO
+CREATE OR ALTER FUNCTION RPad(@input NVARCHAR(MAX), @padToLen INT) RETURNS NVARCHAR(MAX)                -->                                                                                                test<--
+WITH RETURNS NULL ON NULL INPUT
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringFormat].RPad;  
+GO
+SELECT RPad_______________________________________________________________ = dbo.RPad('test', 100)     -->test                                                                                                <--
 GO
 CREATE OR ALTER FUNCTION ReplaceRecursive(@input NVARCHAR(MAX), @find NVARCHAR(MAX), @replacement NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) 
 WITH RETURNS NULL ON NULL INPUT
 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTransform].ReplaceRecursive; 
 GO
+/**************************************************************************************************************************************************************************************************
+ *
+ *      General transformations
+ *
+/***************************************************************************************************************************************************************************************************/*/
 SELECT dbo.ReplaceRecursive('This is                a test  of the     emergency  ', '  ', ' ')    -->This is a test of the emergency <--
 GO
 CREATE OR ALTER FUNCTION ReplaceMatch(@input NVARCHAR(MAX), @find NVARCHAR(MAX), @replacement NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
@@ -404,30 +505,6 @@ WITH RETURNS NULL ON NULL INPUT
 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTransform].ReplaceMatch; 
 GO
 SELECT dbo.ReplaceMatch('SELECT * FROM $1.$10', '\$1~[0-9]', 'Merry')    -->  ????
-GO
-CREATE OR ALTER FUNCTION LPad(@input NVARCHAR(MAX), @padToLen INT) RETURNS NVARCHAR(MAX) 
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTransform].LPad;  
-GO
-SELECT LPad_______________________________________________________________ = dbo.LPad('test', 100)
-GO
-CREATE OR ALTER FUNCTION RPad(@input NVARCHAR(MAX), @padToLen INT) RETURNS NVARCHAR(MAX)                -->                                                                                                test<--
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTransform].RPad;  
-GO
-SELECT RPad_______________________________________________________________ = dbo.RPad('test', 100)     -->test                                                                                                <--
-GO
-CREATE OR ALTER FUNCTION RevealNonPrintables(@input NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)                -->                                                                                                test<--
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTransform].RevealNonPrintables;  
-GO
-SELECT RevealNonprintables_______________________________________________________________ = dbo.RevealNonPrintables('test'+ CHAR(10) + CHAR(13))     -->test1013                                                                                               <--
-GO
-CREATE OR ALTER FUNCTION StripBracketing(@input NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)                -->                                                                                                test<--
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTransform].StripBracketing;  
-GO
-SELECT StripBracketing_______________________________________________________________ = dbo.StripBracketing('[test]')-->test<--
 GO
 /**************************************************************************************************************************************************************************************************
  *

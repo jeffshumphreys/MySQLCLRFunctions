@@ -2,26 +2,29 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace MySQLCLRFunctions
 {
-    public static class StringTransformStripDownCustomizations
+    public static class StringBuildOut
     {
         /***************************************************************************************************************************************************************************************************
          * 
-         * StripDownCherwellDescription    Descriptions in Cherwell tickets are often full of garbage.  Strip out garbage.
+         * For building CSV lines in a loop.
          * 
          **************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static string StripDownCherwellDescription(string input)
+        public static string AppendWithSeparator(string input, string newfield, string sep)
         {
-            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
+            if (StringTest.IsNullOrWhiteSpaceOrEmpty(newfield)) return input;
+            if (StringTest.IsNullOrWhiteSpaceOrEmpty(sep)) sep = ", ";
 
-            return input.Trim();
+            // No sense adding the same value
+            if (input == string.Empty) input = newfield;
+            else input = input + sep + newfield;
+
+            return input;
         }
     }
 }
