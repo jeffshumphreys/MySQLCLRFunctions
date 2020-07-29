@@ -12,7 +12,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		SQLCLR_Register.sql.txt = SQLCLR_Register.sql.txt
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MySQLCLRFunctionsMSTests", "..\MySQLCLRFunctionsTests\MySQLCLRFunctionsMSTests.csproj", "{9DC997C0-C2D7-4339-9E1C-893937A32EEA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MySQLCLRFunctionsMSTests", "MySQLCLRFunctionsMSTests\MySQLCLRFunctionsMSTests.csproj", "{9DC997C0-C2D7-4339-9E1C-893937A32EEA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
