@@ -1,6 +1,16 @@
-﻿-- Time to execute: 8 sec
-:SETVAR svr "*******"
-:SETVAR db "*******"
+﻿-- Time to execute: 5 sec
+
+--:SETVAR testsvr1 "******\****"
+--:SETVAR testsvr1a "*****"
+--:SETVAR testsvr2 "****"
+--:SETVAR FQDN1 "*****.****.***"
+--:SETVAR FQDN2 "****"
+--:SETVAR FQDN3 "****\*****"
+--:SETVAR FQDN4 "\****.*.*.com"
+--:SETVAR FQDN5 "\****.*.*.com."
+--:SETVAR svr "****\***"
+--:SETVAR db "*******"
+
 USE $(db)
 :ON ERROR EXIT
 SELECT ThisServer = @@servername, ThisDatabase = DB_NAME(), ThisUser = ORIGINAL_LOGIN()                 
@@ -8,90 +18,159 @@ IF DB_NAME() <> '$(db)' THROW 50000, 'WRONG DATABASE', 0
 IF @@servername <> '$(svr)' THROW 50001, 'WRONG SERVER', 0
 GO
 -- If anything changes, drop and recreate
-:ON ERROR IGNORE
+/**************************************************************************************************************************************************************************************************
+ *      Event Logs
+/***************************************************************************************************************************************************************************************************/*/
+DROP FUNCTION IF EXISTS ReadEventLog
+/**************************************************************************************************************************************************************************************************
+ *      Networking
+/***************************************************************************************************************************************************************************************************/*/
 DROP FUNCTION IF EXISTS GetHostRealName
 DROP FUNCTION IF EXISTS GetHostAliases
 DROP FUNCTION IF EXISTS GetHostNames
 DROP FUNCTION IF EXISTS PingGetReturnBuffer
 DROP FUNCTION IF EXISTS PingGetAddress
 DROP FUNCTION IF EXISTS Ping
+DROP FUNCTION IF EXISTS IsIP4
 DROP FUNCTION IF EXISTS SpreadHex
+/**************************************************************************************************************************************************************************************************
+ *      Convert
+/***************************************************************************************************************************************************************************************************/*/
 DROP FUNCTION IF EXISTS VarBin2Hex
 DROP FUNCTION IF EXISTS ADDateTimeString2DateTime
-DROP FUNCTION IF EXISTS ReadEventLog
-DROP FUNCTION IF EXISTS Pieces
-DROP FUNCTION IF EXISTS PiecesWithContext
-DROP FUNCTION IF EXISTS PieceNumber
-DROP FUNCTION IF EXISTS LastPiece
-DROP FUNCTION IF EXISTS Matches
-DROP FUNCTION IF EXISTS StringSplitOnRegEx
-DROP FUNCTION IF EXISTS GetFirstName
-DROP FUNCTION IF EXISTS HumanizeDateTimeDiff
+/**************************************************************************************************************************************************************************************************
+ *      Compare
+/***************************************************************************************************************************************************************************************************/*/
 DROP FUNCTION IF EXISTS Max2DateTimes
 DROP FUNCTION IF EXISTS Max3DateTimes
 DROP FUNCTION IF EXISTS Max4DateTimes
+/**************************************************************************************************************************************************************************************************
+ *      Interact with Environment (Doesn't work)
+/***************************************************************************************************************************************************************************************************/*/
 DROP FUNCTION IF EXISTS Beep
 DROP FUNCTION IF EXISTS BeepStandard
-DROP FUNCTION IF EXISTS HowMany
-DROP FUNCTION IF EXISTS RTrimChar
+/**************************************************************************************************************************************************************************************************
+ *      String Formatting
+/***************************************************************************************************************************************************************************************************/*/
+DROP FUNCTION IF EXISTS Title
+DROP FUNCTION IF EXISTS HumanizeDateTimeDiff
 DROP FUNCTION IF EXISTS RPad
 DROP FUNCTION IF EXISTS RPadChar
 DROP FUNCTION IF EXISTS LPad
 DROP FUNCTION IF EXISTS LPadChar
-DROP FUNCTION IF EXISTS StartsWith
-DROP FUNCTION IF EXISTS EndsWith
-DROP FUNCTION IF EXISTS LegalName
+/**************************************************************************************************************************************************************************************************
+ *      String Pivots
+/***************************************************************************************************************************************************************************************************/*/
+DROP FUNCTION IF EXISTS Pieces
+DROP FUNCTION IF EXISTS PiecesWithContext
+DROP FUNCTION IF EXISTS PiecesWithMatches
+DROP FUNCTION IF EXISTS Matches
+DROP FUNCTION IF EXISTS Captures
+DROP FUNCTION IF EXISTS StringSplitOnRegEx
+DROP FUNCTION IF EXISTS KeyValuePairsWithMultiValues
+DROP FUNCTION IF EXISTS NearX
+/**************************************************************************************************************************************************************************************************
+ *      String Extract
+/***************************************************************************************************************************************************************************************************/*/
+DROP FUNCTION IF EXISTS GetFirstName
+--DROP FUNCTION IF EXISTS GetLastName
 DROP FUNCTION IF EXISTS LeftOf
 DROP FUNCTION IF EXISTS LeftOfAny
 DROP FUNCTION IF EXISTS LeftOfNth
 DROP FUNCTION IF EXISTS LeftMOfNth
+DROP FUNCTION IF EXISTS FirstWord
+DROP FUNCTION IF EXISTS FirstWordBeforeS
+DROP FUNCTION IF EXISTS FirstWordBeforeAnyC
+DROP FUNCTION IF EXISTS PieceNumber
+DROP FUNCTION IF EXISTS LastPiece
 DROP FUNCTION IF EXISTS RightOf
 DROP FUNCTION IF EXISTS RightOfAny
+DROP FUNCTION IF EXISTS EverythingAfterX -- X = Regexpression
+DROP FUNCTION IF EXISTS Mid
+/**************************************************************************************************************************************************************************************************
+ *      String Reduce
+/***************************************************************************************************************************************************************************************************/*/
 DROP FUNCTION IF EXISTS BlankOut
 DROP FUNCTION IF EXISTS RemoveSQLServerNameDelimiters
+DROP FUNCTION IF EXISTS StripDownSQLModule
+DROP FUNCTION IF EXISTS TrimBracketing
+DROP FUNCTION IF EXISTS TrimIfStartsWith
+DROP FUNCTION IF EXISTS RTrimChar
+DROP FUNCTION IF EXISTS TrimEnd
+/**************************************************************************************************************************************************************************************************
+ *      String Transformations
+/***************************************************************************************************************************************************************************************************/*/
+DROP FUNCTION IF EXISTS ReplaceRecursive
+DROP FUNCTION IF EXISTS ReplaceMatch
+/**************************************************************************************************************************************************************************************************
+ *      String Decode
+/***************************************************************************************************************************************************************************************************/*/
+DROP FUNCTION IF EXISTS RevealNonPrintables
+/**************************************************************************************************************************************************************************************************
+ *      String Measure
+/***************************************************************************************************************************************************************************************************/*/
+DROP FUNCTION IF EXISTS HowMany
+/**************************************************************************************************************************************************************************************************
+ *      String Tests
+/***************************************************************************************************************************************************************************************************/*/
+DROP FUNCTION IF EXISTS StartsWith
+DROP FUNCTION IF EXISTS EndsWith
+DROP FUNCTION IF EXISTS LegalName
+DROP FUNCTION IF EXISTS AnyOfTheseSAreAnyOfThoseS
+/**************************************************************************************************************************************************************************************************
+ *      File Name processing
+/***************************************************************************************************************************************************************************************************/*/
 DROP FUNCTION IF EXISTS FileNameExtension
 DROP FUNCTION IF EXISTS FileNameWithoutExtension
 DROP FUNCTION IF EXISTS FileNameWithExtension
 DROP FUNCTION IF EXISTS FileInDirectory
 DROP FUNCTION IF EXISTS FileInFolder
-DROP FUNCTION IF EXISTS AnyOfTheseAreAnyOfThose
 DROP FUNCTION IF EXISTS TempFilePath
-DROP FUNCTION IF EXISTS StripDownSQLModule
-DROP FUNCTION IF EXISTS ReplaceRecursive
-DROP FUNCTION IF EXISTS ReplaceMatch
+/**************************************************************************************************************************************************************************************************
+ *      SQL Caller Script Generators
+/***************************************************************************************************************************************************************************************************/*/
 DROP FUNCTION IF EXISTS ExpandSQLParameterString
 DROP FUNCTION IF EXISTS ExpandSQLParameter
 DROP FUNCTION IF EXISTS BuildRaiserrorMessage
-DROP FUNCTION IF EXISTS RevealNonPrintables
-DROP FUNCTION IF EXISTS TrimBracketing
-DROP FUNCTION IF EXISTS FirstWord
-DROP FUNCTION IF EXISTS FirstWordBefore
-DROP FUNCTION IF EXISTS FirstWordBeforeAnyChar
-DROP FUNCTION IF EXISTS EverythingAfter
-DROP FUNCTION IF EXISTS TrimIfStartsWith
-DROP FUNCTION IF EXISTS TrimEnd
-
-DROP FUNCTION IF EXISTS IsIP4
 /*
     Embedded in Table Def!!!
 */
 --DROP FUNCTION IF EXISTS HowMany
 
---DROP ASSEMBLY IF EXISTS MySQLCLRFunctions
+DECLARE @errmsg NVARCHAR(2048)
+
+--DROP ASSEMBLY MySQLCLRFunctions
 --Msg 10327, Level 14, State 1, Line 44
 --CREATE ASSEMBLY for assembly 'MySQLCLRFunctions' failed because assembly 'MySQLCLRFunctions' is not trusted. The assembly is trusted when either of the following is true: the assembly is signed with a certificate or an asymmetric key that has a corresponding login with UNSAFE ASSEMBLY permission, or the assembly is trusted using sp_add_trusted_assembly.
 
 --.Net SqlClient Data Provider: Msg 6285, Level 16, State 1, Line 57
 --ALTER ASSEMBLY failed because the source assembly is, according to MVID, identical to an assembly that is already registered under the name "MySQLCLRFunctions".
-
+BEGIN TRY
+    CREATE ASSEMBLY MySQLCLRFunctions from 'C:\Users\humphrej2\Source\Repos\jeffshumphreys\MySQLCLRFunctions\bin\Release\MySQLCLRFunctions.dll' WITH PERMISSION_SET = UNSAFE
+END TRY
+BEGIN CATCH
+    IF ERROR_NUMBER() = 6246 PRINT 'Already present'
+    ELSE
+    BEGIN
+        SET @errmsg = CONCAT('Error: CANNOT ', ERROR_MESSAGE())
+         PRINT @errmsg
+         ;THROW 51001, @errmsg, 1
+         
+    END
+END CATCH
 BEGIN TRY
     ALTER ASSEMBLY MySQLCLRFunctions from 'C:\Users\humphrej2\Source\Repos\jeffshumphreys\MySQLCLRFunctions\bin\Release\MySQLCLRFunctions.dll' WITH PERMISSION_SET = UNSAFE, UNCHECKED DATA
 END TRY
 BEGIN CATCH
-    IF ERROR_NUMBER() = 6285 PRINT 'MVID? Says assembly identical'
+    IF ERROR_NUMBER() = 6285 PRINT 'MVID? Says assembly identical. Ignore.'
+    ELSE IF ERROR_NUMBER() = 6270
+    BEGIN
+        PRINT ERROR_MESSAGE()
+        ;THROW 51002, @errmsg, 1
+    END
     ELSE
     BEGIN
-        DECLARE @errmsg NVARCHAR(2048) = CONCAT('Error: CANNOT ', ERROR_MESSAGE())
+        SET @errmsg = CONCAT('Error: CANNOT ', ERROR_MESSAGE())
          PRINT @errmsg
          ;THROW 51000, @errmsg, 1
          
@@ -120,7 +199,7 @@ CREATE OR ALTER FUNCTION Ping(@Machine NVARCHAR(257)) RETURNS BIT
 WITH RETURNS NULL ON NULL INPUT
 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.NetworkTest].Ping;  
 GO  
-SELECT Ping = dbo.Ping('EDWPROD') 
+SELECT Ping = dbo.Ping('$(testsvr2)') 
 GO
 /**************************************************************************************************************************************************************************************************
  *
@@ -132,13 +211,13 @@ CREATE OR ALTER FUNCTION PingGetAddress(@Machine NVARCHAR(257)) RETURNS NVARCHAR
 WITH RETURNS NULL ON NULL INPUT
 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.NetworkCollect].PingGetAddress;  
 GO  
-SELECT PingGetAddress = dbo.PingGetAddress('EDWPROD')                                         -->fd85:eb7f:dad9:7777::a0a:b0e
+SELECT PingGetAddress = dbo.PingGetAddress('$(testsvr2)')                                         -->fd85:eb7f:dad9:7777::a0a:b0e
 GO
 CREATE OR ALTER FUNCTION PingGetReturnBuffer(@Machine NVARCHAR(257)) RETURNS VARBINARY(200) 
 WITH RETURNS NULL ON NULL INPUT
 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.NetworkCollect].PingGetReturnBuffer;  
 GO  
-SELECT PingGetReturnBuffer = CAST(dbo.PingGetReturnBuffer('*****') AS VARCHAR(400))        -->abcdefghijklmnopqrstuvwabcdefghi<--
+SELECT PingGetReturnBuffer = CAST(dbo.PingGetReturnBuffer('$(testsvr2)') AS VARCHAR(400))        -->abcdefghijklmnopqrstuvwabcdefghi<--
 GO
 CREATE OR ALTER FUNCTION GetHostNames(@Machine NVARCHAR(257)) RETURNS NVARCHAR(600) 
 WITH RETURNS NULL ON NULL INPUT
@@ -158,14 +237,14 @@ CREATE OR ALTER FUNCTION GetHostAliases(@Machine NVARCHAR(257)) RETURNS NVARCHAR
 WITH RETURNS NULL ON NULL INPUT
 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.NetworkCollect].GetHostAliases;  
 GO  
-SELECT GetHostAliases = CAST(dbo.GetHostAliases('****') AS VARCHAR(400))
+SELECT GetHostAliases = CAST(dbo.GetHostAliases('$(testsvr2)') AS VARCHAR(400))
 GO
 CREATE OR ALTER FUNCTION GetHostRealName(@Machine NVARCHAR(257)) RETURNS NVARCHAR(600) 
 WITH RETURNS NULL ON NULL INPUT
 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.NetworkCollect].GetHostRealName;  
 GO  
-SELECT GetHostRealName = dbo.GetHostRealName('***\***')
-SELECT GetHostRealName = dbo.GetHostRealName('***')
+SELECT GetHostRealName = dbo.GetHostRealName('$(testsvr1)')
+SELECT GetHostRealName = dbo.GetHostRealName('$(testsvr1a)')
 GO
 /**************************************************************************************************************************************************************************************************
  *
@@ -284,12 +363,12 @@ GO
  *       String tests for conditions, contents, meanings
  *
 /***************************************************************************************************************************************************************************************************/*/
-CREATE OR ALTER FUNCTION AnyOfTheseAreAnyOfThose(@inputstrings NVARCHAR(MAX), @stringsitmightcontain NVARCHAR(MAX), @sep NVARCHAR(MAX)) RETURNS BIT
+CREATE OR ALTER FUNCTION AnyOfTheseSAreAnyOfThoseS(@inputs NVARCHAR(MAX), @markers NVARCHAR(MAX), @sep NVARCHAR(MAX)) RETURNS BIT
 WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTest].AnyOfTheseAreAnyOfThose;  
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTest].AnyOfTheseSAreAnyOfThoseS;  
 GO
-SELECT dbo.AnyOfTheseAreAnyOfThose('hi;there;', 'not;here;', ';') --> 0
-SELECT dbo.AnyOfTheseAreAnyOfThose('hi;there;', 'not;there;', ';') --> 1
+SELECT dbo.AnyOfTheseSAreAnyOfThoseS('hi;there;', 'not;here;', ';') --> 0
+SELECT dbo.AnyOfTheseSAreAnyOfThoseS('hi;there;', 'not;there;', ';') --> 1
 GO
 CREATE OR ALTER FUNCTION StartsWith(@input NVARCHAR(MAX), @searchFor NVARCHAR(MAX)) RETURNS BIT
 WITH RETURNS NULL ON NULL INPUT
@@ -308,13 +387,26 @@ WITH RETURNS NULL ON NULL INPUT
 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTest].IsIP4;  
 GO
 SELECT IsIP4_______________________________________________________________ = dbo.IsIP4('10.10.10.218')
-SELECT IsIP4_______________________________________________________________ = dbo.IsIP4('*****.10.in-addr.arpa')
+SELECT IsIP4_______________________________________________________________ = dbo.IsIP4('$(FQDN1)')
 GO
 CREATE OR ALTER FUNCTION LegalName(@input NVARCHAR(MAX), @searchFor NVARCHAR(MAX)) RETURNS BIT
 WITH RETURNS NULL ON NULL INPUT
 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTest].LegalName;  
 GO
-SELECT LegalName_______________________________________________________________ = dbo.LegalName('HOSTNAMEUSUALLY\R12345678901234567', 'SQL Server Server Name')
+BEGIN TRY
+    SELECT LegalName_______________________________________________________________ = dbo.LegalName('HOSTNAMEUSUALLY\R12345678901234567', 'SQL Server Server Name')
+END TRY
+BEGIN CATCH
+    IF ERROR_NUMBER() = 6522 PRINT 'System.NotImplementedException'
+    ELSE
+    BEGIN
+        DECLARE @errmsg NVARCHAR(2048)
+        SET @errmsg = CONCAT('Error: CANNOT ', ERROR_MESSAGE())
+         PRINT @errmsg
+         ;THROW 51003, @errmsg, 1
+         
+    END
+END CATCH
 GO
 
 /**************************************************************************************************************************************************************************************************
@@ -384,49 +476,78 @@ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].FirstWord;
 GO
 SELECT FirstWord_______________________________________________________________ = dbo.FirstWord('126.334.333 Hi!')
 GO
-CREATE OR ALTER FUNCTION FirstWordBefore(@input NVARCHAR(MAX), @marker NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
+CREATE OR ALTER FUNCTION FirstWordBeforeS(@input NVARCHAR(MAX), @marker NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
 WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].FirstWordBefore;  
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].FirstWordBeforeS;  
 GO
-SELECT FirstWordBefore_______________________________________________________________ = dbo.FirstWordBefore('c7efb5be-9007-4fa4-9f21-6d7944769868._msdcs.na.simplot.com', '.')
+SELECT FirstWordBeforeS_______________________________________________________________ = dbo.FirstWordBeforeS('$(FQDN2)', '.')
 GO
-CREATE OR ALTER FUNCTION FirstWordBeforeAnyChar(@input NVARCHAR(MAX), @marker NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
+CREATE OR ALTER FUNCTION FirstWordBeforeAnyC(@input NVARCHAR(MAX), @marker NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
 WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].FirstWordBeforeAnyChar;  
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].FirstWordBeforeAnyC;  
 GO
-SELECT FirstWordBeforeAnyChar___________________________________________________________ = dbo.FirstWordBeforeAnyChar('cULVHST81.SIMNETAD.SIMPLOT.COM.AU\CITECTHISTORIAN', '.\')
+SELECT FirstWordBeforeAnyC___________________________________________________________ = dbo.FirstWordBeforeAnyC('$(FQDN3)', '.\')
 GO
-CREATE OR ALTER FUNCTION EverythingAfter(@input NVARCHAR(MAX), @marker NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
+CREATE OR ALTER FUNCTION EverythingAfterX(@input NVARCHAR(MAX), @marker NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
 WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].EverythingAfter;  
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].EverythingAfterX;  
 GO
-SELECT EverythingAfter_______________________________________________________________ = dbo.EverythingAfter('c7efb5be-9007-4fa4-9f21-6d7944769868._msdcs.na.simplot.com', '.')
+SELECT EverythingAfterX_______________________________________________________________ = dbo.EverythingAfterX('$(FQDN2)', '.')
+GO
+CREATE OR ALTER FUNCTION Mid(@input NVARCHAR(MAX), @from INT, @to INT) RETURNS NVARCHAR(MAX)
+WITH RETURNS NULL ON NULL INPUT
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].Mid;  
+GO
+SELECT Mid_______________________________________________________________ = dbo.Mid('this is my face', 2, 6)
 GO
 /**************************************************************************************************************************************************************************************************
  *
  *       Pivot substrings into rows and metadata.
  *
 /***************************************************************************************************************************************************************************************************/*/
-CREATE OR ALTER FUNCTION Pieces(@stringtosplitintopieces NVARCHAR(MAX), @regexsplitterpattern NVARCHAR(4000)) RETURNS TABLE (piece NVARCHAR(MAX), pieceorderno INT) 
+CREATE OR ALTER FUNCTION Pieces(@input NVARCHAR(MAX), @pattern NVARCHAR(4000)) 
+RETURNS TABLE (piece NVARCHAR(MAX), pieceorderno INT) 
 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringPivot].Pieces;  
 GO  
 SELECT ssore.piece, ssore.pieceorderno FROM Pieces('this is 100 times, or maybe 1503', '(\d+)') AS ssore
 GO
-CREATE OR ALTER FUNCTION PiecesWithContext(@stringtosplitintopieces NVARCHAR(MAX), @regexsplitterpattern NVARCHAR(4000)) RETURNS TABLE (pieceorderno INT, previousPiece NVARCHAR(MAX), piece NVARCHAR(MAX), nextPiece NVARCHAR(MAX)) 
+CREATE OR ALTER FUNCTION PiecesWithContext(@input NVARCHAR(MAX), @regexsplitterpattern NVARCHAR(4000)) RETURNS TABLE (pieceorderno INT, previousPiece NVARCHAR(MAX), piece NVARCHAR(MAX), nextPiece NVARCHAR(MAX)) 
 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringPivot].PiecesWithContext;  
 GO  
 SELECT ssore.piece, ssore.pieceorderno FROM PiecesWithContext('this is 100 times, or maybe 1503', '(\d+)') AS ssore
 GO
-CREATE OR ALTER FUNCTION PiecesWithMatches(@stringtoextractmatchesintorows NVARCHAR(MAX), @pattern NVARCHAR(4000)) RETURNS TABLE(pieceorderNo INT, previousPiece NVARCHAR(MAX), matchAtStartOfPiece NVARCHAR(MAX), piece NVARCHAR(MAX), matchAtEndOfPiece NVARCHAR(MAX), nextPiece NVARCHAR(MAX)) 
+CREATE OR ALTER FUNCTION PiecesWithMatches(@stringtoextractmatchesintorows NVARCHAR(MAX), @pattern NVARCHAR(4000)) RETURNS TABLE(pieceorderNo INT, previousPiece NVARCHAR(MAX)
+, matchAtStartOfPiece NVARCHAR(MAX), piece NVARCHAR(MAX), matchAtEndOfPiece NVARCHAR(MAX), nextPiece NVARCHAR(MAX)) 
 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringPivot].PiecesWithMatches;  
 GO  
 SELECT * FROM PiecesWithMatches('this is 100 times, or maybe 1503', '(\d+)') AS ssore
 GO
-CREATE OR ALTER FUNCTION Matches(@stringtoextractmatchesintorows NVARCHAR(MAX), @capturepattern NVARCHAR(4000)) RETURNS TABLE(matchorderno INT, capturedMatch NVARCHAR(MAX), capturedmatchstartsat INT) 
+CREATE OR ALTER FUNCTION Matches(@input NVARCHAR(MAX), @pattern NVARCHAR(4000)) RETURNS TABLE(matchorderno INT, capturedMatch NVARCHAR(MAX), capturedmatchstartsat INT) 
 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringPivot].Matches;  
 GO  
 SELECT matchorderno, ssore.capturedMatch, ssore.capturedmatchstartsat FROM Matches('this is 100 times, or maybe 1503', '(\d+)') AS ssore
 SELECT * FROM Matches('this is 100 times, or maybe 1503', '(\d+)') AS ssore
+GO
+CREATE OR ALTER FUNCTION NearX(@input NVARCHAR(MAX), @pattern NVARCHAR(4000)) RETURNS TABLE(matchorderno INT, [match] NVARCHAR(MAX), matchstartsat INT, matchcontextstartsat INT, matchcontextendsat INT, matchcontext NVARCHAR(MAX)) 
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringPivot].NearX;  
+GO  
+SELECT * FROM NearX('this is 100 times, or maybe emailed you 1503
+
+Don''t forget to mailout', 'mail') AS ssore
+GO
+CREATE OR ALTER FUNCTION Captures(@input NVARCHAR(MAX), @pattern NVARCHAR(4000)) RETURNS TABLE(matchorderno INT, capturedMatch NVARCHAR(MAX), capturedmatchstartsat INT) 
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringPivot].Captures;  
+GO  
+SELECT * FROM Captures('div class="browsename"><span class="listname"><a href="/name/abbey">ABBEY</a></span> <span class="listgender">', '\<span class\="listname"\>\<a href=\"\/name\/(\w+)"') AS ssore
+GO
+CREATE OR ALTER FUNCTION KeyValuePairsWithMultiValues(@input NVARCHAR(MAX), @betweeneachkeyvaluepair NVARCHAR(4000), @betweenkeyandvalue NVARCHAR(4000), @betweensubvalues NVARCHAR(4000)) 
+RETURNS TABLE(pieceorderNo INT, keystring NVARCHAR(MAX), valuestring NVARCHAR(MAX)) 
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringPivot].KeyValuePairsWithMultiValues;  
+GO  
+SELECT * FROM KeyValuePairsWithMultiValues('Edward => Ned, Ed, Eddy, Eddie
+Henry => Harry, Hal
+Jacob => Jake
+', NULL, NULL, NULL) AS ssore
 GO
 /**************************************************************************************************************************************************************************************************
  *
@@ -464,13 +585,13 @@ CREATE OR ALTER FUNCTION TrimIfStartsWith(@input NVARCHAR(MAX), @marker NVARCHAR
 WITH RETURNS NULL ON NULL INPUT
 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringReduce].TrimIfStartsWith; 
 GO
-SELECT TrimIfStartsWith_______________________________________________________________ = dbo.TrimIfStartsWith('\032occ00ap000.na.simplot.com', '\032')-->occ00ap000.na.simplot.com<--
+SELECT TrimIfStartsWith_______________________________________________________________ = dbo.TrimIfStartsWith('$(FQDN4)', '\032')-->occ00ap000.na.simplot.com<--
 GO
 CREATE OR ALTER FUNCTION TrimEnd(@input NVARCHAR(MAX), @howmanycharactersofftheend INT) RETURNS NVARCHAR(MAX)
 WITH RETURNS NULL ON NULL INPUT
 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringReduce].TrimEnd; 
 GO
-SELECT TrimEnd_______________________________________________________________ = dbo.TrimEnd('occ00ap000.na.simplot.com.', 1)-->occ00ap000.na.simplot.com
+SELECT TrimEnd_______________________________________________________________ = dbo.TrimEnd('$(FQDN5)', 1)-->occ00ap000.na.simplot.com
 GO
 /**************************************************************************************************************************************************************************************************
  *
@@ -489,16 +610,23 @@ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringFormat].RPad;
 GO
 SELECT RPad_______________________________________________________________ = dbo.RPad('test', 100)     -->test                                                                                                <--
 GO
-CREATE OR ALTER FUNCTION ReplaceRecursive(@input NVARCHAR(MAX), @find NVARCHAR(MAX), @replacement NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) 
+CREATE OR ALTER FUNCTION Title(@input NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) 
 WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTransform].ReplaceRecursive; 
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringFormat].Title; 
+GO
+SELECT Title_______________________________________________________________ = dbo.Title('test')     -->Test<--
+SELECT Title_______________________________________________________________ = dbo.Title('Abigail')     -->Test<--
 GO
 /**************************************************************************************************************************************************************************************************
  *
  *      General transformations
  *
 /***************************************************************************************************************************************************************************************************/*/
-SELECT dbo.ReplaceRecursive('This is                a test  of the     emergency  ', '  ', ' ')    -->This is a test of the emergency <--
+CREATE OR ALTER FUNCTION ReplaceRecursive(@input NVARCHAR(MAX), @find NVARCHAR(MAX), @replacement NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) 
+WITH RETURNS NULL ON NULL INPUT
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTransform].ReplaceRecursive; 
+GO
+SELECT dbo.ReplaceRecursive('This is                a test  of the     emergency  ', '  ', '')    -->This is a test of the emergency <--
 GO
 CREATE OR ALTER FUNCTION ReplaceMatch(@input NVARCHAR(MAX), @find NVARCHAR(MAX), @replacement NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
 WITH RETURNS NULL ON NULL INPUT
@@ -536,3 +664,16 @@ GO
 --AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTransformTSQLSpecific].BuildRaiserrorMessage; 
 --GO
 
+SELECT name, principal_id, clr_name, permission_set, is_visible, create_date, modify_date, is_user_defined FROM sys.assemblies AS a WHERE name = 'MySQLCLRFunctions'
+SELECT name, DATALENGTH(content) FROM sys.assembly_files AS af WHERE name = 'MySQLCLRFunctions'
+SELECT object_id
+     , am.assembly_id
+     , assembly_class
+     , assembly_method
+     , null_on_null_input
+     , execute_as_principal_id
+     FROM sys.assembly_modules AS am JOIN sys.assemblies AS a ON a.assembly_id = am.assembly_id WHERE name = 'MySQLCLRFunctions'
+SELECT * FROM sys.dm_clr_properties
+-- version	v4.0.30319
+-- SQL Server 2012 and newer, even though they are on CLR version 4.
+-- .NET Framework 4.8 was released on 18 April 2019.

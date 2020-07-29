@@ -1,7 +1,6 @@
 ﻿using MySQLCLRFunctions;
 using System;
 using System.Diagnostics;
-using System.Linq;
 
 namespace TestMySQLCLRFunctions
 {
@@ -19,7 +18,7 @@ namespace TestMySQLCLRFunctions
 
             input = "c7efb5be-9007-4fa4-9f21-6d7944769868._msdcs.na.simplot.com";
             marker = ".";
-            output = StringExtract.FirstWordBefore(input, marker);
+            output = StringExtract.FirstWordBeforeS(input, marker);
             Debug.Print($"StringExtract.FirstWordBefore(\"{input}\", \"{marker}\");=>{output}<=");
 
             d1 = DateTime.Now; DateTime.TryParse("01/01/1976", out nd2); d2 = nd2;
@@ -94,7 +93,7 @@ namespace TestMySQLCLRFunctions
             input = "CN=SyncState,CN=Varney\\, Dennis M,OU=People,OU=Enterprise,DC=na,DC=simplot,DC=com";
             marker = ",";
             var pieceswithcontext1 = StringPivot.PiecesWithContext($"{input}", ",");
-            foreach (StringPivot.PieceContext row in pieceswithcontext1)
+            foreach (StringPivot.PiecesWithContextRecord row in pieceswithcontext1)
             {
                 Debug.Print($"StringPivot.PiecesWithContext(\"{input}\");=>{row.previousPiece}..{row.piece}..{row.nextPiece}<=");
             }
@@ -102,7 +101,7 @@ namespace TestMySQLCLRFunctions
             input = "this is 100 times, or maybe 1503";
             marker = "(\\d+)";
             var matchesfound = StringPivot.Matches($"{input}", $"{marker}");
-            foreach (StringPivot.CapturedMatches row in matchesfound)
+            foreach (StringPivot.MatchesRecord row in matchesfound)
             {
                 Debug.Print($"StringTransform.Matches(\"{input}\");=>{row.matchOrderNo}..{row.capturedMatch}..{row.capturedMatchStartsAt}<=");
             }
@@ -110,7 +109,7 @@ namespace TestMySQLCLRFunctions
             input = "Hi %s the %s";
             marker = "\\%(.?[diosuxX])";
             var pieceswithcontextandmatches = StringPivot.PiecesWithMatches($"{input}", $"{marker}");
-            foreach (StringPivot.PieceMatchContext row in pieceswithcontextandmatches)
+            foreach (StringPivot.PiecesWithMatchesRecord row in pieceswithcontextandmatches)
             {
                 Debug.Print($"StringTransform.PiecesWithMatches(\"{input}\");=>{row.previousPiece}..{row.matchAtStartOfPiece}..{row.piece}..{row.matchAtEndOfPiece}..{row.nextPiece}<=");
             }

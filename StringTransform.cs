@@ -1,6 +1,5 @@
 ﻿using Microsoft.SqlServer.Server;
 using System;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -59,13 +58,15 @@ namespace MySQLCLRFunctions
          * Replace again and again.  This is for when I want to remove all but one of the spaces, or all the "             " wide open spaces in a SQL proc header except for one space.
          * 
          * This is good as part of a series of "fluent" methods to reduce a proc to an easily read header string.  For quick review of a million modules.
+         * This is also my one attempt to try and avoid blowing up memory with immutable strings.
          * 
          **************************************************************************************************************************************************************************************/
         unsafe public static string ReplaceRecursive(string input, string marker, string replacement)
         {
-            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
-            if (StringTest.IsNullOrWhiteSpaceOrEmpty(marker)) return input;
-            if (replacement == null) return input;  // Did they mean empty string?
+            if (StringTest.IsNullOrEmpty(input)) return input;
+            // Unreal Request: Cannot replace empty strings. Infinite.
+            if (StringTest.IsNullOrEmpty(marker)) return input;
+            if (replacement == null) return null;  // Did they mean empty string?
 
             if (marker == replacement) return input;
             if (replacement.Contains(marker))

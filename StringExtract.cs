@@ -1,13 +1,11 @@
 ﻿using Microsoft.SqlServer.Server;
 using System;
 using System.Text.RegularExpressions;
-
+using static MySQLCLRFunctions._SharedConstants;
 namespace MySQLCLRFunctions
 {
     public static class StringExtract
     {
-        private const int NOT_FOUND = -1;
-        private const int BACKSET_FOR_ZEROBASED = -1;
 
         /***************************************************************************************************************************************************************************************************
          * 
@@ -158,17 +156,18 @@ namespace MySQLCLRFunctions
         public static string Mid(this string input, int from, int to)
         {
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
-            if (from < 0) return input;
-            if (from >= 0 && to >= 0 && from > to) return input;
+            if (from == to) return string.Empty;
+            if (from > 0 && to > 0 && from > to) return string.Empty;
+            if (from < 0 && to < 0 && to < from) return string.Empty;
 
-            if (to < 0)
+            if (from < 0 && to < 0)
             {
-                string x = input.Substring(from);
-                int i = -to;
-                x = x.TrimEnd((int)i);
+                int i = -from;
+                string x = input.Right(i).Substring(0, -(from - to)); // This use of "to" is very confusing!
                 return x;
             }
-            if (to > from) return input.Substring(from, input.Length - (from + to));
+
+            if (to > from) return input.Substring(from + BACKSET_FOR_ZEROBASED, to - from + ADJUST_POINTER_TO_INCLUDE);
 
             return input;
         }
@@ -187,9 +186,11 @@ namespace MySQLCLRFunctions
             string workingFullName = FullName.Trim();
             string firstName;
 
+
             if (workingFullName.EndsWith("(CWF)")) workingFullName = workingFullName.Substring(0, workingFullName.Length - 6).Trim();
             if (workingFullName.EndsWith("(SSI)")) workingFullName = workingFullName.Substring(0, workingFullName.Length - 6).Trim();
             if (workingFullName.EndsWith("(RDI Contractor)")) workingFullName = workingFullName.Substring(0, workingFullName.Length - "(RDI Contractor)".Length).Trim();
+
             if (workingFullName.Contains(","))
             {
                 firstName = workingFullName.Substring(workingFullName.IndexOf(",") + 1);
@@ -210,7 +211,7 @@ namespace MySQLCLRFunctions
                 firstName = firstName.Substring(0, firstName.Length - 2);
             }
 
-            return firstName.Trim();
+            return StringExtract.FirstWord(firstName.Trim());
         }
 
         /***************************************************************************************************************************************************************************************************
@@ -223,10 +224,28 @@ namespace MySQLCLRFunctions
         public static string Left(this string input, int howmany)
         {
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
+            if (howmany == 0) return string.Empty;
+            if (howmany < 0) return null;
 
             return input.Substring(0, howmany);
         }
 
+        public static string Right(this string input, int howmany)
+        {
+            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
+            if (howmany == 0) return string.Empty;
+            if (howmany < 0) return null;
+            var tupin = input.Reverse();
+            return tupin.Left(howmany).Reverse().ToString();
+        }
+
+        public static string Reverse(this string input)
+        {
+            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
+            char[] inputAsCharArray = input.ToCharArray();
+            Array.Reverse(inputAsCharArray);
+            return new string(inputAsCharArray);
+        }
         /***************************************************************************************************************************************************************************************************
         * 
         * Extract the first word using regex word semantics.
@@ -295,7 +314,7 @@ namespace MySQLCLRFunctions
         * 
         ***************************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static string FirstWordBefore(string input, string marker)
+        public static string FirstWordBeforeS(string input, string marker)
         {
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
             return input.Split(SingleStringAsArray(marker), StringSplitOptions.None)[0];
@@ -307,7 +326,7 @@ namespace MySQLCLRFunctions
         * 
         ***************************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static string FirstWordBeforeAnyChar(string input, string markerchars)
+        public static string FirstWordBeforeAnyC(string input, string markerchars)
         {
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
             int firstindex = input.IndexOfAny(markerchars.ToCharArray());
@@ -325,7 +344,7 @@ namespace MySQLCLRFunctions
         * 
         ***************************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static string EverythingAfter(string input, string marker)
+        public static string EverythingAfterX(string input, string marker)
         {
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
             int i = input.FindIndexOf(marker);

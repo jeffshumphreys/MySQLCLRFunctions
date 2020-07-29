@@ -1,15 +1,6 @@
-﻿using System;
-using System.Collections;
-using Microsoft.SqlServer.Server;
-using System.Data.SqlTypes;
-using System.Text.RegularExpressions;
-using System.Text;
-using System.Net.NetworkInformation;
-using System.Net;
-using System.Net.Sockets;
+﻿using Microsoft.SqlServer.Server;
+using System;
 using System.Linq;
-using System.IO;
-using System.Xml.Schema;
 
 namespace MySQLCLRFunctions
 {
@@ -25,7 +16,7 @@ namespace MySQLCLRFunctions
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = false, IsPrecise = true)]
         public static DateTime? Max3DateTimes(DateTime? d1, DateTime? d2, DateTime? d3)
         {
-            DateTime?[] itemlist = new [] { d1, d2, d3 };
+            DateTime?[] itemlist = new[] { d1, d2, d3 };
             return itemlist.Max();
         }
 

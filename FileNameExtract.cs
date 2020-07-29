@@ -1,16 +1,6 @@
-﻿using System;
-using System.Collections;
-using Microsoft.SqlServer.Server;
-using System.Data.SqlTypes;
-using System.Text.RegularExpressions;
-using System.Text;
-using System.Net.NetworkInformation;
-using System.Net;
-using System.Net.Sockets;
-using System.Linq;
+﻿using Microsoft.SqlServer.Server;
 using System.IO;
-using System.Xml.Schema;
-using System.Runtime.Remoting.Messaging;
+using System.Linq;
 
 namespace MySQLCLRFunctions
 {
@@ -42,7 +32,7 @@ namespace MySQLCLRFunctions
         public static bool IsLegalFileName(string filenamewithoutext)
         {
             // http://stackoverflow.com/questions/1976007/ddg#31976060
-            var invalidchars = new char[] {'/', '\\', '"', ':', '>', '<', '|', '?', '*'};
+            var invalidchars = new char[] { '/', '\\', '"', ':', '>', '<', '|', '?', '*' };
 
             if (filenamewithoutext.Any(c => char.IsControl(c) || invalidchars.Contains(c)))
             {

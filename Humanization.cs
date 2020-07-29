@@ -1,6 +1,5 @@
 ﻿using Microsoft.SqlServer.Server;
 using System;
-using System.Linq;
 
 namespace MySQLCLRFunctions
 {
