@@ -1,5 +1,4 @@
 ﻿using Microsoft.SqlServer.Server;
-using System.Text;
 using System.Text.RegularExpressions;
 /*
 * Take measurements from a string.  Not actual values from a string as Extract does.
@@ -70,7 +69,7 @@ namespace MySQLCLRFunctions
         {
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
 
-            return Regex.Replace(input, @"\b[a-z]\w+", delegate (Match match)
+            return Regex.Replace(input.ToLower(), @"\b[a-z]\w+", delegate (Match match)
             {
                 string v = match.ToString();
                 return char.ToUpper(v[0]) + v.Substring(1);

@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Text;
-using System.Text.RegularExpressions;
+﻿using Microsoft.SqlServer.Server;
+using System;
 using System.Linq;
-using System.Data.SqlTypes;
-using Microsoft.SqlServer.Server;
-using NUnit.Framework;
 
 namespace MySQLCLRFunctions
 {

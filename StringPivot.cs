@@ -1,13 +1,12 @@
 ﻿using Microsoft.SqlServer.Server;
 using System;
-using System.Data.SqlTypes;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
+using System.Text.RegularExpressions;
 
 /*
-* All splits, pieces, matches
+* All splits, pieces, matches, keypairs
 */
 namespace MySQLCLRFunctions
 {
@@ -48,22 +47,14 @@ namespace MySQLCLRFunctions
             return matches.ToArray();
         }
 
-        private static void FillRowWithCapStrs(Object ob, out SqlInt32 matchorderNo, out SqlString match, out SqlInt32 capturedmatchstartsat)
-        {
-            var capturedMatch = ob as CapturedMatches;
-            matchorderNo = capturedMatch.matchOrderNo;
-            match = new SqlString(capturedMatch.capturedMatch);
-            capturedmatchstartsat = capturedMatch.capturedmatchstartsat;
-        }
-
         //-----------------------------------------------------------------------------------------------------------
         // Helper class for Matches method.
         //-----------------------------------------------------------------------------------------------------------
         public class CapturedMatches
         {
-            public int matchOrderNo; public string capturedMatch; public int capturedmatchstartsat;
+            public int matchOrderNo; public string capturedMatch; public int capturedMatchStartsAt;
             public CapturedMatches(int lmatchOrderNo, string lcapturedMatch, int lcapturedmatchstartsat)
-            { matchOrderNo = lmatchOrderNo; capturedMatch = lcapturedMatch; capturedmatchstartsat = lcapturedmatchstartsat; }
+            { matchOrderNo = lmatchOrderNo; capturedMatch = lcapturedMatch; capturedMatchStartsAt = lcapturedmatchstartsat; }
         }
 
         /***************************************************************************************************************************************************************************************************
@@ -94,16 +85,6 @@ namespace MySQLCLRFunctions
             return pieces.ToArray();
         }
 
-        //------------------------------------------------------------------------------------------------------
-        private static void FillRowWithStrPiecesWithContext(Object ob, out SqlInt32 pieceorderNo, out SqlString previousPiece, out SqlString piece, out SqlString nextPiece)
-        {
-            var pieceContext = ob as PieceContext;
-            pieceorderNo = pieceContext.pieceOrderNo;
-            previousPiece = pieceContext.previousPiece;
-            piece = pieceContext.piece;
-            nextPiece = pieceContext.nextPiece;
-        }
-
         //-----------------------------------------------------------------------------------------------------------
         // Helper class for the PiecesWithContext only. The FillRowMethod only takes an object, so you can't send multiple
         // values to it.  This has to be public for tester to use to parse out.  SQL Server may need it too?
@@ -127,18 +108,12 @@ namespace MySQLCLRFunctions
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true, FillRowMethodName = "FillRowWithStrPieces")]
         public static IEnumerable Pieces(string input, string pattern)
         {
-            returnpieceorderno = 0;
+            returnpieceorderno = 1;
             string[] stringpieces = Regex.Split(input, pattern, RegexOptions.IgnoreCase, TimeSpan.FromSeconds(2));
             return stringpieces;
         }
 
         private static int returnpieceorderno = 0;
-        //------------------------------------------------------------------------------------------------------
-        private static void FillRowWithStrPieces(Object obj, out SqlString piece, out SqlInt32 pieceorderNo)
-        {
-            piece = obj.ToString();
-            pieceorderNo = returnpieceorderno++;
-        }
 
         //-----------------------------------------------------------------------------------------------------------
         // Helper class for the PiecesWithContext only. The FillRowMethod only takes an object, so you can't send multiple
@@ -175,7 +150,7 @@ namespace MySQLCLRFunctions
             {
                 string matchAtEndOfPiece = stringpieces[i].Value;
                 int matchAtEndOfPieceAt = stringpieces[i].Index;
-                string piece = StringExtract.Cut(input, nextpiecestartsat, matchAtEndOfPieceAt);
+                string piece = StringExtract.Mid(input, nextpiecestartsat, matchAtEndOfPieceAt);
                 nextpiecestartsat = matchAtEndOfPieceAt + matchAtEndOfPiece.Length;
                 pieces.Add(new PieceMatchContext(lpieceOrderNo: i + 1, lpreviousPiece: null, lmatchAtStartOfPiece: matchAtStartOfPiece, lpiece: piece, lmatchAtEndOfPiece: matchAtEndOfPiece, lnextPiece: null)); ;
             }
@@ -199,18 +174,6 @@ namespace MySQLCLRFunctions
             return pieces.ToArray();
         }
 
-        //------------------------------------------------------------------------------------------------------
-        private static void FillRowWithStrPiecesWithContextAndMatch(Object obj, out SqlInt32 pieceorderNo, out SqlString previousPiece, out SqlString matchAtStartOfPiece, out SqlString piece, out SqlString matchAtEndOfPiece, out SqlString nextPiece)
-        {
-            var pieceContext = obj as PieceMatchContext;
-            pieceorderNo = pieceContext.pieceOrderNo;
-            previousPiece = pieceContext.previousPiece;
-            matchAtStartOfPiece = pieceContext.matchAtStartOfPiece;
-            piece = pieceContext.piece;
-            matchAtEndOfPiece = pieceContext.matchAtEndOfPiece;
-            nextPiece = pieceContext.nextPiece;
-        }
-
         public static string[] GetWords(this string input)
         {
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return new string[0];
@@ -223,5 +186,152 @@ namespace MySQLCLRFunctions
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return new string[0];
             return Regex.Split(input, pattern, RegexOptions.None);
         }
-    }
+
+        private static void FillRowWithCapStrs(Object ob, out SqlInt32 matchorderNo, out SqlString match, out SqlInt32 capturedmatchstartsat)
+        {
+            var capturedMatch = ob as CapturedMatches;
+            matchorderNo = capturedMatch.matchOrderNo;
+            match = new SqlString(capturedMatch.capturedMatch);
+            capturedmatchstartsat = capturedMatch.capturedMatchStartsAt;
+        }
+
+        // .Net SqlClient Data Provider: Msg 51000, Level 16, State 1, Line 95 Error: CANNOT ALTER ASSEMBLY failed because the required method "FillRowWithStrPiecesWithContextAndMatch" in type "MySQLCLRFunctions.StringPivot" was not found with the same signature in the updated assembly.
+        //------------------------------------------------------------------------------------------------------
+        private/* Cannot change to public without breaking assembly */ static void FillRowWithStrPiecesWithContext(Object ob, out SqlInt32 pieceorderNo, out SqlString previousPiece, out SqlString piece, out SqlString nextPiece)
+        {
+            var pieceContext = ob as PieceContext;
+            pieceorderNo = pieceContext.pieceOrderNo;
+            previousPiece = pieceContext.previousPiece;
+            piece = pieceContext.piece;
+            nextPiece = pieceContext.nextPiece;
+        }
+
+        //------------------------------------------------------------------------------------------------------
+        private static void FillRowWithStrPieces(Object obj, out SqlString piece, out SqlInt32 pieceorderNo)
+        {
+            piece = obj.ToString();
+            pieceorderNo = returnpieceorderno++;
+        }
+
+        //------------------------------------------------------------------------------------------------------
+        private static void FillRowWithStrPiecesWithContextAndMatch(Object obj, out SqlInt32 pieceorderNo, out SqlString previousPiece, out SqlString matchAtStartOfPiece, out SqlString piece, out SqlString matchAtEndOfPiece, out SqlString nextPiece)
+        {
+            var pieceContext = obj as PieceMatchContext;
+            pieceorderNo = pieceContext.pieceOrderNo;
+            previousPiece = pieceContext.previousPiece;
+            matchAtStartOfPiece = pieceContext.matchAtStartOfPiece;
+            piece = pieceContext.piece;
+            matchAtEndOfPiece = pieceContext.matchAtEndOfPiece;
+            nextPiece = pieceContext.nextPiece;
+        }
+
+        //-----------------------------------------------------------------------------------------------------------
+        public class KeyPairHelper
+        {
+            public int pieceOrderNo; public string key; public string value;
+            public KeyPairHelper(int lpieceOrderNo, string lkey, string lvalue)
+            { pieceOrderNo = lpieceOrderNo; key = lkey; value = lvalue;  }
+        }
+
+        /***************************************************************************************************************************************************************************************************
+         * 
+         * Split into key pairs, and if the value is multiple values, split those out into multiple rows.
+         * Created due to some websites having some great name to diminutive maps, and in a readable format.
+         * 
+         * Input: Edward => Ned, Ed, Eddy, Eddie\nHenry => Harry, Hal\nJacob => Jake
+         * Output:
+         *      Edward      Ned
+         *      Edward      Ed
+         *      Edward      Eddy
+         *      Edward      Eddie
+         *      Henry       Harry
+         *      Henry       Hal
+         *      Jacob       Jake
+         * 
+         **************************************************************************************************************************************************************************************/
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true, FillRowMethodName = "FillRowWithKeyPairs")]
+        public static IEnumerable KeyValuePairsWithMultiValues(string input, string betweeneachkeyvaluepair, string betweenkeyandvalue, string betweensubvalues)
+        {
+            if (betweeneachkeyvaluepair == null) betweeneachkeyvaluepair = new string('\n', 1);
+            if (betweenkeyandvalue == null) betweenkeyandvalue = " => ";
+            if (betweensubvalues == null) betweensubvalues = ", ";
+            string[] stringpieces = input.Split(betweeneachkeyvaluepair);
+            int nofpieces = stringpieces.Length;
+            var pieces = new List<KeyPairHelper>(nofpieces);
+            for (int i = 0; i < nofpieces; i++)
+            {
+                string keypair = stringpieces[i];
+                string[] splitkeypair = keypair.Split(betweenkeyandvalue);
+                if (splitkeypair.Length != 2) continue;
+                string lkey = splitkeypair[0]; string lval = splitkeypair[1];
+                string[] splitmultivalues = lval.Split(betweensubvalues);
+                foreach (string subval in splitmultivalues)
+                { 
+                    pieces.Add(new KeyPairHelper(i+1, lkey, subval));
+                }
+            }
+
+            return pieces.ToArray();
+        }
+
+        //------------------------------------------------------------------------------------------------------
+        private static void FillRowWithKeyPairs(Object obj, out SqlInt32 pieceorderNo, out SqlString keystring, out SqlString valuestring)
+        {
+            var pieceContext = obj as KeyPairHelper;
+            pieceorderNo = pieceContext.pieceOrderNo;
+            keystring = pieceContext.key;
+            valuestring = pieceContext.value;
+        }
+
+        private static void FillRowWithGroupCapStrs(Object ob, out SqlInt32 matchorderNo, out SqlString match, out SqlInt32 capturedmatchstartsat)
+        {
+            var capturedMatch = ob as MatchedCaptures;
+            matchorderNo = capturedMatch.matchOrderNo;
+            match = new SqlString(capturedMatch.capturedMatch);
+            capturedmatchstartsat = capturedMatch.capturedMatchStartsAt;
+        }
+
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true, FillRowMethodName = "FillRowWithGroupCapStrs")]
+        public static IEnumerable Captures(string input, string pattern)
+        {
+            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
+            if (StringTest.IsNullOrWhiteSpaceOrEmpty(pattern)) return input;
+
+            MatchCollection regexmatches = Regex.Matches(input, pattern, RegexOptions.IgnoreCase, TimeSpan.FromSeconds(2));
+
+            int nofmatches = regexmatches.Count;
+            var matches = new List<MatchedCaptures>(nofmatches);
+            for (int i = 0; i < nofmatches; i++)
+            {
+                string match = ""; int startsat = -1;
+                //TOCONSIDERDOING: string nextMatch = null;
+                //TOCONSIDERDOING: string previousMatch = null;
+                if (regexmatches[i].Groups.Count >= 1)
+                {
+                    match = regexmatches[i].Groups[1].Value;
+                    startsat = regexmatches[i].Groups[1].Index;
+                } else
+                {
+                    match = "";
+                    startsat = -1;
+                }
+
+                //if (i < nofmatches - 1) nextMatch = regexmatches[i + 1].Groups[1].Value;
+                //if (i > 0) previousMatch = regexmatches[i - 1].Groups[1].Value;
+
+                matches.Add(new MatchedCaptures(lmatchOrderNo: i + 1, lcapturedMatch: match, lcapturedmatchstartsat: startsat));
+            }
+            return matches.ToArray();
+        }
+
+        //-----------------------------------------------------------------------------------------------------------
+        // Helper class for Matches method.
+        //-----------------------------------------------------------------------------------------------------------
+        public class MatchedCaptures
+        {
+            public int matchOrderNo; public string capturedMatch; public int capturedMatchStartsAt;
+            public MatchedCaptures(int lmatchOrderNo, string lcapturedMatch, int lcapturedmatchstartsat)
+            { matchOrderNo = lmatchOrderNo; capturedMatch = lcapturedMatch; capturedMatchStartsAt = lcapturedmatchstartsat; }
+        }
+      }
 }

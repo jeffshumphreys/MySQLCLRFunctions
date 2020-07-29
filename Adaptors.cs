@@ -16,16 +16,13 @@ namespace MySQLCLRFunctions
 {
     public static class Adaptors
     {
-        /// <summary>
-        /// 
-        /// Converts a hex string to a VARBINARY string, I think.
-        /// 
-        /// </summary>
-        /// <param name="InputAsHex"></param>
-        /// <returns></returns>
+        // Converts a hex string to a VARBINARY string, I think.
+
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
         public static string VarBin2Hex(SqlBytes InputAsHex)
         {
+            if (InputAsHex == null) return null;
+
             return BitConverter.ToString(InputAsHex.Buffer);
         }
 
@@ -40,7 +37,7 @@ namespace MySQLCLRFunctions
             {
                 return DateTime.ParseExact(InputAsStringDateTime.Substring(0, 14), "yyyyMMddHHmmss", CultureInfo.InvariantCulture);
             }
-            catch (FormatException fe)
+            catch (FormatException)
             {
                 return null;
             }

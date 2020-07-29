@@ -81,7 +81,9 @@ namespace MySQLCLRFunctions
                 // Named instance
             }
 
+#pragma warning disable CS0618 // Type or member is obsolete
             IPHostEntry truehost = Dns.Resolve(host);
+#pragma warning restore CS0618 // Type or member is obsolete
 
             string hosts = string.Join<string>(";", truehost.Aliases);
             return new SqlString(hosts);
@@ -100,7 +102,9 @@ namespace MySQLCLRFunctions
             }
             try
             {
+#pragma warning disable CS0618 // Type or member is obsolete
                 IPHostEntry truehost = Dns.Resolve(host);
+#pragma warning restore CS0618 // Type or member is obsolete
 
                 host = truehost.HostName;
             }

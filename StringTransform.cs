@@ -1,10 +1,8 @@
-﻿using System;
+﻿using Microsoft.SqlServer.Server;
+using System;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Linq;
-using System.Data.SqlTypes;
-using Microsoft.SqlServer.Server;
-using NUnit.Framework;
 
 namespace MySQLCLRFunctions
 {
@@ -56,13 +54,13 @@ namespace MySQLCLRFunctions
             return ReplaceRecursive(input, marker, replacement);
         }
 
-       /***************************************************************************************************************************************************************************************************
-        * 
-        * Replace again and again.  This is for when I want to remove all but one of the spaces, or all the "             " wide open spaces in a SQL proc header except for one space.
-        * 
-        * This is good as part of a series of "fluent" methods to reduce a proc to an easily read header string.  For quick review of a million modules.
-        * 
-        **************************************************************************************************************************************************************************************/
+        /***************************************************************************************************************************************************************************************************
+         * 
+         * Replace again and again.  This is for when I want to remove all but one of the spaces, or all the "             " wide open spaces in a SQL proc header except for one space.
+         * 
+         * This is good as part of a series of "fluent" methods to reduce a proc to an easily read header string.  For quick review of a million modules.
+         * 
+         **************************************************************************************************************************************************************************************/
         unsafe public static string ReplaceRecursive(string input, string marker, string replacement)
         {
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;

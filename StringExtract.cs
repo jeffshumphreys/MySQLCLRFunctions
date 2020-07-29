@@ -7,7 +7,6 @@ namespace MySQLCLRFunctions
     public static class StringExtract
     {
         private const int NOT_FOUND = -1;
-        private const int CHARACTER_AFTER_MARKER = 1;
         private const int BACKSET_FOR_ZEROBASED = -1;
 
         /***************************************************************************************************************************************************************************************************
@@ -87,7 +86,7 @@ namespace MySQLCLRFunctions
             for (int j = 1; j <= n; j++)
             {
                 if (i >= input.IndexOfLastChar()) return string.Empty;
-                pointsfound[j+BACKSET_FOR_ZEROBASED] = i;
+                pointsfound[j + BACKSET_FOR_ZEROBASED] = i;
                 i = input.IndexOf(marker, i + marker.Length);
                 if (i == NOT_FOUND) return string.Empty;
                 if (j == howmany)
@@ -151,16 +150,27 @@ namespace MySQLCLRFunctions
 
         /***************************************************************************************************************************************************************************************************
          * 
-         * Extract a snippet of a string given a starting and ending position, rather than substring with starting and length to return.
+         * This is not at all the BASIC function Mid, but what the hey.  I need a snippet from a string, and I want the cleverness of supporting negatives as it's intuitive.
+         * Matter of fact, I need substring to be a little smarter too.
          * 
-         ***************************************************************************************************************************************************************************************************/
+         **************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static string Cut(string input, int from, int to)
+        public static string Mid(this string input, int from, int to)
         {
-            if (to - from <= 0)  return String.Empty; 
-            if (to > input.Length) return input;
+            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
+            if (from < 0) return input;
+            if (from >= 0 && to >= 0 && from > to) return input;
 
-            return input.Substring(from, to - from);
+            if (to < 0)
+            {
+                string x = input.Substring(from);
+                int i = -to;
+                x = x.TrimEnd((int)i);
+                return x;
+            }
+            if (to > from) return input.Substring(from, input.Length - (from + to));
+
+            return input;
         }
 
         /***************************************************************************************************************************************************************************************************
@@ -227,7 +237,7 @@ namespace MySQLCLRFunctions
         {
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
             return input.Split(@"\W")[0];
-         }
+        }
 
         /***************************************************************************************************************************************************************************************************
          * 
@@ -322,30 +332,6 @@ namespace MySQLCLRFunctions
             if (i == -1) return string.Empty;
             if (i + marker.Length > input.Length) return string.Empty;
             return input.Substring(i + marker.Length);
-        }
-
-        /***************************************************************************************************************************************************************************************************
-         * 
-         * This is not at all the BASIC function Mid, but what the hey.  I need a snippet from a string, and I want the cleverness of supporting negatives as it's intuitive.
-         * Matter of fact, I need substring to be a little smarter too.
-         * 
-         **************************************************************************************************************************************************************************************/
-        public static string Mid(this string input, int from, int to)
-        {
-            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
-            if (from < 0) return input;
-            if (from >= 0 && to >= 0 && from > to) return input;
-
-            if (to < 0)
-            {
-                string x = input.Substring(from);
-                int i = -to;
-                x = x.TrimEnd((int)i);
-                return x;
-            }
-            if (to > from) return input.Substring(from, input.Length - (from + to));
-
-            return input;
         }
     }
 }
