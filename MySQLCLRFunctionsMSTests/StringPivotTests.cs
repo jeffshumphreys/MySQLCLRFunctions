@@ -71,8 +71,4 @@ namespace MySQLCLRFunctionsTests
         }
     }
 
-    [AttributeUsage(AttributeTargets.All, AllowMultiple = false)]
-    internal class CountsAttribute : Attribute
-    {
-    }
 }

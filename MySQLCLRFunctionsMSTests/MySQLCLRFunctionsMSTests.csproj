@@ -47,8 +47,6 @@
   </Choose>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="StringExtractTests.cs" />
-    <Compile Include="StringFormatTests.cs" />
     <Compile Include="StringMeasureTests.cs" />
     <Compile Include="StringPivotTests.cs" />
     <Compile Include="StringReduceTests.cs" />

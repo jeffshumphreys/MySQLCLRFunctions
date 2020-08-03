@@ -1,8 +1,9 @@
 ﻿using Microsoft.SqlServer.Server;
 using static MySQLCLRFunctions.StringTest;
 using System;
+using System.Text.RegularExpressions;
 /*
-* Take measurements from a string.  Not actual values from a string as Extract does.
+* Take measurements from a string.  Not actual values from a string as Extract does, and not a "changed" (immutable) string like Transform or Pivot, or Format, Reduce.
 */
 namespace MySQLCLRFunctions
 {
@@ -33,19 +34,17 @@ namespace MySQLCLRFunctions
          * 
          ***************************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static int? HowManyX(string input, string expression)
+        public static int? HowManyX(string input, string pattern)
         {
             // General Rule: Follow SQL rules around null
-            if (input == null || expression == null) return null;
-            // throw exception if marker = ""
-            // return 1 if input = "" and marker = ""??????
+            if (IsNull(input) || IsNull(pattern)) return null;
+            if (IsEmpty(pattern)) throw new ArgumentOutOfRangeException("Empty strings as a search pattern would result in infinite loop.");
+            if (IsEmpty(input)) return 0; // Something can't be in nothing
+            if (IsWhiteSpace(pattern)) return null;
 
-            if (IsNullOrWhiteSpaceOrEmpty(input)) return null;
-
-            // Warning: May not count "%%%%" where search string is "%%".  Is it 2 or 1.
-            int howMany = (input.Length - input.Replace(expression, "").Length) / expression.Length;
-
-            return howMany;
+            MatchCollection matches = Regex.Matches(input, pattern, RegexOptions.None, matchTimeout: TimeSpan.FromSeconds(2));
+            
+            return matches.Count;
         }
         /***************************************************************************************************************************************************************************************************
          * 
