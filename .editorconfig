@@ -1,0 +1,4 @@
+﻿[*.cs]
+
+# ET002: Namespace does not match file path or default namespace
+dotnet_diagnostic.ET002.severity = none
