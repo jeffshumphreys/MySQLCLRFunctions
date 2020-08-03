@@ -2,6 +2,7 @@
 using static MySQLCLRFunctions.StringTest;
 using System;
 using System.Text.RegularExpressions;
+using System.Data.SqlTypes;
 /*
 * Take measurements from a string.  Not actual values from a string as Extract does, and not a "changed" (immutable) string like Transform or Pivot, or Format, Reduce.
 */
@@ -15,10 +16,10 @@ namespace MySQLCLRFunctions
          * 
          ***************************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static int? HowManyS(string input, string marker)
+        public static SqlInt32 HowManyS(string input, string marker)
         {
             // General Rule: Follow SQL rules around null
-            if (IsNull(input) || IsNull(marker)) return null;
+            if (IsNull(input) || IsNull(marker)) return SqlInt32.Null;
             if (IsEmpty(marker)) throw new ArgumentOutOfRangeException("Empty strings would result in infinite loop.");
             if (IsEmpty(input)) return 0;
 
@@ -34,13 +35,13 @@ namespace MySQLCLRFunctions
          * 
          ***************************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static int? HowManyX(string input, string pattern)
+        public static SqlInt32 HowManyX(string input, string pattern)
         {
             // General Rule: Follow SQL rules around null
-            if (IsNull(input) || IsNull(pattern)) return null;
+            if (IsNull(input) || IsNull(pattern)) return SqlInt32.Null;
             if (IsEmpty(pattern)) throw new ArgumentOutOfRangeException("Empty strings as a search pattern would result in infinite loop.");
             if (IsEmpty(input)) return 0; // Something can't be in nothing
-            if (IsWhiteSpace(pattern)) return null;
+            if (IsWhiteSpace(pattern)) return SqlInt32.Null;
 
             MatchCollection matches = Regex.Matches(input, pattern, RegexOptions.None, matchTimeout: TimeSpan.FromSeconds(2));
             
