@@ -1,10 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MySQLCLRFunctions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MySQLCLRFunctionsTests
 {
@@ -16,7 +11,7 @@ namespace MySQLCLRFunctionsTests
         {
             var input = "This.3.3.3";
             var validoutput = 3;
-            var output = StringMeasure.HowMany(input, ".");
+            var output = StringMeasure.HowManyS(input, ".");
             Assert.AreEqual(expected: validoutput, output);
         }
 

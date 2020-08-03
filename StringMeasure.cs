@@ -1,4 +1,5 @@
 ﻿using Microsoft.SqlServer.Server;
+using static MySQLCLRFunctions.StringTest;
 using System;
 /*
 * Take measurements from a string.  Not actual values from a string as Extract does.
@@ -13,14 +14,12 @@ namespace MySQLCLRFunctions
          * 
          ***************************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static int? HowMany(string input, string marker)
+        public static int? HowManyS(string input, string marker)
         {
             // General Rule: Follow SQL rules around null
-            if (input == null || marker == null) return null;
-            // throw exception if marker = ""
-            // return 1 if input = "" and marker = ""??????
-
-            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return null;
+            if (IsNull(input) || IsNull(marker)) return null;
+            if (IsEmpty(marker)) throw new ArgumentOutOfRangeException("Empty strings would result in infinite loop.");
+            if (IsEmpty(input)) return 0;
 
             // Warning: May not count "%%%%" where search string is "%%".  Is it 2 or 1.
             int howMany = (input.Length - input.Replace(marker, "").Length) / marker.Length;
@@ -28,6 +27,26 @@ namespace MySQLCLRFunctions
             return howMany;
         }
 
+        /***************************************************************************************************************************************************************************************************
+         * 
+         * How many of a string occurs?  What about overlap?
+         * 
+         ***************************************************************************************************************************************************************************************************/
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
+        public static int? HowManyX(string input, string expression)
+        {
+            // General Rule: Follow SQL rules around null
+            if (input == null || expression == null) return null;
+            // throw exception if marker = ""
+            // return 1 if input = "" and marker = ""??????
+
+            if (IsNullOrWhiteSpaceOrEmpty(input)) return null;
+
+            // Warning: May not count "%%%%" where search string is "%%".  Is it 2 or 1.
+            int howMany = (input.Length - input.Replace(expression, "").Length) / expression.Length;
+
+            return howMany;
+        }
         /***************************************************************************************************************************************************************************************************
          * 
          * Can't do in SQL Server, unfortunately.

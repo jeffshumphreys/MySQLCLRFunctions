@@ -14,7 +14,10 @@ namespace MySQLCLRFunctionsTests
         [TestMethod()]
         public void ReplaceMatchTest()
         {
-            Assert.Fail();
+            var input = "ThisIsIt";
+            var validoutput = "Th!s!s!t";
+            var output = StringTransform.ReplaceMatch(input, "[it]", "!");
+            Assert.AreEqual(expected: validoutput, output);
         }
 
         [TestMethod()]

@@ -23,7 +23,6 @@ namespace MySQLCLRFunctionsTests
         {
             Assert.Fail();
         }
-
         [TestMethod()]
         public void LeftOfAnyTest()
         {
