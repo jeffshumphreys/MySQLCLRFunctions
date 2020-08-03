@@ -9,13 +9,8 @@
 --:SETVAR FQDN4 "\****.*.*.com"
 --:SETVAR FQDN5 "\****.*.*.com."
 --:SETVAR svr "****\***"
---:SETVAR db "*******"
 
-USE $(db)
-:ON ERROR EXIT
 SELECT ThisServer = @@servername, ThisDatabase = DB_NAME(), ThisUser = ORIGINAL_LOGIN()                 
-IF DB_NAME() <> '$(db)' THROW 50000, 'WRONG DATABASE', 0
-IF @@servername <> '$(svr)' THROW 50001, 'WRONG SERVER', 0
 GO
 -- If anything changes, drop and recreate
 /**************************************************************************************************************************************************************************************************
