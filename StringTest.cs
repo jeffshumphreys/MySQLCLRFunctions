@@ -7,9 +7,8 @@ using System.Text.RegularExpressions;
 
 namespace MySQLCLRFunctions
 {
-    /// <summary>
-    /// Functions that take input, are non-mutating, do not involve floating point or date time data, and return either true or false.
-    /// </summary>
+    
+    // Functions that take input, are non-mutating, do not involve floating point or date time data, and return either true or false.
     public static class StringTest
     {
         /***************************************************************************************************************************************************************************************************
