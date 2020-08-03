@@ -1,10 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MySQLCLRFunctions;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MySQLCLRFunctionsTests
 {
@@ -23,7 +20,7 @@ namespace MySQLCLRFunctionsTests
         [TestMethod()]
         public void IsNullOrWhiteSpaceOrEmptyTest2()
         {
-            string input = "";
+            string input = string.Empty;
             var validoutput = true;
             var output = StringTest.IsNullOrWhiteSpaceOrEmpty(input);
             Assert.AreEqual(expected: validoutput, output);
@@ -50,7 +47,7 @@ namespace MySQLCLRFunctionsTests
         [TestMethod()]
         public void IsNullOrEmptyTest()
         {
-            string input = "";
+            string input = string.Empty;
             var validoutput = true;
             var output = StringTest.IsNullOrEmpty(input);
             Assert.AreEqual(expected: validoutput, output);
@@ -86,7 +83,7 @@ namespace MySQLCLRFunctionsTests
         [TestMethod()]
         public void IsEmptyOrWhiteSpaceTest()
         {
-            string input = "";
+            string input = string.Empty;
             var validoutput = true;
             var output = StringTest.IsEmptyOrWhiteSpace(input);
             Assert.AreEqual(expected: validoutput, output);
@@ -95,7 +92,7 @@ namespace MySQLCLRFunctionsTests
         [TestMethod()]
         public void IsNullOrWhiteSpaceTest()
         {
-            string input = "";
+            string input = string.Empty;
             var validoutput = false;
             var output = StringTest.IsNullOrWhiteSpace(input);
             Assert.AreEqual(expected: validoutput, output);
@@ -104,7 +101,7 @@ namespace MySQLCLRFunctionsTests
         [TestMethod()]
         public void IsWhiteSpaceTest()
         {
-            string input = "";
+            string input = string.Empty;
             var validoutput = false;
             var output = StringTest.IsWhiteSpace(input);
             Assert.AreEqual(expected: validoutput, output);
