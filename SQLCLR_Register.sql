@@ -1,16 +1,9 @@
 ﻿-- Time to execute: 5 sec
-
---:SETVAR testsvr1 "******\****"
---:SETVAR testsvr1a "*****"
---:SETVAR testsvr2 "****"
---:SETVAR FQDN1 "*****.****.***"
---:SETVAR FQDN2 "****"
---:SETVAR FQDN3 "****\*****"
---:SETVAR FQDN4 "\****.*.*.com"
---:SETVAR FQDN5 "\****.*.*.com."
---:SETVAR svr "****\***"
-
+:SETVAR LibName MySQLCLRFunctions
+:R TestValueSettings.localuseonly
 SELECT ThisServer = @@servername, ThisDatabase = DB_NAME(), ThisUser = ORIGINAL_LOGIN()                 
+GO
+SELECT name, principal_id, clr_name, permission_set, is_visible, create_date, modify_date, is_user_defined FROM sys.assemblies AS a WHERE name = '$(LibName)'
 GO
 -- If anything changes, drop and recreate
 /**************************************************************************************************************************************************************************************************
@@ -74,12 +67,16 @@ DROP FUNCTION IF EXISTS LeftOfAny
 DROP FUNCTION IF EXISTS LeftOfNth
 DROP FUNCTION IF EXISTS LeftMOfNth
 DROP FUNCTION IF EXISTS FirstWord
+DROP FUNCTION IF EXISTS FirstWordBefore
 DROP FUNCTION IF EXISTS FirstWordBeforeS
+DROP FUNCTION IF EXISTS FirstWordBeforeAny
+DROP FUNCTION IF EXISTS FirstWordBeforeAnyChar
 DROP FUNCTION IF EXISTS FirstWordBeforeAnyC
 DROP FUNCTION IF EXISTS PieceNumber
 DROP FUNCTION IF EXISTS LastPiece
 DROP FUNCTION IF EXISTS RightOf
 DROP FUNCTION IF EXISTS RightOfAny
+DROP FUNCTION IF EXISTS EverythingAfter
 DROP FUNCTION IF EXISTS EverythingAfterX -- X = Regexpression
 DROP FUNCTION IF EXISTS Mid
 /**************************************************************************************************************************************************************************************************
@@ -105,12 +102,15 @@ DROP FUNCTION IF EXISTS RevealNonPrintables
  *      String Measure
 /***************************************************************************************************************************************************************************************************/*/
 DROP FUNCTION IF EXISTS HowMany
+DROP FUNCTION IF EXISTS HowManyS
+DROP FUNCTION IF EXISTS HowManyX
 /**************************************************************************************************************************************************************************************************
  *      String Tests
 /***************************************************************************************************************************************************************************************************/*/
 DROP FUNCTION IF EXISTS StartsWith
 DROP FUNCTION IF EXISTS EndsWith
 DROP FUNCTION IF EXISTS LegalName
+DROP FUNCTION IF EXISTS AnyOfTheseAreAnyOfThose
 DROP FUNCTION IF EXISTS AnyOfTheseSAreAnyOfThoseS
 /**************************************************************************************************************************************************************************************************
  *      File Name processing
@@ -130,7 +130,7 @@ DROP FUNCTION IF EXISTS BuildRaiserrorMessage
 /*
     Embedded in Table Def!!!
 */
---DROP FUNCTION IF EXISTS HowMany
+--DROP FUNCTION IF EXISTS HowManyX
 
 DECLARE @errmsg NVARCHAR(2048)
 
@@ -409,13 +409,20 @@ GO
  *       T-SQL String Measure (which creates a new value, deterministically, but not reversibly)
  *
 /***************************************************************************************************************************************************************************************************/*/
-CREATE OR ALTER FUNCTION HowMany(@input NVARCHAR(MAX), @howManyOfThese NVARCHAR(MAX)) RETURNS INT
+CREATE OR ALTER FUNCTION HowManyS(@input NVARCHAR(MAX), @marker NVARCHAR(MAX)) RETURNS INT
 WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringMeasure].HowMany;  
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringMeasure].HowManyS;  
 GO  
-SELECT HowMany = dbo.HowMany('hi!', '!')
-SELECT HowMany = dbo.HowMany('Hell%%%%o', '%%')
-SELECT HowMany = dbo.HowMany('Hell%%%o', '%%')
+SELECT HowManyS = dbo.HowManyS('hi!', '!')
+SELECT HowManyS = dbo.HowManyS('Hell%%%%o', '%%')
+SELECT HowManyS = dbo.HowManyS('Hell%%%o', '%%')
+GO
+
+CREATE OR ALTER FUNCTION HowManyX(@input NVARCHAR(MAX), @pattern NVARCHAR(MAX)) RETURNS INT
+WITH RETURNS NULL ON NULL INPUT
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringMeasure].HowManyX;  
+GO  
+SELECT HowManyX = dbo.HowManyX('Created for raiserror generator so that %s with %d would generate', '(%s|%d)') -- 2
 GO
 
 /**************************************************************************************************************************************************************************************************
