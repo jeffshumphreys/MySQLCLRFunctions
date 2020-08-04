@@ -20,6 +20,7 @@ DROP FUNCTION IF EXISTS PingGetReturnBuffer
 DROP FUNCTION IF EXISTS PingGetAddress
 DROP FUNCTION IF EXISTS Ping
 DROP FUNCTION IF EXISTS IsIP4
+DROP FUNCTION IF EXISTS GetMyIP4
 DROP FUNCTION IF EXISTS SpreadHex
 /**************************************************************************************************************************************************************************************************
  *      Convert
@@ -240,6 +241,12 @@ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.NetworkCollect].GetHostRea
 GO  
 SELECT GetHostRealName = dbo.GetHostRealName('$(testsvr1)')
 SELECT GetHostRealName = dbo.GetHostRealName('$(testsvr1a)')
+GO
+CREATE OR ALTER FUNCTION GetMyIP4() RETURNS NVARCHAR(20)
+WITH RETURNS NULL ON NULL INPUT
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.NetworkCollect].GetMyIP4;  
+GO
+SELECT MyHost = dbo.GetMyIP4()
 GO
 /**************************************************************************************************************************************************************************************************
  *
