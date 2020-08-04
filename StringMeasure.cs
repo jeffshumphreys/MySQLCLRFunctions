@@ -44,7 +44,7 @@ namespace MySQLCLRFunctions
             if (IsWhiteSpace(pattern)) return SqlInt32.Null;
 
             MatchCollection matches = Regex.Matches(input, pattern, RegexOptions.None, matchTimeout: TimeSpan.FromSeconds(2));
-            
+
             return matches.Count;
         }
         /***************************************************************************************************************************************************************************************************
@@ -55,7 +55,7 @@ namespace MySQLCLRFunctions
         public static T Min<T>(params T[] args) where T: struct, IComparable
         {
             bool notset = true;
-            T minarg = default(T);
+            T minarg = default;
 
             foreach(T arg in args)
             {
@@ -73,7 +73,7 @@ namespace MySQLCLRFunctions
         public static T MinOver<T>(T floor, params T[] args) where T : struct, IComparable
         {
             bool notset = true;
-            T minarg = default(T);
+            T minarg = default;
 
             foreach (T arg in args)
             {
@@ -92,7 +92,7 @@ namespace MySQLCLRFunctions
         public static T Max<T>(params T[] args) where T : struct, IComparable
         {
             bool notset = true;
-            T maxarg = default(T);
+            T maxarg = default;
 
             foreach (T arg in args)
             {
