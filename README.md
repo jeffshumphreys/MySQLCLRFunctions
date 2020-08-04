@@ -17,7 +17,7 @@ For example, hypothetically, I would do this:
 
 For reduced maintenance, I pass everything as NVARCHAR(MAX) as well as return NVARCHAR(MAX).  Speed is not my main problem.  The main problem is that SQL Server functions are severely lacking and new functions are added every third decade.  STRING_AGG is great, but a SQLCLR function can go back to at least 2012.
 
-I do suspect that their may be memory allocation issues with this design, and so I may come up with a generative way to make VARCHAR(8000) or NVARCHAR(4000) clones.  Due to the way SQL Server pre-allocates memory, it may be even better to support smaller sizes.  Not really sure.
+I do suspect that there may be memory allocation issues with this design, and so I may come up with a generative way to make VARCHAR(8000) or NVARCHAR(4000) clones.  Due to the way SQL Server pre-allocates memory, it may be even better to support smaller sizes.  Not really sure.
 
 If it's possible to think of a logical algorithm that can easily be described and understood, and there's no confusion about what to expect in the output, then it's worth being a function.
 
@@ -85,18 +85,16 @@ Also GetFirstName, Pieces, RTrimChar.
 I have a bunch somewhere, and I need to add more.
 
 <h1>Some ideas:</h1>
-- Better captures
-- Escape for multi-level dynamic SQL generation
-- A UNIX cut command for fixed-width
-- CSV, XML in/out
+- Better captures of stored procedure output or xp_cmdshell return strings.
+- Escape function for multi-level dynamic SQL generation.
+- A UNIX cut command for fixed-width.
+- CSV, XML, Excel in/out.
 - HTML table generation for emails.
 - Intelligent Substring Title casing, like "ROTC" is not "Rotc".
 - Smarter name normalization, accent removals for us Americanos.
-- SQLFormat?  The way I like?
+- SQL formating more to my tastes.
 - Some default formatters, like LogFileTimeStamp = "YYYYmmDDhh24missffffff" or some such.  So I don't have to remember.
-
+- Pivot code I found for true column-to-row pivot.
 - Possibly push SQL work down?  Like a TRUNCATE TABLE that pre-strips FKs, truncates, reloads, and tries to add the FKs back.
 - Unix to/from for Active Directory columns.
 - Natural language extraction of patterned speech.
-
-  
