@@ -1,13 +1,12 @@
 ﻿using Microsoft.SqlServer.Server;
 using System;
+using System.Data.SqlTypes;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 
-
 namespace MySQLCLRFunctions
 {
-    
     // Functions that take input, are non-mutating, do not involve floating point or date time data, and return either true or false.
     public static class StringTest
     {
@@ -18,40 +17,22 @@ namespace MySQLCLRFunctions
          * 
          ***************************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static bool IsNullOrWhiteSpaceOrEmpty(string input)
-        {
-            return (string.IsNullOrWhiteSpace(input));
-        }
+        public static bool IsNullOrWhiteSpaceOrEmpty(string input) { return string.IsNullOrWhiteSpace(input); }
 
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static bool IsNullOrEmpty(string input)
-        {
-            return (input == null || input == "");
-        }
+        public static SqlBoolean IsNullOrEmpty(string input) { return string.IsNullOrEmpty(input); }
 
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static bool IsNull(string input)
-        {
-            return (input == null);
-        }
+        public static SqlBoolean IsNull(string input) { return input == null; }
 
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static bool IsEmpty(string input)
-        {
-            return (input == "");
-        }
+        public static SqlBoolean IsEmpty(string input) { return input?.Length == 0; }
 
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static bool IsEmptyOrWhiteSpace(string input)
-        {
-            return (input == "" || IsWhiteSpace(input));
-        }
+        public static SqlBoolean IsEmptyOrWhiteSpace(string input) { return input?.Length == 0 || IsWhiteSpace(input); }
 
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static bool IsNullOrWhiteSpace(string input)
-        {
-            return (input == null || IsWhiteSpace(input));
-        }
+        public static SqlBoolean IsNullOrWhiteSpace(string input) { return input == null || IsWhiteSpace(input); }
 
         /***************************************************************************************************************************************************************************************************
          * 
@@ -59,13 +40,15 @@ namespace MySQLCLRFunctions
          * 
          ***************************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static bool IsWhiteSpace(string input)
+        public static SqlBoolean IsWhiteSpace(string input)
         {
-            if (input == "") return false;
-            foreach (var c in input.ToCharArray())
-            {
-                if (!Char.IsWhiteSpace(c)) return false;
+            if (IsNull(input)) return SqlBoolean.Null;
+            if (IsEmpty(input)) return false; // White space IS NOT empty string!!!! It exists!!!! Think about it!  Stop being a lazy programmer!
 
+            foreach (var c in input)
+            {
+                if (!Char.IsWhiteSpace(c))
+                    return false;
             }
 
             return true;
@@ -75,15 +58,17 @@ namespace MySQLCLRFunctions
          *  Computer (Host) names vs. IP4 in the same columns.
          * 
          ***************************************************************************************************************************************************************************************************/
-        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static bool IsIP4(string input)
-        {
-            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return false;
 
-            IPAddress address;
-            if (IPAddress.TryParse(input, out address))
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
+        public static SqlBoolean IsIP4(string input)
+        {
+            if (IsNull(input)) return SqlBoolean.Null;
+            if (IsEmpty(input)) return false; // Empty string doesn't start with anything
+
+            if (IPAddress.TryParse(input, out IPAddress address))
             {
-                if (address.AddressFamily is System.Net.Sockets.AddressFamily.InterNetwork) return true;
+                if (address.AddressFamily is System.Net.Sockets.AddressFamily.InterNetwork)
+                    return true;
             }
 
             return false;
@@ -95,14 +80,15 @@ namespace MySQLCLRFunctions
          * 
          ***************************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static bool IsIP6(string input)
+        public static SqlBoolean IsIP6(string input)
         {
-            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return false;
+            if (IsNull(input)) return SqlBoolean.Null;
+            if (IsEmpty(input)) return false; // Empty string doesn't start with anything
 
-            IPAddress address;
-            if (IPAddress.TryParse(input, out address))
+            if (IPAddress.TryParse(input, out IPAddress address))
             {
-                if (address.AddressFamily is System.Net.Sockets.AddressFamily.InterNetworkV6) return true;
+                if (address.AddressFamily is System.Net.Sockets.AddressFamily.InterNetworkV6)
+                    return true;
             }
 
             return false;
@@ -112,11 +98,14 @@ namespace MySQLCLRFunctions
          * Returns true if the input string starts with the sought string.
          * 
          ***************************************************************************************************************************************************************************************************/
+
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static bool? StartsWith(string input, string marker)
+        public static SqlBoolean StartsWithS(string input, string marker)
         {
-            if (StringTest.IsNull(input)) return false;
-            if (StringTest.IsNullOrEmpty(marker)) return null;
+            if (IsNull(input)) return SqlBoolean.Null;
+            if (IsNull(marker)) throw new ArgumentNullException("marker cannot be null");
+            if (IsEmpty(marker)) throw new ArgumentNullException("marker cannot be empty. Would be an infinite loop.");
+            if (IsEmpty(input)) return false; // Empty string doesn't start with anything
 
             return input.StartsWith(marker);
         }
@@ -127,10 +116,12 @@ namespace MySQLCLRFunctions
          * 
          ***************************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static bool? EndsWith(string input, string marker)
+        public static SqlBoolean EndsWithS(string input, string marker)
         {
-            if (StringTest.IsNull(input)) return false;
-            if (StringTest.IsNullOrEmpty(input)) return null;
+            if (IsNull(input)) return SqlBoolean.Null;
+            if (IsNull(marker)) throw new ArgumentNullException("marker cannot be null");
+            if (IsEmpty(marker)) throw new ArgumentNullException("marker cannot be empty. Would be an infinite loop.");
+            if (IsEmpty(input)) return false; // Empty string doesn't end with anything
 
             return input.EndsWith(marker);
         }
@@ -141,23 +132,28 @@ namespace MySQLCLRFunctions
          * 
          ***************************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static bool LegalName(string input, string characterrule)
+        public static SqlBoolean LegalName(string input, string rule)
         {
-            throw new NotImplementedException("Copied from old code. Great idea, but needs to be written.");
+            if (IsNull(input)) return SqlBoolean.Null;
+            if (IsNull(rule)) throw new ArgumentNullException("character rule cannot be null");
+            if (IsEmpty(rule)) throw new ArgumentNullException("rule cannot be empty. That would be a non-rule.");
+            if (IsEmpty(input)) return false; // Empty string is never a legal name
 
-#pragma warning disable CS0162 // Unreachable code detected
-            if (characterrule == "SQL Server Server Name")
-#pragma warning restore CS0162 // Unreachable code detected
+            if (rule == "SQL Server Server Name")
             {
+                if ((bool)input.FirstC().NotInX("[a-zA-Z\\&\\_\\#]")) return false;
                 // Instance portion Cannot be Default or MSSQLServer
                 // Instance be up to 16 characters, Unicode Standard 2.0, decimal numbers basic latin or other national scripts, $, #, _
                 // First character must be letter, &, _, #
                 // No embedded spaces, special characters, backslash, comma, colon, or at sign.
 
                 // Windows Server 2008 R2 NetBIOS limited to 15 char
+                return true;
             }
-
-            return true;
+            else
+            {
+                throw new ArgumentException($"Unrecognize rule: {rule}");
+            }
         }
 
         /***************************************************************************************************************************************************************************************************
@@ -166,9 +162,11 @@ namespace MySQLCLRFunctions
          * 
          ***************************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static bool AnyOfTheseSAreAnyOfThoseS(string inputs, string markers, string sep)
+        public static SqlBoolean AnyOfTheseSAreAnyOfThoseS(string inputs, string markers, string sep)
         {
-            if (StringTest.IsNullOrWhiteSpaceOrEmpty(inputs)) return false;
+            if (IsNull(inputs) || IsNull(markers) || IsNull(sep)) return SqlBoolean.Null;
+            if (inputs.Length == 0) return false; // Nothing can be in an empty string
+            if (markers.Length == 0 || sep.Length == 0) throw new ArgumentOutOfRangeException("Empty strings in a search make no sense.");
 
             var inputsasarray = inputs.Split(new string[] { sep }, StringSplitOptions.RemoveEmptyEntries);
             foreach (string i in markers.Split(new string[] { sep }, StringSplitOptions.RemoveEmptyEntries))
@@ -189,16 +187,22 @@ namespace MySQLCLRFunctions
          * Idea is: SELECT * FROM x where dbo.LikeAny(FullName, '%Humphreys;Humphrey%;JSH;%Jeff%Hum%;Jeff%H;(Jeff|Jeffrey|Jeffry);') = 1
          * 
          ***************************************************************************************************************************************************************************************************/
-        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static bool LikeAny(string input, string patterns, string patternsep)
-        {
-            throw new NotImplementedException("Copied from old code. Great idea, but needs to be written.");
 
-#pragma warning disable CS0162 // Unreachable code detected
-            foreach (string pattern in patterns.Split(new string[] { patternsep }, StringSplitOptions.RemoveEmptyEntries))
-#pragma warning restore CS0162 // Unreachable code detected
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
+        public static SqlBoolean LikeAny(string inputs, string patterns, string inputsep, string patternsep)
+        {
+            if (IsNull(inputs) || IsNull(patterns) || IsNull(inputsep) || IsNull(patternsep)) return SqlBoolean.Null; // SQL: Nulls make null
+            if (inputs.Length == 0) return false; // Nothing can be in an empty string
+            if (patterns.Length == 0 || inputsep.Length == 0 || patternsep.Length == 0) throw new ArgumentOutOfRangeException("Empty strings in a search make no sense.");
+
+            var inputsasarray = inputs.Split(new string[] { inputsep }, StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (string pattern in patterns.Split(new string[] { inputsep }, StringSplitOptions.RemoveEmptyEntries))
             {
-                if (Regex.IsMatch(input, pattern)) return true;
+                foreach (string input in inputsasarray)
+                {
+                    if (Regex.IsMatch(input, pattern)) return true;
+                }
             }
 
             return false;
@@ -229,6 +233,4 @@ namespace MySQLCLRFunctions
          *       }
          */
     }
-
-
 }
