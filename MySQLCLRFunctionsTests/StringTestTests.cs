@@ -134,7 +134,7 @@ namespace MySQLCLRFunctions.Tests
             string input = "1.1.1.1";
             string marker = "1.1";
             var validoutput = true;
-            var output = StringTest.StartsWith(input, marker);
+            var output = StringTest.StartsWithS(input, marker);
             Assert.AreEqual(expected: validoutput, output);
         }
 
@@ -144,7 +144,7 @@ namespace MySQLCLRFunctions.Tests
             string input = "1x1.1.1";
             string marker = "1.1";
             var validoutput = false;
-            var output = StringTest.StartsWith(input, marker);
+            var output = StringTest.StartsWithS(input, marker);
             Assert.AreEqual(expected: validoutput, output);
         }
 

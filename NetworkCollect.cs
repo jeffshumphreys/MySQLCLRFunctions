@@ -29,6 +29,20 @@ namespace MySQLCLRFunctions
         }
 
         [SqlFunction()]
+        public static SqlString GetMyIP4()
+        {
+            var host = Dns.GetHostEntry(Dns.GetHostName());
+            foreach (var ip in host.AddressList)
+            {
+                if (ip.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    return ip.ToString();
+                }
+            }
+
+            return SqlString.Null;
+        }
+        [SqlFunction()]
         public static SqlBytes PingGetReturnBuffer(SqlString Machine)
         {
             string host = Machine.ToString();
@@ -113,7 +127,7 @@ namespace MySQLCLRFunctions
         }
         private static PingReply PingHostGetReply(string nameOrAddress)
         {
-            bool pingable = false;
+            bool pingable;
             Ping pinger = null;
             PingReply reply = null;
 
@@ -129,10 +143,7 @@ namespace MySQLCLRFunctions
             }
             finally
             {
-                if (pinger != null)
-                {
-                    pinger.Dispose();
-                }
+                pinger?.Dispose();
             }
 
             return reply;

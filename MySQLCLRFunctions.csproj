@@ -49,6 +49,8 @@
   <ItemGroup>
     <Compile Include="ActiveDirectory.cs" />
     <Compile Include="Adaptors.cs" />
+    <Compile Include="CharacterExtract.cs" />
+    <Compile Include="CharacterTest.cs" />
     <Compile Include="Compares.cs" />
     <Compile Include="Environmental.cs" />
     <Compile Include="FileNameExtract.cs" />

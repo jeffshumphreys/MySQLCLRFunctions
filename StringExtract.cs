@@ -2,11 +2,12 @@
 using System;
 using System.Text.RegularExpressions;
 using static MySQLCLRFunctions._SharedConstants;
+using static MySQLCLRFunctions.StringTest;
+
 namespace MySQLCLRFunctions
 {
     public static class StringExtract
     {
-
         /***************************************************************************************************************************************************************************************************
          * 
          *  Find the marker, and pull the entire string before that marker first appears, not including that marker.
@@ -45,6 +46,7 @@ namespace MySQLCLRFunctions
         {
             if (string.IsNullOrEmpty(input)) return input;
             if (n <= 0) throw new ArgumentOutOfRangeException(nameof(n));
+
             var i = input.IndexOf(marker);
             if (i == NOT_FOUND) return null;
             if (n == 1) return input.Substring(0, i);
@@ -186,7 +188,6 @@ namespace MySQLCLRFunctions
             string workingFullName = FullName.Trim();
             string firstName;
 
-
             if (workingFullName.EndsWith("(CWF)")) workingFullName = workingFullName.Substring(0, workingFullName.Length - 6).Trim();
             if (workingFullName.EndsWith("(SSI)")) workingFullName = workingFullName.Substring(0, workingFullName.Length - 6).Trim();
             if (workingFullName.EndsWith("(RDI Contractor)")) workingFullName = workingFullName.Substring(0, workingFullName.Length - "(RDI Contractor)".Length).Trim();
@@ -235,13 +236,16 @@ namespace MySQLCLRFunctions
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
             if (howmany == 0) return string.Empty;
             if (howmany < 0) return null;
+
             var tupin = input.Reverse();
-            return tupin.Left(howmany).Reverse().ToString();
+
+            return tupin.Left(howmany).Reverse();
         }
 
         public static string Reverse(this string input)
         {
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
+
             char[] inputAsCharArray = input.ToCharArray();
             Array.Reverse(inputAsCharArray);
             return new string(inputAsCharArray);
@@ -255,6 +259,7 @@ namespace MySQLCLRFunctions
         public static string FirstWord(string input)
         {
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
+
             return input.Split(@"\W")[0];
         }
 
@@ -267,6 +272,7 @@ namespace MySQLCLRFunctions
         public static string PieceNumber(String input, String pattern, int piecenumbertoreturn)
         {
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
+
             string[] stringpieces = Regex.Split(input, pattern, RegexOptions.IgnoreCase, TimeSpan.FromSeconds(2));
             if (stringpieces != null && stringpieces.Length >= piecenumbertoreturn)
                 return stringpieces[piecenumbertoreturn - 1];
@@ -286,12 +292,12 @@ namespace MySQLCLRFunctions
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(pattern)) return input;
 
             string[] stringpieces = Regex.Split(input, pattern, RegexOptions.IgnoreCase, TimeSpan.FromSeconds(2));
-            if (stringpieces != null && stringpieces.Length > 0)
+            if (stringpieces?.Length > 0)
             {
                 string laststring = stringpieces[stringpieces.Length - 1];
                 if (string.IsNullOrWhiteSpace(laststring))
                 {
-                    if (stringpieces != null && stringpieces.Length > 1)
+                    if (stringpieces?.Length > 1)
                     {
                         laststring = stringpieces[stringpieces.Length - 2];
                     }
@@ -299,8 +305,12 @@ namespace MySQLCLRFunctions
                 return laststring;
             }
             else
+            {
                 return null;
+            }
         }
+
+        // Convenience and clarity function
 
         private static string[] SingleStringAsArray(string element1)
         {
@@ -317,6 +327,7 @@ namespace MySQLCLRFunctions
         public static string FirstWordBeforeS(string input, string marker)
         {
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
+
             return input.Split(SingleStringAsArray(marker), StringSplitOptions.None)[0];
         }
 
@@ -329,8 +340,10 @@ namespace MySQLCLRFunctions
         public static string FirstWordBeforeAnyC(string input, string markerchars)
         {
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
+
             int firstindex = input.IndexOfAny(markerchars.ToCharArray());
             if (firstindex < 1) return null;
+
             return input.Left(firstindex);
         }
 
@@ -338,6 +351,7 @@ namespace MySQLCLRFunctions
         {
             return input.IndexOf(marker);
         }
+
         /***************************************************************************************************************************************************************************************************
         * 
         * Extract everything after a specific string
@@ -346,10 +360,12 @@ namespace MySQLCLRFunctions
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
         public static string EverythingAfterX(string input, string marker)
         {
-            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
+            if (IsNullOrWhiteSpaceOrEmpty(input)) return input;
+
             int i = input.FindIndexOf(marker);
             if (i == -1) return string.Empty;
             if (i + marker.Length > input.Length) return string.Empty;
+
             return input.Substring(i + marker.Length);
         }
     }
