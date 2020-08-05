@@ -20,7 +20,7 @@ namespace MySQLCLRFunctions.Tests
         [TestMethod()]
         public void PiecesTest()
         {
-            var pieces = StringPivot.Pieces("This is input", "\b");
+            var pieces = StringPivot.PiecesX("This is input", "\b");
             Assert.IsNotNull(pieces);
         }
 
@@ -28,7 +28,7 @@ namespace MySQLCLRFunctions.Tests
         [TestMethod()]
         public void PiecesTestCount()
         {
-            var pieces = (string[])StringPivot.Pieces("This is input", " ");
+            var pieces = (string[])StringPivot.PiecesX("This is input", " ");
             Assert.AreEqual(expected: 3, pieces.Length);
         }
 

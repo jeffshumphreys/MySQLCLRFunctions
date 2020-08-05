@@ -44,13 +44,39 @@ namespace MySQLCLRFunctions.Tests
         [TestMethod()]
         public void RTrimCharTest()
         {
-            Assert.Fail();
+            const string input = "1.1.1.1";
+            const string marker = "1xy.";
+            const string validoutput = "1.1.1.";
+            var output = StringReduce.RTrimAnyC(input, marker);
+            Assert.AreEqual(expected: validoutput, output);
         }
 
         [TestMethod()]
         public void RTrimNTest()
         {
-            Assert.Fail();
+            const string input = "1.1.1.1";
+            const int howmany = 2;
+            const string validoutput = "1.1.1";
+            var output = StringReduce.RTrimN(input, howmany);
+            Assert.AreEqual(expected: validoutput, output);
+        }
+
+        [TestMethod()]
+        public void RTrimOneTest()
+        {
+            const string input = "1.1.1.1";
+            const string validoutput = "1.1.1.";
+            var output = StringReduce.RTrimOne(input);
+            Assert.AreEqual(expected: validoutput, output);
+        }
+
+        [TestMethod()]
+        public void LTrimOneTest()
+        {
+            const string input = "1.1.1.1";
+            const string validoutput = ".1.1.1";
+            var output = StringReduce.LTrimOne(input);
+            Assert.AreEqual(expected: validoutput, output);
         }
     }
 }

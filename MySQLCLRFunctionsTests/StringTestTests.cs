@@ -14,8 +14,8 @@ namespace MySQLCLRFunctions.Tests
         [TestMethod()]
         public void IsNullOrWhiteSpaceOrEmptyTest()
         {
-            string input = null;
-            var validoutput = true;
+            const string input = null;
+            const bool validoutput = true;
             var output = StringTest.IsNullOrWhiteSpaceOrEmpty(input);
             Assert.AreEqual(expected: validoutput, output);
         }
@@ -24,7 +24,7 @@ namespace MySQLCLRFunctions.Tests
         public void IsNullOrWhiteSpaceOrEmptyTest2()
         {
             string input = string.Empty;
-            var validoutput = true;
+            const bool validoutput = true;
             var output = StringTest.IsNullOrWhiteSpaceOrEmpty(input);
             Assert.AreEqual(expected: validoutput, output);
         }
@@ -32,8 +32,8 @@ namespace MySQLCLRFunctions.Tests
         [TestMethod()]
         public void IsNullOrWhiteSpaceOrEmptyTest3()
         {
-            string input = " ";
-            var validoutput = true;
+            const string input = " ";
+            const bool validoutput = true;
             var output = StringTest.IsNullOrWhiteSpaceOrEmpty(input);
             Assert.AreEqual(expected: validoutput, output);
         }
@@ -41,8 +41,8 @@ namespace MySQLCLRFunctions.Tests
         [TestMethod()]
         public void IsNullOrWhiteSpaceOrEmptyTest4()
         {
-            string input = "\n";
-            var validoutput = true;
+            const string input = "\n";
+            const bool validoutput = true;
             var output = StringTest.IsNullOrWhiteSpaceOrEmpty(input);
             Assert.AreEqual(expected: validoutput, output);
         }
@@ -51,7 +51,7 @@ namespace MySQLCLRFunctions.Tests
         public void IsNullOrEmptyTest()
         {
             string input = string.Empty;
-            var validoutput = true;
+            const bool validoutput = true;
             var output = StringTest.IsNullOrEmpty(input);
             Assert.AreEqual(expected: validoutput, output);
         }
@@ -59,8 +59,8 @@ namespace MySQLCLRFunctions.Tests
         [TestMethod()]
         public void IsNullOrEmptyTest2()
         {
-            string input = null;
-            var validoutput = true;
+            const string input = null;
+            const bool validoutput = true;
             var output = StringTest.IsNullOrWhiteSpaceOrEmpty(input);
             Assert.AreEqual(expected: validoutput, output);
         }
@@ -68,8 +68,8 @@ namespace MySQLCLRFunctions.Tests
         [TestMethod()]
         public void IsNullTest()
         {
-            string input = null;
-            var validoutput = true;
+            const string input = null;
+            const bool validoutput = true;
             var output = StringTest.IsNull(input);
             Assert.AreEqual(expected: validoutput, output);
         }
@@ -77,8 +77,8 @@ namespace MySQLCLRFunctions.Tests
         [TestMethod()]
         public void IsEmptyTest()
         {
-            string input = null;
-            var validoutput = true;
+            const string input = null;
+            const bool validoutput = true;
             var output = StringTest.IsEmpty(input);
             Assert.AreEqual(expected: validoutput, output);
         }
@@ -87,7 +87,7 @@ namespace MySQLCLRFunctions.Tests
         public void IsEmptyOrWhiteSpaceTest()
         {
             string input = string.Empty;
-            var validoutput = true;
+            const bool validoutput = true;
             var output = StringTest.IsEmptyOrWhiteSpace(input);
             Assert.AreEqual(expected: validoutput, output);
         }
@@ -96,7 +96,7 @@ namespace MySQLCLRFunctions.Tests
         public void IsNullOrWhiteSpaceTest()
         {
             string input = string.Empty;
-            var validoutput = false;
+            const bool validoutput = false;
             var output = StringTest.IsNullOrWhiteSpace(input);
             Assert.AreEqual(expected: validoutput, output);
         }
@@ -105,7 +105,7 @@ namespace MySQLCLRFunctions.Tests
         public void IsWhiteSpaceTest()
         {
             string input = string.Empty;
-            var validoutput = false;
+            const bool validoutput = false;
             var output = StringTest.IsWhiteSpace(input);
             Assert.AreEqual(expected: validoutput, output);
         }
@@ -113,8 +113,8 @@ namespace MySQLCLRFunctions.Tests
         [TestMethod()]
         public void IsIP4Test()
         {
-            string input = "1.1.1.1";
-            var validoutput = true;
+            const string input = "1.1.1.1";
+            const bool validoutput = true;
             var output = StringTest.IsIP4(input);
             Assert.AreEqual(expected: validoutput, output);
         }
@@ -122,8 +122,8 @@ namespace MySQLCLRFunctions.Tests
         [TestMethod()]
         public void IsIP6Test()
         {
-            string input = "1.1.1.1";
-            var validoutput = false;
+            const string input = "1.1.1.1";
+            const bool validoutput = false;
             var output = StringTest.IsIP6(input);
             Assert.AreEqual(expected: validoutput, output);
         }
@@ -131,9 +131,9 @@ namespace MySQLCLRFunctions.Tests
         [TestMethod()]
         public void StartsWithTestAmbiguous()
         {
-            string input = "1.1.1.1";
-            string marker = "1.1";
-            var validoutput = true;
+            const string input = "1.1.1.1";
+            const string marker = "1.1";
+            const bool validoutput = true;
             var output = StringTest.StartsWithS(input, marker);
             Assert.AreEqual(expected: validoutput, output);
         }
@@ -141,9 +141,9 @@ namespace MySQLCLRFunctions.Tests
         [TestMethod()]
         public void StartsWithTest()
         {
-            string input = "1x1.1.1";
-            string marker = "1.1";
-            var validoutput = false;
+            const string input = "1x1.1.1";
+            const string marker = "1.1";
+            const bool validoutput = false;
             var output = StringTest.StartsWithS(input, marker);
             Assert.AreEqual(expected: validoutput, output);
         }
@@ -151,10 +151,10 @@ namespace MySQLCLRFunctions.Tests
         [TestMethod()]
         public void EndsWithTest()
         {
-            string input = "1.1.1.1";
-            string marker = "1.1";
-            var validoutput = true;
-            var output = StringTest.EndsWith(input, marker);
+            const string input = "1.1.1.1";
+            const string marker = "1.1";
+            const bool validoutput = true;
+            var output = StringTest.EndsWithS(input, marker);
             Assert.AreEqual(expected: validoutput, output);
         }
 
@@ -167,9 +167,9 @@ namespace MySQLCLRFunctions.Tests
         [TestMethod()]
         public void AnyOfTheseSAreAnyOfThoseSTest()
         {
-            var input = "hi;there;";
-            var markers = "not;there;";
-            var validoutput = true;
+            const string input = "hi;there;";
+            const string markers = "not;there;";
+            const bool validoutput = true;
             var output = StringTest.AnyOfTheseSAreAnyOfThoseS(input, markers, sep: ";");
             Assert.AreEqual(expected: validoutput, output);
         }
@@ -177,17 +177,21 @@ namespace MySQLCLRFunctions.Tests
         [TestMethod()]
         public void AnyOfTheseSAreAnyOfThoseSTest_Negative()
         {
-            var input = "hi;there;";
-            var markers = "not;here;";
-            var validoutput = false;
+            const string input = "hi;there;";
+            const string markers = "not;here;";
+            const bool validoutput = false;
             var output = StringTest.AnyOfTheseSAreAnyOfThoseS(input, markers, sep: ";");
             Assert.AreEqual(expected: validoutput, output);
         }
 
         [TestMethod()]
-        public void LikeAnyTest()
+        public void LikeAnyXTest()
         {
-            Assert.Fail();
+            const string inputs = "Jeffrey S. Humphrey;Jeff Humprheys";
+            const string patterns = "%Humphreys;Humphrey%;JSH;%Jeff%Hum%;Jeff%H;(Jeff|Jeffrey|Jeffry)";
+            const bool validoutput = false;
+            var output = StringTest.LikeAnyX(inputs, patterns, inputsep: ";", patternsep: ";");
+            Assert.AreEqual(expected: validoutput, output);
         }
     }
 }

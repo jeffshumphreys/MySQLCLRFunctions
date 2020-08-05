@@ -16,7 +16,7 @@ namespace MySQLCLRFunctions.Tests
         [Timeout(100)]
         public void RPadTest()
         {
-            var input = "Joseph Jr.";
+            const string input = "Joseph Jr.";
             var output = StringFormat.RPad(input, input.Length + 1);
             Assert.AreEqual(expected: input + " ", actual: output);
         }
@@ -24,7 +24,7 @@ namespace MySQLCLRFunctions.Tests
         [TestMethod()]
         public void RPadCharTest()
         {
-            var input = "Joseph Jr.";
+            const string input = "Joseph Jr.";
             var output = StringFormat.RPadChar(input, input.Length + 1, 'x');
             Assert.AreEqual(expected: input + "x", output);
         }
@@ -32,7 +32,7 @@ namespace MySQLCLRFunctions.Tests
         [TestMethod()]
         public void LPadTest()
         {
-            var input = "Joseph Jr.";
+            const string input = "Joseph Jr.";
             var output = StringFormat.LPad(input, input.Length + 1);
             Assert.AreEqual(expected: " " + input, output);
         }
@@ -41,15 +41,15 @@ namespace MySQLCLRFunctions.Tests
         [TestMethod()]
         public void LPadCharTest()
         {
-            var input = "Joseph Jr.";
-            var output = StringFormat.LPadChar(input, input.Length + 1, 'x');
+            const string input = "Joseph Jr.";
+            var output = StringFormat.LPadC(input, input.Length + 1, 'x');
             Assert.AreEqual(expected: "x" + input, output);
         }
 
         [TestMethod()]
         public void TitleTest()
         {
-            var input = "joseph Jr.";
+            const string input = "joseph Jr.";
             var output = StringFormat.Title(input);
             Assert.AreEqual(expected: "Joseph Jr.", actual: output, ignoreCase: false);
         }

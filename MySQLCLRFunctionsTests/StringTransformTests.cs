@@ -14,18 +14,18 @@ namespace MySQLCLRFunctions.Tests
         [TestMethod()]
         public void ReplaceMatchTest()
         {
-            var input = "ThisIsIt";
-            var validoutput = "Th!s!s!t";
-            var output = StringTransform.ReplaceMatch(input, "[it]", "!");
+            const string input = "ThisIsIt";
+            const string validoutput = "Th!s!s!t";
+            var output = StringTransform.ReplaceMatchX(input, "[it]", "!");
             Assert.AreEqual(expected: validoutput, output);
         }
 
         [TestMethod()]
         public void ReplaceRecursiveTest()
         {
-            var input = "This is                a test  of the     emergency  ";
-            var validoutput = "This is a test of the emergency ";
-            var output = StringTransform.ReplaceRecursive(input, "  ", " ");
+            const string input = "This is                a test  of the     emergency  ";
+            const string validoutput = "This is a test of the emergency ";
+            var output = StringTransform.ReplaceRecursiveS(input, "  ", " ");
             Assert.AreEqual(expected: validoutput, output);
         }
     }

@@ -49,8 +49,8 @@ namespace MySQLCLRFunctions.Tests
         [TestMethod()]
         public void MidTest()
         {
-            var input = "GetTHEMIDDLEofthis";
-            var validoutput = "THEMIDDLE";
+            const string input = "GetTHEMIDDLEofthis";
+            const string validoutput = "THEMIDDLE";
             var output = StringExtract.Mid(input, 4, 12);
             Assert.AreEqual(expected: validoutput, output);
         }
@@ -58,8 +58,8 @@ namespace MySQLCLRFunctions.Tests
         [TestMethod()]
         public void MidTest_OverloadBySign()
         {
-            var input = "GetTHEMIDDLEofthis";
-            var validoutput = "th";
+            const string input = "GetTHEMIDDLEofthis";
+            const string validoutput = "th";
             var output = StringExtract.Mid(input, -4, -2);
             Assert.AreEqual(expected: validoutput, output);
         }
@@ -67,8 +67,8 @@ namespace MySQLCLRFunctions.Tests
         [TestMethod()]
         public void GetFirstNameTest()
         {
-            var input = "Jeff Humphreys";
-            var validoutput = "Jeff";
+            const string input = "Jeff Humphreys";
+            const string validoutput = "Jeff";
             var output = StringExtract.GetFirstName(input);
             Assert.AreEqual(expected: validoutput, output);
         }
@@ -76,8 +76,8 @@ namespace MySQLCLRFunctions.Tests
         [TestMethod()]
         public void GetFirstNameTest2()
         {
-            var input = "Humphreys, Jeff";
-            var validoutput = "Jeff";
+            const string input = "Humphreys, Jeff";
+            const string validoutput = "Jeff";
             var output = StringExtract.GetFirstName(input);
             Assert.AreEqual(expected: validoutput, output);
         }
@@ -85,8 +85,8 @@ namespace MySQLCLRFunctions.Tests
         [TestMethod()]
         public void GetFirstNameTest3()
         {
-            var input = "Humphreys, Jeff S.";
-            var validoutput = "Jeff";
+            const string input = "Humphreys, Jeff S.";
+            const string validoutput = "Jeff";
             var output = StringExtract.GetFirstName(input);
             Assert.AreEqual(expected: validoutput, output);
         }
@@ -94,63 +94,65 @@ namespace MySQLCLRFunctions.Tests
         [TestMethod()]
         public void LeftTest()
         {
-            var input = "Humphreys, Jeff S.";
-            var validoutput = "Hum";
+            const string input = "Humphreys, Jeff S.";
+            const string validoutput = "Hum";
+#pragma warning disable RCS1196 // Call extension method as instance method.
             var output = StringExtract.Left(input, 3);
+#pragma warning restore RCS1196 // Call extension method as instance method.
             Assert.AreEqual(expected: validoutput, output);
         }
 
         [TestMethod()]
         public void FirstWordTest()
         {
-            var input = "Humphreys, Jeff S.";
-            var validoutput = "Humphreys";
-            var output = StringExtract.FirstWord(input);
+            const string input = "Humphreys, Jeff S.";
+            const string validoutput = "Humphreys";
+            var output = StringExtract.FirstWordW(input);
             Assert.AreEqual(expected: validoutput, output);
         }
 
         [TestMethod()]
         public void PieceNumberTest()
         {
-            var input = "Humphreys, Jeff S.";
-            var validoutput = "Humphreys";
-            var output = StringExtract.PieceNumber(input, ",", 1);
+            const string input = "Humphreys, Jeff S.";
+            const string validoutput = "Humphreys";
+            var output = StringExtract.PieceNumberX(input, ",", 1);
             Assert.AreEqual(expected: validoutput, output);
         }
 
         [TestMethod()]
         public void LastPieceTest()
         {
-            var input = "Humphreys, Jeff S.";
-            var validoutput = " Jeff S.";
-            var output = StringExtract.LastPiece(input, ",");
+            const string input = "Humphreys, Jeff S.";
+            const string validoutput = " Jeff S.";
+            var output = StringExtract.LastPieceX(input, ",");
             Assert.AreEqual(expected: validoutput, output);
         }
 
         [TestMethod()]
         public void FirstWordBeforeSTest()
         {
-            var input = "Humphreys, Jeff S.";
-            var validoutput = "Humphreys, ";
-            var output = StringExtract.FirstWordBeforeS(input, @"Je");
+            const string input = "Humphreys, Jeff S.";
+            const string validoutput = "Humphreys, ";
+            var output = StringExtract.FirstWordBeforeS(input, "Je");
             Assert.AreEqual(expected: validoutput, output);
         }
 
         [TestMethod()]
         public void FirstWordBeforeAnyCTest()
         {
-            var input = "Humphreys, Jeff S.";
-            var validoutput = "Humphr";
-            var output = StringExtract.FirstWordBeforeAnyC(input, @"e,.");
+            const string input = "Humphreys, Jeff S.";
+            const string validoutput = "Humphr";
+            var output = StringExtract.FirstWordBeforeAnyC(input, "e,.");
             Assert.AreEqual(expected: validoutput, output);
         }
 
         [TestMethod()]
         public void EverythingAfterXTest()
         {
-            var input = "Humphreys, Jeff S.";
-            var validoutput = " Jeff S.";
-            var output = StringExtract.EverythingAfterX(input, @",");
+            const string input = "Humphreys, Jeff S.";
+            const string validoutput = " Jeff S.";
+            var output = StringExtract.EverythingAfterX(input, ",");
             Assert.AreEqual(expected: validoutput, output);
         }
     }
