@@ -1,7 +1,7 @@
 ﻿using Microsoft.SqlServer.Server;
 using System.Text.RegularExpressions;
 /*
-* Take measurements from a string.  Not actual values from a string as Extract does.
+* Formatting may lengthen, reduce, or do nothing to the size of a string.  It's more about presentation.  Which might put it under Humanization?
 */
 namespace MySQLCLRFunctions
 {
@@ -39,7 +39,7 @@ namespace MySQLCLRFunctions
         * 
         **************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static string RPadChar(string input, int length, char character)
+        public static string RPadC(string input, int length, char character)
         {
             if (StringTest.IsNull(input)) return input;
 
