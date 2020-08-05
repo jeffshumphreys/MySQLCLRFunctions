@@ -19,29 +19,27 @@ namespace MySQLCLRFunctions
          * Usefulness Analysis: I need to clean some long strings with parenthised words, and it worked!
          **************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static string TrimBracketing(string input)
+        public static string TrimBrackets(string input)
         {
             // https://en.wikipedia.org/wiki/Bracket
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
 
-            if (input.Last() == ']' && input.First() == '[') return input.Mid(1, -1);
-            if (input.Last() == '⦌' && input.First() == '⦋') return input.Mid(1, -1);
-            if (input.Last() == '}' && input.First() == '{') return input.Mid(1, -1);
-            if (input.Last() == '⟭' && input.First() == '⟬') return input.Mid(1, -1);//white tortoise shell brackets
-            if (input.Last() == ')' && input.First() == '(') return input.Mid(1, -1);
-            if (input.Last() == ':' && input.First() == ':') return input.Mid(1, -1);
-            if (input.Last() == '⟧' && input.First() == '⟦') return input.Mid(1, -1);
-            if (input.Last() == '>' && input.First() == '<') return input.Mid(1, -1);
-            if (input.Last() == '⟩' && input.First() == '⟨') return input.Mid(1, -1);
-            if (input.Last() == '⟫' && input.First() == '⟪') return input.Mid(1, -1);
-            // Also, <<, >>
-            // Les Guillemets
-            if (input.Last() == '»' && input.First() == '«') return input.Mid(1, -1);
+            if (input.First() == '[' && input.Last() == ']' ) return input.MID(1, -1);
+            if (input.First() == '⦋' && input.Last() == '⦌'  ) return input.MID(1, -1);
+            if (input.First() == '{' && input.Last() == '}' ) return input.MID(1, -1);
+            if (input.First() == '⟬' && input.Last() == '⟭' ) return input.MID(1, -1);//white tortoise shell brackets
+            if (input.First() == '(' && input.Last() == ')' ) return input.MID(1, -1);
+            if (input.First() == ':' && input.Last() == ':' ) return input.MID(1, -1);
+            if (input.First() == '⟦' && input.Last() == '⟧' ) return input.MID(1, -1);
+            if (input.First() == '<' && input.Last() == '>' ) return input.MID(1, -1);
+            if (input.First() == '⟨' && input.Last() == '⟩'  ) return input.MID(1, -1);
+            if (input.First() == '⟪' && input.Last() == '⟫' ) return input.MID(1, -1);
+            if (input.First() == '«' && input.Last() == '»') return input.MID(1, -1);  // Les Guillemets
 
-            if (input.Last() == '"' && input.First() == '"') return input.Mid(1, -1);
-            if (input.Last() == '\'' && input.First() == '\'') return input.Mid(1, -1);
-            if (input.Last() == '’' && input.First() == '‘') return input.Mid(1, -1); // opening/closing quote
-            if (input.Last() == '”' && input.First() == '“') return input.Mid(1, -1); // opening/closing quote
+            if (input.First() == '"' && input.Last() == '"') return input.MID(1, -1);
+            if ( input.First() == '\\' && input.Last() == '\\') return input.MID(1, -1);
+            if (input.First() == '‘' && input.Last() == '’') return input.MID(1, -1); // opening/closing quote
+            if (input.First() == '“' && input.Last() == '”') return input.MID(1, -1); // opening/closing quote
             // HTML: &lsquo; &rsquo; &ldquo; &rdquo;
             // — (tiret)
 
