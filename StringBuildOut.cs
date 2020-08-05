@@ -6,7 +6,7 @@ namespace MySQLCLRFunctions
     {
         /***************************************************************************************************************************************************************************************************
          * 
-         * For building CSV lines in a loop.
+         * For building  lines in a loop.
          * 
          **************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
@@ -16,10 +16,38 @@ namespace MySQLCLRFunctions
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(sep)) sep = ", ";
 
             // No sense adding the same value
-            if (input == string.Empty) input = newfield;
-            else input = input + sep + newfield;
+            if (input?.Length == 0) return newfield;
+            else return input + sep + newfield;
+        }
 
-            return input;
+        /***************************************************************************************************************************************************************************************************
+         * 
+         * For building CSV lines in a loop.
+         * 
+         **************************************************************************************************************************************************************************************/
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
+        public static string AppendWithComma(string input, string newfield)
+        {
+            if (StringTest.IsNullOrWhiteSpaceOrEmpty(newfield)) return input;
+
+            // No sense adding the same value
+            if (input?.Length == 0) return newfield;
+            else return input + ", " + newfield;
+        }
+
+        /***************************************************************************************************************************************************************************************************
+         * 
+         * For building TSV lines in a loop.
+         * 
+         **************************************************************************************************************************************************************************************/
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
+        public static string AppendWithTab(string input, string newfield)
+        {
+            if (StringTest.IsNullOrWhiteSpaceOrEmpty(newfield)) return input;
+
+            // No sense adding the same value
+            if (input?.Length == 0) return newfield;
+            else return input + '\t' + newfield;
         }
     }
 }
