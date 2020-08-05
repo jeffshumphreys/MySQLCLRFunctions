@@ -65,6 +65,24 @@ namespace MySQLCLRFunctions.Tests
         }
 
         [TestMethod()]
+        public void MidTest_OverloadBySignButOnlyOnEnd()
+        {
+            const string input = "[test]";
+            const string validoutput = "test";
+            var output = StringExtract.Mid(input, 1, -1);
+            Assert.AreEqual(expected: validoutput, output);
+        }
+
+        [TestMethod()]
+        public void MIDTest()
+        {
+            const string input = "GetTHEMIDDLEofthis";
+            const string validoutput = "THEMIDDLE";
+            var output = input.MID(4, 12);
+            Assert.AreEqual(expected: validoutput, output);
+        }
+
+        [TestMethod()]
         public void GetFirstNameTest()
         {
             const string input = "Jeff Humphreys";

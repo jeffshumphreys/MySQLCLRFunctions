@@ -12,15 +12,22 @@ namespace MySQLCLRFunctions.Tests
     public class StringReduceTests
     {
         [TestMethod()]
-        public void TrimBracketingTest()
+        public void TrimBracketsTest()
         {
-            Assert.Fail();
+            const string input = "[test]";
+            const string validoutput = "test";
+            var output = StringReduce.TrimBrackets(input);
+            Assert.AreEqual(expected: validoutput, output);
         }
 
         [TestMethod()]
-        public void TrimIfStartsWithTest()
+        public void TrimIfStartsWithSTest()
         {
-            Assert.Fail();
+            const string input = "-This is a test";
+            const string marker = "-";
+            const string validoutput = "This is a test";
+            var output = StringReduce.LTrimIfStartsWithS(input, marker);
+            Assert.AreEqual(expected: validoutput, output);
         }
 
         [TestMethod()]
@@ -42,12 +49,12 @@ namespace MySQLCLRFunctions.Tests
         }
 
         [TestMethod()]
-        public void RTrimCharTest()
+        public void RTrimCTest()
         {
-            const string input = "1.1.1.1";
+            const string input = "1.2.1.1";
             const string marker = "1xy.";
-            const string validoutput = "1.1.1.";
-            var output = StringReduce.RTrimAnyC(input, marker);
+            const string validoutput = "1.2";
+            var output = StringReduce.RTrimAnyC(input, marker); // So it's recursive.
             Assert.AreEqual(expected: validoutput, output);
         }
 

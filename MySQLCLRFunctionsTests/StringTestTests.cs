@@ -75,9 +75,36 @@ namespace MySQLCLRFunctions.Tests
         }
 
         [TestMethod()]
-        public void IsEmptyTest()
+        public void IsEmptyNegativeTest()
         {
             const string input = null;
+            const bool validoutput = false;
+            var output = StringTest.IsEmpty(input);
+            Assert.AreEqual(expected: validoutput, output);
+        }
+
+        [TestMethod()]
+        public void IsEmptyNegativeTest2()
+        {
+            const string input = "  ";
+            const bool validoutput = false;
+            var output = StringTest.IsEmpty(input);
+            Assert.AreEqual(expected: validoutput, output);
+        }
+
+        [TestMethod()]
+        public void IsEmptyNegativeTest3()
+        {
+            const string input = "\n";
+            const bool validoutput = false;
+            var output = StringTest.IsEmpty(input);
+            Assert.AreEqual(expected: validoutput, output);
+        }
+
+        [TestMethod()]
+        public void IsEmptyPositiveTest()
+        {
+            const string input = "";
             const bool validoutput = true;
             var output = StringTest.IsEmpty(input);
             Assert.AreEqual(expected: validoutput, output);
@@ -185,12 +212,31 @@ namespace MySQLCLRFunctions.Tests
         }
 
         [TestMethod()]
-        public void LikeAnyXTest()
+        public void LikeAnyXHitTest()
         {
             const string inputs = "Jeffrey S. Humphrey;Jeff Humprheys";
             const string patterns = "%Humphreys;Humphrey%;JSH;%Jeff%Hum%;Jeff%H;(Jeff|Jeffrey|Jeffry)";
+            const bool validoutput = true;
+            var output = StringTest.LikeAnyX(inputs, patterns, inputsep: ";", patternsep: ";");
+            Assert.AreEqual(expected: validoutput, output);
+        }
+
+        [TestMethod()]
+        public void LikeAnyXMissTest()
+        {
+            const string inputs = "Jffrey S. Humhrey;Jeef Hmprheys";
+            const string patterns = "%Humphreys;Humphrey%;JSH;%Jeff%Hum%;Jeff%H;(Jeff|Jeffrey|Jeffry)";
             const bool validoutput = false;
             var output = StringTest.LikeAnyX(inputs, patterns, inputsep: ";", patternsep: ";");
+            Assert.AreEqual(expected: validoutput, output);
+        }
+
+        [TestMethod()]
+        public void ValidateRegexTest()
+        {
+            const string pattern = "[a-zA-Z\\&\\_\\#]";
+            const bool validoutput = false;
+            var output = StringTest.ValidateRegex(pattern);
             Assert.AreEqual(expected: validoutput, output);
         }
     }

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace MySQLCLRFunctions.Tests
 {
     [TestClass()]
-    public class StringTransformStripDownCustomizationsTests
+    public class StringReduceCustomizationsTests
     {
         [TestMethod()]
         public void StripDownCherwellDescriptionTest()
