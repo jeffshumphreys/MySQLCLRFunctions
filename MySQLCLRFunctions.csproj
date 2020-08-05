@@ -61,6 +61,7 @@
     <Compile Include="Humanization.cs" />
     <Compile Include="NetworkCollect.cs" />
     <Compile Include="NetworkTest.cs" />
+    <Compile Include="StringAggregate.cs" />
     <Compile Include="_NewFunctionsToTry.cs" />
     <Compile Include="_SharedConstants.cs" />
     <Compile Include="StringBuildOut.cs" />
@@ -72,8 +73,8 @@
     <Compile Include="StringReduce.cs" />
     <Compile Include="StringTest.cs" />
     <Compile Include="StringTransform.cs" />
-    <Compile Include="StringTransformStripDownCustomizations.cs" />
-    <Compile Include="StringTransformTSQLSpecific.cs" />
+    <Compile Include="StringReduceCustomizations.cs" />
+    <Compile Include="StringTransformCustomizations.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="_VERIFY_CSHARP8.cs" />
   </ItemGroup>
