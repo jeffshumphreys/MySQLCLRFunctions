@@ -179,7 +179,7 @@ namespace MySQLCLRFunctions
             {
                 string matchAtEndOfPiece = stringPieces[i].Value;
                 int matchAtEndOfPieceAt = stringPieces[i].Index;
-                var piece = input.Mid(from: nextPieceStartsAt + UPSET_TO_ONEBASED_FROM_ZEROBASED, to: matchAtEndOfPieceAt + UPSET_TO_ONEBASED_FROM_ZEROBASED);
+                var piece = input.MID(from: nextPieceStartsAt + UPSET_TO_ONEBASED_FROM_ZEROBASED, to: matchAtEndOfPieceAt + UPSET_TO_ONEBASED_FROM_ZEROBASED);
                 nextPieceStartsAt = matchAtEndOfPieceAt + matchAtEndOfPiece.Length;
                 pieces.Add(new PiecesWithMatchesRecord(lpieceOrderNo: i + 1, lpreviousPiece: null, lmatchAtStartOfPiece: matchAtStartOfPiece, lpiece: piece, lmatchAtEndOfPiece: matchAtEndOfPiece, lnextPiece: null));
             }
@@ -391,7 +391,7 @@ namespace MySQLCLRFunctions
                     startsat = regexmatches[i].Captures[0].Index;
                     contextstartsat = StringMeasure.Max(0, startsat - 20);
                     contextendsat = StringMeasure.MinOver(0, startsat + 20, input.Length);
-                    matchcontext = input.Mid(contextstartsat, contextendsat);
+                    matchcontext = input.MID(contextstartsat, contextendsat);
                 }
 
                 matches.Add(new NearRecord(lmatchOrderNo: i + 1, lcapturedMatch: match, lcapturedMatchStartsAt: startsat, lcapturedMatchContextStartsAt: contextstartsat
