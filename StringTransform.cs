@@ -22,7 +22,7 @@ namespace MySQLCLRFunctions
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(pattern)) return input;
             if (replacement == null) return input;  // Did they mean empty string?
 
-            return ReplaceMatch(input, pattern, replacement);
+            return ReplaceMatchX(input, pattern, replacement);
         }
 
         /***************************************************************************************************************************************************************************************************
@@ -34,7 +34,7 @@ namespace MySQLCLRFunctions
          * 
          **************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static string ReplaceMatch(string input, string pattern, string replacement)
+        public static string ReplaceMatchX(string input, string pattern, string replacement)
         {
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
@@ -50,7 +50,7 @@ namespace MySQLCLRFunctions
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(marker)) return input;
             if (replacement == null) return input;  // Did they mean empty string?
 
-            return ReplaceRecursive(input, marker, replacement);
+            return ReplaceRecursiveS(input, marker, replacement);
         }
 
         /***************************************************************************************************************************************************************************************************
@@ -61,7 +61,7 @@ namespace MySQLCLRFunctions
          * This is also my one attempt to try and avoid blowing up memory with immutable strings.
          * 
          **************************************************************************************************************************************************************************************/
-        unsafe public static string ReplaceRecursive(string input, string marker, string replacement)
+        unsafe public static string ReplaceRecursiveS(string input, string marker, string replacement)
         {
             if (StringTest.IsNullOrEmpty(input)) return input;
             // Unreal Request: Cannot replace empty strings. Infinite.
@@ -120,6 +120,5 @@ namespace MySQLCLRFunctions
 
             return input;
         }
-
     }
 }

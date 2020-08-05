@@ -184,12 +184,14 @@ namespace MySQLCLRFunctions
          * SQL style like for multiple strings.  So "Car%;%X[0-9]%;"  Probably just regex strings, but I don't know.  But caller will have to put "^" and "$" around string if they want exact matches.
          * Need working examples.  Haven't tested.
          * 
-         * Idea is: SELECT * FROM x where dbo.LikeAny(FullName, '%Humphreys;Humphrey%;JSH;%Jeff%Hum%;Jeff%H;(Jeff|Jeffrey|Jeffry);') = 1
+         * Idea is: SELECT * FROM x where dbo.LikeAnyX(FullName, '%Humphreys;Humphrey%;JSH;%Jeff%Hum%;Jeff%H;(Jeff|Jeffrey|Jeffry);') = 1
+         * 
+         * Weirdness: When I name something "Like" in C# for SQLCLR, it means I can pass "%" as control.
          * 
          ***************************************************************************************************************************************************************************************************/
 
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static SqlBoolean LikeAny(string inputs, string patterns, string inputsep, string patternsep)
+        public static SqlBoolean LikeAnyX(string inputs, string patterns, string inputsep, string patternsep)
         {
             if (IsNull(inputs) || IsNull(patterns) || IsNull(inputsep) || IsNull(patternsep)) return SqlBoolean.Null; // SQL: Nulls make null
             if (inputs.Length == 0) return false; // Nothing can be in an empty string
@@ -199,6 +201,11 @@ namespace MySQLCLRFunctions
 
             foreach (string pattern in patterns.Split(new string[] { inputsep }, StringSplitOptions.RemoveEmptyEntries))
             {
+                string regexpattern = pattern;
+                if (regexpattern.StartsWith("%")) regexpattern = regexpattern.ReplaceFirstC('^');
+                if (regexpattern.EndsWith("%")) regexpattern = regexpattern.ReplaceLastC ('$');
+                regexpattern = regexpattern.Replace("%", ".+"); // Not a great solution.  Need to test variations.
+
                 foreach (string input in inputsasarray)
                 {
                     if (Regex.IsMatch(input, pattern)) return true;

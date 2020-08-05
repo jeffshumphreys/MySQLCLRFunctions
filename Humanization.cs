@@ -1,15 +1,20 @@
 ﻿using Microsoft.SqlServer.Server;
 using System;
+using System.Data.SqlTypes;
 
 namespace MySQLCLRFunctions
 {
     public static class Humanization
     {
+        /*
+         * This needs a lot more work.  And when do I use this? I need use cases.
+         */
         [SqlFunction(DataAccess = DataAccessKind.None)]
-        public static string HumanizeDateTimeDiff(DateTime from)
+        public static string HumanizeDateTimeDiff(SqlDateTime from)
         {
-            if (from == null) return null;
-            TimeSpan ts = DateTime.Now.Subtract(from);
+            if (from.IsNull) return null;
+
+            TimeSpan ts = DateTime.Now.Subtract(from.Value);
 
             // The trick: make variable contain date and time representing the desired timespan,
             // having +1 in each date component.
@@ -46,6 +51,5 @@ namespace MySQLCLRFunctions
                 ? String.Format("{0} {1}s ago", value, name)
                 : String.Format("About {0} {1}s ago", value, name);
         }
-
     }
 }

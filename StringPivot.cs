@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data.SqlTypes;
 using System.Text.RegularExpressions;
+using static MySQLCLRFunctions.StringTest;
 using static MySQLCLRFunctions._SharedConstants;
 
 /*
@@ -26,7 +27,7 @@ namespace MySQLCLRFunctions
         // For table-valued functions, the columns of the return table type cannot include timestamp columns or non-Unicode string data type columns (such as char, varchar, and text). 
         // The NOT NULL constraint is not supported.
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true, FillRowMethodName = nameof(MatchesAsSQLRow))]
-        public static IEnumerable Matches(string input, string pattern)
+        public static IEnumerable MatchesX(string input, string pattern)
         {
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(pattern)) return input;
@@ -39,10 +40,10 @@ namespace MySQLCLRFunctions
             {
                 string match = regexmatches[i].Captures[0].ToString();
                 int startsat = regexmatches[i].Captures[0].Index;
-                string nextMatch = null;
-                if (i < nofmatches - 1) nextMatch = regexmatches[i + 1].Captures[0].ToString();
-                string previousMatch = null;
-                if (i > 0) previousMatch = regexmatches[i - 1].Captures[0].ToString();
+                //string nextMatch;
+                //if (i < nofmatches - 1) nextMatch = regexmatches[i + 1].Captures[0].ToString();
+                //string previousMatch;
+                //if (i > 0) previousMatch = regexmatches[i - 1].Captures[0].ToString();
 
                 matches.Add(new MatchesRecord(lmatchOrderNo: i + 1, lcapturedMatch: match, lcapturedMatchStartsAt: startsat));
             }
@@ -60,15 +61,15 @@ namespace MySQLCLRFunctions
 
         public class MatchesRecord
         {
-            public int matchOrderNo; 
-            public string capturedMatch; 
+            public int matchOrderNo;
+            public string capturedMatch;
             public int capturedMatchStartsAt;
-            
+
             public MatchesRecord(int lmatchOrderNo, string lcapturedMatch, int lcapturedMatchStartsAt)
-            { 
-                matchOrderNo = lmatchOrderNo; 
-                capturedMatch = lcapturedMatch; 
-                capturedMatchStartsAt = lcapturedMatchStartsAt; 
+            {
+                matchOrderNo = lmatchOrderNo;
+                capturedMatch = lcapturedMatch;
+                capturedMatchStartsAt = lcapturedMatchStartsAt;
             }
         }
 
@@ -78,7 +79,7 @@ namespace MySQLCLRFunctions
          * 
          **************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true, FillRowMethodName = nameof(PiecesWithContextAsSQLRow))]
-        public static IEnumerable PiecesWithContext(String input, String pattern)
+        public static IEnumerable PiecesWithContextX(String input, String pattern)
         {
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(pattern)) return input;
@@ -114,17 +115,17 @@ namespace MySQLCLRFunctions
 
         public class PiecesWithContextRecord
         {
-            public int pieceOrderNo; 
-            public string previousPiece; 
-            public string piece; 
+            public int pieceOrderNo;
+            public string previousPiece;
+            public string piece;
             public string nextPiece;
 
             public PiecesWithContextRecord(int lpieceOrderNo, string lpreviousPiece, string lpiece, string lnextPiece)
-            { 
-                pieceOrderNo = lpieceOrderNo; 
-                previousPiece = lpreviousPiece; 
-                piece = lpiece; 
-                nextPiece = lnextPiece; 
+            {
+                pieceOrderNo = lpieceOrderNo;
+                previousPiece = lpreviousPiece;
+                piece = lpiece;
+                nextPiece = lnextPiece;
             }
         }
 
@@ -138,7 +139,7 @@ namespace MySQLCLRFunctions
          * 
          **************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true, FillRowMethodName = nameof(PiecesAsSQLRow))]
-        public static IEnumerable Pieces(string input, string pattern)
+        public static IEnumerable PiecesX(string input, string pattern)
         {
             returnpieceorderno = 1;
             string[] stringpieces = Regex.Split(input, pattern, RegexOptions.IgnoreCase, TimeSpan.FromSeconds(2));
@@ -162,7 +163,7 @@ namespace MySQLCLRFunctions
           * 
           **************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true, FillRowMethodName = nameof(PieceWithMatchesAsSQLRow))]
-        public static IEnumerable PiecesWithMatches(string input, string pattern)
+        public static IEnumerable PiecesWithMatchesX(string input, string pattern)
         {
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(pattern)) return input;
@@ -172,15 +173,15 @@ namespace MySQLCLRFunctions
             int nofpieces = stringPieces.Count;
             var pieces = new List<PiecesWithMatchesRecord>(nofpieces);
             int nextPieceStartsAt = 0;
-            string matchAtStartOfPiece = null;
+            const string matchAtStartOfPiece = null;
 
             for (int i = 0; i < nofpieces; i++)
             {
                 string matchAtEndOfPiece = stringPieces[i].Value;
                 int matchAtEndOfPieceAt = stringPieces[i].Index;
-                string piece = StringExtract.Mid(input, from: nextPieceStartsAt + UPSET_TO_ONEBASED_FROM_ZEROBASED, to: matchAtEndOfPieceAt + UPSET_TO_ONEBASED_FROM_ZEROBASED);
+                var piece = input.Mid(from: nextPieceStartsAt + UPSET_TO_ONEBASED_FROM_ZEROBASED, to: matchAtEndOfPieceAt + UPSET_TO_ONEBASED_FROM_ZEROBASED);
                 nextPieceStartsAt = matchAtEndOfPieceAt + matchAtEndOfPiece.Length;
-                pieces.Add(new PiecesWithMatchesRecord(lpieceOrderNo: i + 1, lpreviousPiece: null, lmatchAtStartOfPiece: matchAtStartOfPiece, lpiece: piece, lmatchAtEndOfPiece: matchAtEndOfPiece, lnextPiece: null)); ;
+                pieces.Add(new PiecesWithMatchesRecord(lpieceOrderNo: i + 1, lpreviousPiece: null, lmatchAtStartOfPiece: matchAtStartOfPiece, lpiece: piece, lmatchAtEndOfPiece: matchAtEndOfPiece, lnextPiece: null));
             }
 
             // Fill in the context information from previous and next pieces and matches.  This makes function use in SQL easier.
@@ -217,21 +218,21 @@ namespace MySQLCLRFunctions
 
         public class PiecesWithMatchesRecord
         {
-            public int pieceOrderNo; 
-            public string previousPiece; 
-            public string matchAtStartOfPiece; 
-            public string piece; 
-            public string matchAtEndOfPiece; 
+            public int pieceOrderNo;
+            public string previousPiece;
+            public string matchAtStartOfPiece;
+            public string piece;
+            public string matchAtEndOfPiece;
             public string nextPiece;
 
             public PiecesWithMatchesRecord(int lpieceOrderNo, string lpreviousPiece, string lmatchAtStartOfPiece, string lpiece, string lmatchAtEndOfPiece, string lnextPiece)
-            { 
-                pieceOrderNo = lpieceOrderNo; 
-                previousPiece = lpreviousPiece; 
-                matchAtStartOfPiece = lmatchAtStartOfPiece; 
-                piece = lpiece; 
-                matchAtEndOfPiece = lmatchAtEndOfPiece; 
-                nextPiece = lnextPiece; 
+            {
+                pieceOrderNo = lpieceOrderNo;
+                previousPiece = lpreviousPiece;
+                matchAtStartOfPiece = lmatchAtStartOfPiece;
+                piece = lpiece;
+                matchAtEndOfPiece = lmatchAtEndOfPiece;
+                nextPiece = lnextPiece;
             }
         }
 
@@ -252,21 +253,21 @@ namespace MySQLCLRFunctions
          * 
          **************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true, FillRowMethodName = nameof(KeyValuePairsWithMultiValuesAsSQLRow))]
-        public static IEnumerable KeyValuePairsWithMultiValues(string input, string betweeneachkeyvaluepair, string betweenkeyandvalue, string betweensubvalues)
+        public static IEnumerable KeyValuePairsWithMultiValuesS(string input, string betweeneachkeyvaluepair, string betweenkeyandvalue, string betweensubvalues)
         {
             if (betweeneachkeyvaluepair == null) betweeneachkeyvaluepair = new string('\n', 1);
             if (betweenkeyandvalue == null) betweenkeyandvalue = " => ";
             if (betweensubvalues == null) betweensubvalues = ", ";
-            string[] stringpieces = input.Split(betweeneachkeyvaluepair);
+            string[] stringpieces = input.SplitX(betweeneachkeyvaluepair);
             int nofpieces = stringpieces.Length;
             var pieces = new List<KeyValuePairsWithMultiValuesRecord>(nofpieces);
             for (int i = 0; i < nofpieces; i++)
             {
                 string keypair = stringpieces[i];
-                string[] splitkeypair = keypair.Split(betweenkeyandvalue);
+                string[] splitkeypair = keypair.SplitX(betweenkeyandvalue);
                 if (splitkeypair.Length != 2) continue;
                 string lkey = splitkeypair[0]; string lval = splitkeypair[1];
-                string[] splitmultivalues = lval.Split(betweensubvalues);
+                string[] splitmultivalues = lval.SplitX(betweensubvalues);
                 foreach (string subval in splitmultivalues)
                 {
                     pieces.Add(new KeyValuePairsWithMultiValuesRecord(i + 1, lkey, subval));
@@ -287,15 +288,15 @@ namespace MySQLCLRFunctions
 
         public class KeyValuePairsWithMultiValuesRecord
         {
-            public int pieceOrderNo; 
-            public string key; 
+            public int pieceOrderNo;
+            public string key;
             public string value;
 
             public KeyValuePairsWithMultiValuesRecord(int lpieceOrderNo, string lkey, string lvalue)
-            { 
-                pieceOrderNo = lpieceOrderNo; 
-                key = lkey; 
-                value = lvalue; 
+            {
+                pieceOrderNo = lpieceOrderNo;
+                key = lkey;
+                value = lvalue;
             }
         }
 
@@ -305,7 +306,7 @@ namespace MySQLCLRFunctions
          *
          *****************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true, FillRowMethodName = nameof(CapturesAsSQLRow))]
-        public static IEnumerable Captures(string input, string pattern)
+        public static IEnumerable CapturesX(string input, string pattern)
         {
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(pattern)) return input;
@@ -316,7 +317,8 @@ namespace MySQLCLRFunctions
             var matches = new List<CapturesRecord>(nofmatches);
             for (int i = 0; i < nofmatches; i++)
             {
-                string match = ""; int startsat = -1;
+                string match;
+                int startsat;
                 //TOCONSIDERDOING: string nextMatch = null;
                 //TOCONSIDERDOING: string previousMatch = null;
                 if (regexmatches[i].Groups.Count >= 1)
@@ -346,18 +348,18 @@ namespace MySQLCLRFunctions
             match = new SqlString(capturedMatch.capturedMatch);
             capturedmatchstartsat = capturedMatch.capturedMatchStartsAt;
         }
-        
+
         public class CapturesRecord
         {
-            public int matchOrderNo; 
-            public string capturedMatch; 
+            public int matchOrderNo;
+            public string capturedMatch;
             public int capturedMatchStartsAt;
 
             public CapturesRecord(int lmatchOrderNo, string lcapturedMatch, int lcapturedmatchstartsat)
-            { 
-                matchOrderNo = lmatchOrderNo; 
-                capturedMatch = lcapturedMatch; 
-                capturedMatchStartsAt = lcapturedmatchstartsat; 
+            {
+                matchOrderNo = lmatchOrderNo;
+                capturedMatch = lcapturedMatch;
+                capturedMatchStartsAt = lcapturedmatchstartsat;
             }
         }
 
@@ -376,12 +378,11 @@ namespace MySQLCLRFunctions
 
             int nofmatches = regexmatches.Count;
             var matches = new List<NearRecord>(nofmatches);
-            string match = null;
-            string matchcontext = null;
             int contextstartsat,  contextendsat, startsat;
             for (int i = 0; i < nofmatches; i++)
             {
-                match = string.Empty; matchcontext = string.Empty;
+                string match = string.Empty;
+                string matchcontext = string.Empty;
                 contextstartsat = contextendsat = startsat = NOT_FOUND;
 
                 if (regexmatches[i].Groups.Count >= 1)
@@ -421,8 +422,8 @@ namespace MySQLCLRFunctions
 
         public class NearRecord
         {
-            public int matchOrderNo; 
-            public string capturedMatch; 
+            public int matchOrderNo;
+            public string capturedMatch;
             public int capturedMatchStartsAt;
             public int capturedMatchContextStartsAt;
             public int capturedMatchContextEndsAt;
@@ -434,9 +435,9 @@ namespace MySQLCLRFunctions
                               int lcapturedMatchContextStartsAt,
                               int lcapturedMatchContextEndsAt,
                               string lcapturedMatchContext)
-            { 
-                matchOrderNo = lmatchOrderNo; 
-                capturedMatch = lcapturedMatch; 
+            {
+                matchOrderNo = lmatchOrderNo;
+                capturedMatch = lcapturedMatch;
                 capturedMatchStartsAt = lcapturedMatchStartsAt;
                 capturedMatchContextStartsAt = lcapturedMatchContextStartsAt;
                 capturedMatchContextEndsAt = lcapturedMatchContextEndsAt;
@@ -450,19 +451,17 @@ namespace MySQLCLRFunctions
          *
          *****************************************************************************************************************************************************************/
 
-        internal static string[] GetWords(this string input)
+        internal static string[] GetWordsW(this string input)
         {
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return new string[0];
 
-            return input.Split(@"\W");
+            return input.SplitX(@"\W");
         }
 
-        internal static string[] Split(this string input, string pattern)
+        internal static string[] SplitX(this string input, string pattern)
         {
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return new string[0];
             return Regex.Split(input, pattern, RegexOptions.None);
         }
-
-
     }
 }

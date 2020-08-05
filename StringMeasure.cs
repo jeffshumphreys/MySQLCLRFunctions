@@ -1,10 +1,14 @@
 ﻿using Microsoft.SqlServer.Server;
-using static MySQLCLRFunctions.StringTest;
 using System;
 using System.Text.RegularExpressions;
 using System.Data.SqlTypes;
+using static MySQLCLRFunctions.StringTest;
+using static MySQLCLRFunctions._SharedConstants;
+
 /*
 * Take measurements from a string.  Not actual values from a string as Extract does, and not a "changed" (immutable) string like Transform or Pivot, or Format, Reduce.
+* 
+* WARNING SqlDateTime is not the same as datetime.  SqlDateTime maps to DATETIME, DateTime maps to DATETIME2
 */
 namespace MySQLCLRFunctions
 {
@@ -18,7 +22,6 @@ namespace MySQLCLRFunctions
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
         public static SqlInt32 HowManyS(string input, string marker)
         {
-            // General Rule: Follow SQL rules around null
             if (IsNull(input) || IsNull(marker)) return SqlInt32.Null;
             if (IsEmpty(marker)) throw new ArgumentOutOfRangeException("Empty strings would result in infinite loop.");
             if (IsEmpty(input)) return 0;

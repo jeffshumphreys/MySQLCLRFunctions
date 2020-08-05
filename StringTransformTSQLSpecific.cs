@@ -53,7 +53,7 @@ namespace MySQLCLRFunctions
             input = input.ToLowerInvariant(); // We loose pretty, but matching is better
             input = input.Replace("\t", " ").Replace("[dbo].", "").Replace(" as ", " ").Replace("N'", "'");
 
-            input = StringTransform.ReplaceRecursive(input, "  ", " ");
+            input = StringTransform.ReplaceRecursiveS(input, "  ", " ");
             var lines = input.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
             var cleanlines = new List<string>(100);
 

@@ -13,11 +13,11 @@ namespace MySQLCLRFunctions
         * 
         **************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static string RPad(string input, int padToLen)
+        public static string RPad(string input, int length)
         {
-            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
+            if (StringTest.IsNull(input)) return input;
 
-            return input.PadRight(padToLen);
+            return input.PadRight(length);
         }
 
         /***************************************************************************************************************************************************************************************************
@@ -26,11 +26,11 @@ namespace MySQLCLRFunctions
         * 
         **************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static string LPadChar(string input, int padToLen, char padCh)
+        public static string LPadC(string input, int length, char character)
         {
-            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
+            if (StringTest.IsNull(input)) return input;
 
-            return input.PadLeft(padToLen, padCh);
+            return input.PadLeft(length, character);
         }
 
         /***************************************************************************************************************************************************************************************************
@@ -39,11 +39,11 @@ namespace MySQLCLRFunctions
         * 
         **************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static string RPadChar(string input, int padToLen, char padCh)
+        public static string RPadChar(string input, int length, char character)
         {
-            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
+            if (StringTest.IsNull(input)) return input;
 
-            return input.PadRight(padToLen, padCh);
+            return input.PadRight(length, character);
         }
 
         /***************************************************************************************************************************************************************************************************
@@ -52,11 +52,11 @@ namespace MySQLCLRFunctions
         * 
         **************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static string LPad(string input, int padToLen)
+        public static string LPad(string input, int length)
         {
-            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
+            if (StringTest.IsNull(input)) return input;
 
-            return input.PadLeft(padToLen);
+            return input.PadLeft(length);
         }
 
         /***************************************************************************************************************************************************************************************************
@@ -69,7 +69,7 @@ namespace MySQLCLRFunctions
         {
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
 
-            return Regex.Replace(input.ToLower(), @"\b[a-z]\w+", delegate (Match match)
+            return Regex.Replace(input.ToLower(), @"\b[a-z]\w+", (Match match) =>
             {
                 string v = match.ToString();
                 return char.ToUpper(v[0]) + v.Substring(1);

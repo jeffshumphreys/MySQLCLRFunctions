@@ -1,6 +1,8 @@
 ﻿using Microsoft.SqlServer.Server;
 using System;
 using System.Linq;
+using static MySQLCLRFunctions.StringTest;
+using static MySQLCLRFunctions._SharedConstants;
 
 namespace MySQLCLRFunctions
 {
@@ -47,51 +49,6 @@ namespace MySQLCLRFunctions
         }
 
         /***************************************************************************************************************************************************************************************************
-       * 
-       * Trims off the string if it matches the beginning.  Like a scoped replace.
-       * 
-       **************************************************************************************************************************************************************************************/
-        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static string TrimIfStartsWith(string input, string marker)
-        {
-            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
-            if (StringTest.IsNullOrWhiteSpaceOrEmpty(marker)) return input;
-
-            if (input.StartsWith(marker))
-            {
-                return input.Substring(input.IndexOf(marker) + marker.Length);
-            }
-            return input;
-        }
-        /***************************************************************************************************************************************************************************************************
-         * 
-         * Overloading where others fear to tread.  ints, character arrays.  This isn't C though, so we won't get them confused.  In C#, int doesn't implicitly become a 4-character array!
-         * 
-         **************************************************************************************************************************************************************************************/
-        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static string TrimEnd(this string input, int howmanycharactersofftheend)
-        {
-            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
-            if (howmanycharactersofftheend >= input.Length) return string.Empty;
-
-            return input.Left(input.Length - howmanycharactersofftheend);
-        }
-
-        /***************************************************************************************************************************************************************************************************
-         * 
-         * Trim (n) letters off the beginning of a string.
-         * 
-         **************************************************************************************************************************************************************************************/
-        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static string TrimLeftN(string input, int nofChar2Remove)
-        {
-            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
-            if (input.Length <= nofChar2Remove) return string.Empty;
-
-            return input.Substring(nofChar2Remove);
-        }
-
-        /***************************************************************************************************************************************************************************************************
          * 
          * This removes any of substrings in the input that in the list of strings given.
          * 
@@ -113,28 +70,40 @@ namespace MySQLCLRFunctions
 
         /***************************************************************************************************************************************************************************************************
          * 
-         * Trim repeating bunches of character off right of string
-         * Created for trimming "1.3930000000" off floating point number in sql which REFUSES to round.
+         * Overloading where others fear to tread.  ints, character arrays.  This isn't C though, so we won't get them confused.  In C#, int doesn't implicitly become a 4-character array!
          * 
          **************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static string RTrimChar(string input, string markerchars)
+        public static string TrimEnd(string input, int howmany)
         {
-            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
-            if (StringTest.IsNullOrWhiteSpaceOrEmpty(markerchars)) return input;
+            if (IsNullOrEmpty(input)) return input;
+            if (howmany >= input.Length) return string.Empty;
 
-            return input.TrimEnd(markerchars.ToCharArray());
+            return input.Left(input.Length - howmany);
         }
 
         /***************************************************************************************************************************************************************************************************
          * 
-         * Trim a specified number of characters off the right.  Much simpler than IIF(LEN(s) > 0 AND s IS NOT NULL), SUBSTRING(s, LEN(s) - 1), s)
-         * 
-         * - Created for trimming "1.3930000000" off floating point number in sql which REFUSES to round.
-         * 
-         * - Example of function that always returns a value that would fit inplace, and so does NOT need to copy string!
+         * Very minor but clarifying. So common, and one-off errors are so frustrating.
          * 
          **************************************************************************************************************************************************************************************/
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
+        public static string RTrimOne(string input)
+        {
+            if (IsNullOrEmpty(input)) return input;
+
+            return input.Left(input.Length - 1);
+        }
+
+        /***************************************************************************************************************************************************************************************************
+        * 
+        * Trim a specified number of characters off the right.  Much simpler than IIF(LEN(s) > 0 AND s IS NOT NULL), SUBSTRING(s, LEN(s) - 1), s)
+        * 
+        * - Created for trimming "1.3930000000" off floating point number in sql which REFUSES to round.
+        * 
+        * - Example of function that always returns a value that would fit inplace, and so does NOT need to copy string!
+        * 
+        **************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
         public static string RTrimN(string input, int howmanycharactersoffend)
         {
@@ -145,6 +114,60 @@ namespace MySQLCLRFunctions
 
             return input.Substring(0, input.Length - howmanycharactersoffend);
         }
+        /***************************************************************************************************************************************************************************************************
+          * 
+          * Trim repeating bunches of character off right of string
+          * Created for trimming "1.3930000000" off floating point number in sql which REFUSES to round.
+          * 
+          **************************************************************************************************************************************************************************************/
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
+        public static string RTrimAnyC(string input, string markerchars)
+        {
+            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
+            if (StringTest.IsNullOrWhiteSpaceOrEmpty(markerchars)) return input;
 
+            return input.TrimEnd(markerchars.ToCharArray());
+        }
+
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
+        public static string LTrimOne(string input)
+        {
+            if (IsNullOrEmpty(input)) return input;
+
+            return input.Substring(1);
+        }
+
+        /***************************************************************************************************************************************************************************************************
+       * 
+       * Trims off the string if it matches the beginning.  Like a scoped replace.
+       * 
+       **************************************************************************************************************************************************************************************/
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
+        public static string LTrimIfStartsWithS(string input, string marker)
+        {
+            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
+            if (StringTest.IsNullOrWhiteSpaceOrEmpty(marker)) return input;
+
+            if (input.StartsWith(marker))
+            {
+                return input.Substring(input.IndexOf(marker) + marker.Length);
+            }
+            return input;
+        }
+
+        /***************************************************************************************************************************************************************************************************
+          * 
+          * Trim (n) letters off the beginning of a string.
+          * NAMING ERROR: NameLeft or LTrim???  LTrimN would align with SQL Server LTRIM.
+          * 
+          **************************************************************************************************************************************************************************************/
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
+        public static string LTrimN(string input, int nofChar2Remove)
+        {
+            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
+            if (input.Length <= nofChar2Remove) return string.Empty;
+
+            return input.Substring(nofChar2Remove);
+        }
     }
 }

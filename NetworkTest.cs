@@ -40,10 +40,7 @@ namespace MySQLCLRFunctions
             }
             finally
             {
-                if (pinger != null)
-                {
-                    pinger.Dispose();
-                }
+                pinger?.Dispose();
             }
 
             return pingable;
