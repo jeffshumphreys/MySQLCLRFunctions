@@ -141,7 +141,7 @@ namespace MySQLCLRFunctions
 
             if (rule == "SQL Server Server Name")
             {
-                if ((bool)input.FirstC().NotInX("[a-zA-Z\\&\\_\\#]")) return false;
+                if ((bool)input.FirstC().NotInX("[a-zA-Z_#@]")) return false;
                 // Instance portion Cannot be Default or MSSQLServer
                 // Instance be up to 16 characters, Unicode Standard 2.0, decimal numbers basic latin or other national scripts, $, #, _
                 // First character must be letter, &, _, #
@@ -215,6 +215,40 @@ namespace MySQLCLRFunctions
             return false;
         }
 
+        public static bool ValidateRegex(string pattern)
+        {
+            if (IsNull(pattern)) throw new ArgumentNullException("Null patterns don't work.");
+            if (IsEmpty(pattern)) throw new ArgumentException("Empty patterns should be checked. Why are they empty?");
+            try
+            {
+                var regex = new Regex(pattern);
+            }
+            catch (ArgumentException)
+            {
+                return false;
+            }
+            catch
+            {
+                throw;
+            }
+
+            /*
+            .Net SqlClient Data Provider: Msg 6522, Level 16, State 1, Line 441
+            A.NET Framework error occurred during execution of user-defined routine or aggregate "LegalName": 
+            System.ArgumentException: parsing "[a-zA-Z\&\_\#]" - Unrecognized escape sequence \_.
+            System.ArgumentException: 
+               at System.Text.RegularExpressions.RegexParser.ScanCharEscape()
+               at System.Text.RegularExpressions.RegexParser.ScanCharClass(Boolean caseInsensitive, Boolean scanOnly)
+               at System.Text.RegularExpressions.RegexParser.CountCaptures()
+               at System.Text.RegularExpressions.RegexParser.Parse(String re, RegexOptions op)
+               at System.Text.RegularExpressions.Regex..ctor(String pattern, RegexOptions options, TimeSpan matchTimeout, Boolean useCache)
+               at System.Text.RegularExpressions.Regex.IsMatch(String input, String pattern)
+               at MySQLCLRFunctions.CharacterTest.NotInX(Nullable`1 input, String pattern)
+               at MySQLCLRFunctions.StringTest.LegalName(String input, String rule)
+            .
+            */
+            return true;
+        }
         /*
          *
          *          var str = "White Red Blue Green Yellow Black Gray";
