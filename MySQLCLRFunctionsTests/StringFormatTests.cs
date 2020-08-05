@@ -25,7 +25,7 @@ namespace MySQLCLRFunctions.Tests
         public void RPadCharTest()
         {
             const string input = "Joseph Jr.";
-            var output = StringFormat.RPadChar(input, input.Length + 1, 'x');
+            var output = StringFormat.RPadC(input, input.Length + 1, 'x');
             Assert.AreEqual(expected: input + "x", output);
         }
 
