@@ -103,8 +103,9 @@ DROP FUNCTION IF EXISTS Mid
 /***************************************************************************************************************************************************************************************************/*/
 DROP FUNCTION IF EXISTS BlankOut
 DROP FUNCTION IF EXISTS RemoveSQLServerNameDelimiters
-DROP FUNCTION IF EXISTS StripDownSQLModule
+DROP FUNCTION IF EXISTS TrimSQL
 DROP FUNCTION IF EXISTS TrimBracketing
+DROP FUNCTION IF EXISTS TrimBrackets
 DROP FUNCTION IF EXISTS RTrimChar
 DROP FUNCTION IF EXISTS RTrimAnyC
 DROP FUNCTION IF EXISTS TrimEnd
@@ -116,6 +117,12 @@ DROP FUNCTION IF EXISTS LTrimIfStartsWithS
 DROP FUNCTION IF EXISTS TrimOne
 DROP FUNCTION IF EXISTS LTrimOne
 DROP FUNCTION IF EXISTS LTrimN
+/**************************************************************************************************************************************************************************************************
+ *      String Build Out (dumb name)
+/***************************************************************************************************************************************************************************************************/*/
+DROP FUNCTION IF EXISTS AppendWithSeparator
+DROP FUNCTION IF EXISTS AppendWithComma
+DROP FUNCTION IF EXISTS AppendWithTab
 /**************************************************************************************************************************************************************************************************
  *      String Transformations
 /***************************************************************************************************************************************************************************************************/*/
@@ -426,24 +433,11 @@ GO
 SELECT IsIP4_______________________________________________________________ = dbo.IsIP4('10.10.10.218')
 SELECT IsIP4_______________________________________________________________ = dbo.IsIP4('$(FQDN1)')
 GO
-CREATE OR ALTER FUNCTION LegalName(@input NVARCHAR(MAX), @searchFor NVARCHAR(MAX)) RETURNS BIT
+CREATE OR ALTER FUNCTION LegalName(@input NVARCHAR(MAX), @rule NVARCHAR(MAX)) RETURNS BIT
 WITH RETURNS NULL ON NULL INPUT
 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTest].LegalName;  
 GO
-BEGIN TRY
-    SELECT LegalName_______________________________________________________________ = dbo.LegalName('HOSTNAMEUSUALLY\R12345678901234567', 'SQL Server Server Name')
-END TRY
-BEGIN CATCH
-    IF ERROR_NUMBER() = 6522 PRINT 'System.NotImplementedException'
-    ELSE
-    BEGIN
-        DECLARE @errmsg NVARCHAR(2048)
-        SET @errmsg = CONCAT('Error: CANNOT ', ERROR_MESSAGE())
-         PRINT @errmsg
-         ;THROW 51003, @errmsg, 1
-         
-    END
-END CATCH
+SELECT LegalName_______________________________________________________________ = dbo.LegalName('HOSTNAMEUSUALLY\R12345678901234567', 'SQL Server Server Name')
 GO
 
 /**************************************************************************************************************************************************************************************************
@@ -514,11 +508,11 @@ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].LeftMthOfNt
 GO
 SELECT LeftMOfNth_______________________________________________________________ = dbo.LeftMthOfNthS('Test\x\', '\', 2, 2)
 GO
-CREATE OR ALTER FUNCTION RightOfAnyS(@input NVARCHAR(MAX), @marker NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) 
+CREATE OR ALTER FUNCTION RightOfAnyC(@input NVARCHAR(MAX), @marker NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) 
 WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].RightOfAnyS;  
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].RightOfAnyC;  
 GO
-SELECT RightOfAnyS_______________________________________________________________ = dbo.RightOfAnyS('Test\x', '\')  -->x<--
+SELECT RightOfAnyC_______________________________________________________________ = dbo.RightOfAnyC('Test\x', '\')  -->x<--
 GO
 CREATE OR ALTER FUNCTION RightOfS(@input NVARCHAR(MAX), @marker NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) 
 WITH RETURNS NULL ON NULL INPUT
@@ -550,6 +544,12 @@ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].EverythingA
 GO
 SELECT EverythingAfterX_______________________________________________________________ = dbo.EverythingAfterX('$(FQDN2)', '.')
 GO
+/*
+.Net SqlClient Data Provider: Msg 6572, Level 16, State 1, Procedure Mid, Line 557
+More than one method, property or field was found with name 'Mid' in class 'MySQLCLRFunctions.StringExtract' in assembly 'MySQLCLRFunctions'. Overloaded methods, properties or fields are not supported.
+.Net SqlClient Data Provider: Msg 4121, Level 16, State 1, Line 561
+Cannot find either column "dbo" or the user-defined function or aggregate "dbo.Mid", or the name is ambiguous.
+*/
 CREATE OR ALTER FUNCTION Mid(@input NVARCHAR(MAX), @from INT, @to INT) RETURNS NVARCHAR(MAX)
 WITH RETURNS NULL ON NULL INPUT
 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].Mid;  
@@ -631,27 +631,57 @@ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringReduce].RTrimAnyC;
 GO  
 SELECT RTrimAnyC = CAST(dbo.RTrimAnyC('100.20000000', '0') AS DECIMAL(10,2))     --> 100.20
 GO
-CREATE OR ALTER FUNCTION TrimBracketing(@input NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)                -->                                                                                                test<--
+CREATE OR ALTER FUNCTION TrimBrackets(@input NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)                -->                                                                                                test<--
 WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringReduce].TrimBracketing;  
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringReduce].TrimBrackets;  
 GO
-SELECT TrimBracketing_______________________________________________________________ = dbo.TrimBracketing('[test]')-->test<--               dbo.TrimIfStartsWith(PingableAddress, '\032')
+SELECT TrimBrackets_______________________________________________________________ = dbo.TrimBrackets('[test]')-->test<--               dbo.TrimIfStartsWith(PingableAddress, '\032')
 GO
 CREATE OR ALTER FUNCTION LTrimIfStartsWithS(@input NVARCHAR(MAX), @marker NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
 WITH RETURNS NULL ON NULL INPUT
 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringReduce].LTrimIfStartsWithS; 
 GO
-SELECT LTrimIfStartsWithS_______________________________________________________________ = dbo.LTrimIfStartsWithS('$(FQDN4)', '\032')-->occ00ap000.na.simplot.com<--
+SELECT LTrimIfStartsWithS_______________________________________________________________ = dbo.LTrimIfStartsWithS('$(FQDN4)', '\032')
 GO
 CREATE OR ALTER FUNCTION TrimEnd(@input NVARCHAR(MAX), @howmanycharactersofftheend INT) RETURNS NVARCHAR(MAX)
 WITH RETURNS NULL ON NULL INPUT
 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringReduce].TrimEnd; 
 GO
-SELECT TrimEnd_______________________________________________________________ = dbo.TrimEnd('$(FQDN5)', 1)-->occ00ap000.na.simplot.com
+SELECT TrimEnd_______________________________________________________________ = dbo.TrimEnd('$(FQDN5)', 1)
 GO
 /**************************************************************************************************************************************************************************************************
  *
- *       String formatting
+ *       String build outs, which always increase the size of a string.
+ *
+/***************************************************************************************************************************************************************************************************/*/
+CREATE OR ALTER FUNCTION AppendWithSeparator(@input NVARCHAR(MAX), @newfield NVARCHAR(MAX), @sep NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
+WITH RETURNS NULL ON NULL INPUT
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringBuildOut].AppendWithSeparator; 
+GO
+DECLARE @LineHeader VARCHAR(300) = dbo.AppendWithSeparator('', 'FirstField', ', ')
+SELECT AppendWithSeparator_______________________________________________________________ = dbo.AppendWithSeparator('', 'FirstField', ', ')
+SELECT AppendWithSeparator_______________________________________________________________ = dbo.AppendWithSeparator(@LineHeader, 'SecondField', ', ')
+GO
+CREATE OR ALTER FUNCTION AppendWithComma(@input NVARCHAR(MAX), @newfield NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
+WITH RETURNS NULL ON NULL INPUT
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringBuildOut].AppendWithComma; 
+GO
+DECLARE @LineHeader VARCHAR(300) = dbo.AppendWithComma('', 'FirstField')
+SELECT AppendWithComma_______________________________________________________________ = dbo.AppendWithComma('', 'FirstField')
+SELECT AppendWithComma_______________________________________________________________ = dbo.AppendWithComma(@LineHeader, 'SecondField')
+GO
+CREATE OR ALTER FUNCTION AppendWithTab(@input NVARCHAR(MAX), @newfield NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
+WITH RETURNS NULL ON NULL INPUT
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringBuildOut].AppendWithTab; 
+GO
+DECLARE @LineHeader VARCHAR(300) = dbo.AppendWithTab('', 'FirstField')
+SELECT AppendWithTab_______________________________________________________________ = dbo.AppendWithTab('', 'FirstField')
+SELECT AppendWithTab_______________________________________________________________ = dbo.AppendWithTab(@LineHeader, 'SecondField')
+GO
+
+/**************************************************************************************************************************************************************************************************
+ *
+ *       String formatting (which probably should include date humanization)
  *
 /***************************************************************************************************************************************************************************************************/*/
 CREATE OR ALTER FUNCTION LPad(@input NVARCHAR(MAX), @padToLen INT) RETURNS NVARCHAR(MAX) 
@@ -697,19 +727,19 @@ GO
 /***************************************************************************************************************************************************************************************************/*/
 CREATE OR ALTER FUNCTION RemoveSQLServerNameDelimiters(@input NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) 
 WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTransformTSQLSpecific].RemoveSQLServerNameDelimiters;  
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTransformCustomizations].RemoveSQLServerNameDelimiters;  
 GO
 CREATE OR ALTER FUNCTION ExpandSQLParameterString(@sqlwithparametersembedded NVARCHAR(MAX), @paramno INT, @newvalue NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) 
 WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTransformTSQLSpecific].ExpandSQLParameterString;  
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTransformCustomizations].ExpandSQLParameterString;  
 GO
 CREATE OR ALTER FUNCTION ExpandSQLParameter(@sqlwithparametersembedded NVARCHAR(MAX), @paramno INT, @newvalue NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) 
 WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTransformTSQLSpecific].ExpandSQLParameter;  
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTransformCustomizations].ExpandSQLParameter;  
 GO
-CREATE OR ALTER FUNCTION StripDownSQLModule(@input NVARCHAR(MAX), @toSingleLine BIT, @dropFullLineComments BIT) RETURNS NVARCHAR(MAX) 
+CREATE OR ALTER FUNCTION TrimSQL(@input NVARCHAR(MAX), @toSingleLine BIT, @dropFullLineComments BIT) RETURNS NVARCHAR(MAX) 
 WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTransformTSQLSpecific].StripDownSQLModule; 
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTransformCustomizations].TrimSQL; 
 GO
 
 /*
@@ -717,18 +747,18 @@ GO
 */
 --CREATE OR ALTER FUNCTION BuildRaiserrorMessage(@input NVARCHAR(MAX), @Param1 VARCHAR(MAX) = NULL, @Param2 VARCHAR(MAX) = NULL, @Param3 VARCHAR(MAX) = NULL, @Param4 VARCHAR(MAX) = NULL, @Param5 VARCHAR(MAX) = NULL, @Param6 VARCHAR(MAX) = NULL, @Param7 VARCHAR(MAX) = NULL, @Param8 VARCHAR(MAX) = NULL, @Param9 VARCHAR(MAX) = NULL, @Param10 VARCHAR(MAX) = NULL) RETURNS NVARCHAR(MAX) 
 --WITH RETURNS NULL ON NULL INPUT
---AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTransformTSQLSpecific].BuildRaiserrorMessage; 
+--AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTransformCustomizations].BuildRaiserrorMessage; 
 --GO
 
-SELECT name, principal_id, clr_name, permission_set, is_visible, create_date, modify_date, is_user_defined FROM sys.assemblies AS a WHERE name = 'MySQLCLRFunctions'
-SELECT name, DATALENGTH(content) FROM sys.assembly_files AS af WHERE name = 'MySQLCLRFunctions'
+SELECT name, principal_id, clr_name, permission_set, is_visible, create_date, modify_date, is_user_defined FROM sys.assemblies AS a WHERE name = '$(LibName)'
+SELECT name, DATALENGTH(content) FROM sys.assembly_files AS af WHERE name = '$(LibName)'
 SELECT object_id
      , am.assembly_id
      , assembly_class
      , assembly_method
      , null_on_null_input
      , execute_as_principal_id
-     FROM sys.assembly_modules AS am JOIN sys.assemblies AS a ON a.assembly_id = am.assembly_id WHERE name = 'MySQLCLRFunctions'
+     FROM sys.assembly_modules AS am JOIN sys.assemblies AS a ON a.assembly_id = am.assembly_id WHERE name = '$(LibName)'
 SELECT * FROM sys.dm_clr_properties
 -- version	v4.0.30319
 -- SQL Server 2012 and newer, even though they are on CLR version 4.
