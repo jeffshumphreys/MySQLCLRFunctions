@@ -3,6 +3,7 @@ using System;
 using System.Text.RegularExpressions;
 using static MySQLCLRFunctions._SharedConstants;
 using static MySQLCLRFunctions.StringTest;
+using static System.Math;
 
 namespace MySQLCLRFunctions
 {
@@ -319,9 +320,18 @@ namespace MySQLCLRFunctions
         public static string Mid(string input, int from, int to)
         {
             if (IsNullOrWhiteSpaceOrEmpty(input)) return input;
+
             if (from == to) return string.Empty;
             if (from > 0 && to > 0 && from > to) return string.Empty;
             if (from < 0 && to < 0 && to < from) return string.Empty;
+            if (from > 0 && to < 0)
+            {
+                if (input.Length - from + to <= 0) return string.Empty; // They ran past each other.
+#pragma warning disable RCS1032 // Remove redundant parentheses.
+                string x = input.Substring(from, (input.Length - (from + Abs(to)))); // Yikes!
+#pragma warning restore RCS1032 // Remove redundant parentheses.
+                return x;
+            }
 
             if (from < 0 && to < 0)
             {
@@ -332,7 +342,7 @@ namespace MySQLCLRFunctions
 
             if (to > from) return input.Substring(from + BACKSET_FOR_ZEROBASED, to - from + ADJUST_POINTER_TO_INCLUDE);
 
-            return input;
+            throw new ArgumentOutOfRangeException("Unable to determine what Mid from and to parameters are requesting.");
         }
 
         /***************************************************************************************************************************************************************************************************
@@ -343,12 +353,13 @@ namespace MySQLCLRFunctions
 
 #pragma warning disable RCS1163 // Unused parameter.
 #pragma warning disable IDE0060 // Remove unused parameter
-        internal static string Mid(this string input, int from, int to, int extmethod = 0)
+        public static string MID(this string input, int from, int to, int extmethod = 0)
 #pragma warning restore IDE0060 // Remove unused parameter
 #pragma warning restore RCS1163 // Unused parameter.
         {
             return Mid(input, from, to);
         }
+
         /***************************************************************************************************************************************************************************************************
          * 
          * Return a specific piece by its index.
