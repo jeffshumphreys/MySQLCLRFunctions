@@ -9,6 +9,7 @@ namespace MySQLCLRFunctions
          * StripDownCherwellDescription    Descriptions in Cherwell tickets are often full of garbage.  Strip out garbage.
          * Needs work.
          * 
+         * Product customized for: 
          **************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
         public static string TrimCherwellTicketField(string input)

@@ -17,7 +17,7 @@ namespace MySQLCLRFunctions
             //if (Char.GetUnicodeCategory(replacement) != System.Globalization.UnicodeCategory.) Warning!
 
             char firstC = input.First();
-            if (firstC == replacement) return input;
+            if (firstC != replacement) return input;
             return StringReduce.LTrimOne(input) + replacement;
         }
 
@@ -28,7 +28,7 @@ namespace MySQLCLRFunctions
             //if (Char.GetUnicodeCategory(replacement) != System.Globalization.UnicodeCategory.) Warning!
 
             char lastC = input.Last();
-            if (lastC == replacement) return input;
+            if (lastC != replacement) return input;
             return StringReduce.RTrimOne(input) + replacement;
         }
     }
