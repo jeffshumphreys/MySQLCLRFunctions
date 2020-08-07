@@ -11,7 +11,7 @@ namespace MySQLCLRFunctions
          * 
          **************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static string StripDownCherwellDescription(string input)
+        public static string TrimCherwellFieldCherwellTicket(string input)
         {
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
 
