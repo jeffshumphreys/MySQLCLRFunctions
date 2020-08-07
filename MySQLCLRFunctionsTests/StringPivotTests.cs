@@ -1,65 +1,64 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Xunit;
 
 namespace MySQLCLRFunctions.Tests
 {
-    [TestClass()]
     public class StringPivotTests
     {
-        [TestMethod()]
+        [Fact]
         public void MatchesTest()
         {
-            Assert.Fail();
+            Assert.False(true);
         }
 
-        [TestMethod()]
+        [Fact]
         public void PiecesWithContextTest()
         {
-            Assert.Fail();
+            Assert.False(true);
         }
 
-        [TestMethod()]
+        [Fact]
         public void PiecesTest()
         {
             var pieces = StringPivot.PiecesX("This is input", "\b");
-            Assert.IsNotNull(pieces);
+            Assert.NotNull(pieces);
         }
 
         [Counts]
-        [TestMethod()]
+        [Fact]
         public void PiecesTestCount()
         {
             var pieces = (string[])StringPivot.PiecesX("This is input", " ");
-            Assert.AreEqual(expected: 3, pieces.Length);
+            Assert.Equal(expected: 3, pieces.Length);
         }
 
-        [TestMethod()]
+        [Fact]
         public void PiecesWithMatchesTest()
         {
-            Assert.Fail();
+            Assert.False(true);
         }
 
-        [TestMethod()]
+        [Fact]
         public void GetWordsTest()
         {
-            Assert.Fail();
+            Assert.False(true);
         }
 
-        [TestMethod()]
+        [Fact]
         public void SplitTest()
         {
-            Assert.Fail();
+            Assert.False(true);
         }
 
-        [TestMethod()]
+        [Fact]
         public void KeyValuePairsWithMultiValuesTest()
         {
-            Assert.Fail();
+            Assert.False(true);
         }
 
-        [TestMethod()]
+        [Fact]
         public void CapturesTest()
         {
-            Assert.Fail();
+            Assert.False(true);
         }
     }
 }

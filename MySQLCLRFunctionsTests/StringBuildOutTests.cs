@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Xunit;
 using MySQLCLRFunctions;
 using System;
 using System.Collections.Generic;
@@ -8,13 +8,12 @@ using System.Threading.Tasks;
 
 namespace MySQLCLRFunctions.Tests
 {
-    [TestClass()]
     public class StringBuildOutTests
     {
-        [TestMethod()]
+        [Fact]
         public void AppendWithSeparatorTest()
         {
-            Assert.Fail();
+            Assert.False(true);
         }
     }
 }

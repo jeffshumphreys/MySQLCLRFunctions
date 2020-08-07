@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Xunit;
 using MySQLCLRFunctions;
 using System;
 using System.Collections.Generic;
@@ -8,82 +8,81 @@ using System.Threading.Tasks;
 
 namespace MySQLCLRFunctions.Tests
 {
-    [TestClass()]
     public class StringReduceTests
     {
-        [TestMethod()]
+        [Fact]
         public void TrimBracketsTest()
         {
             const string input = "[test]";
             const string validoutput = "test";
             var output = StringReduce.TrimBrackets(input);
-            Assert.AreEqual(expected: validoutput, output);
+            Assert.Equal(expected: validoutput, output);
         }
 
-        [TestMethod()]
+        [Fact]
         public void TrimIfStartsWithSTest()
         {
             const string input = "-This is a test";
             const string marker = "-";
             const string validoutput = "This is a test";
             var output = StringReduce.LTrimIfStartsWithS(input, marker);
-            Assert.AreEqual(expected: validoutput, output);
+            Assert.Equal(expected: validoutput, output);
         }
 
-        [TestMethod()]
+        [Fact]
         public void TrimEndTest()
         {
-            Assert.Fail();
+            Assert.False(true);
         }
 
-        [TestMethod()]
+        [Fact]
         public void TrimLeftNTest()
         {
-            Assert.Fail();
+            Assert.False(true);
         }
 
-        [TestMethod()]
+        [Fact]
         public void BlankOutTest()
         {
-            Assert.Fail();
+            Assert.False(true);
         }
 
-        [TestMethod()]
+        [Fact]
         public void RTrimCTest()
         {
             const string input = "1.2.1.1";
             const string marker = "1xy.";
             const string validoutput = "1.2";
             var output = StringReduce.RTrimAnyC(input, marker); // So it's recursive.
-            Assert.AreEqual(expected: validoutput, output);
+            Assert.Equal(expected: validoutput, output);
         }
 
-        [TestMethod()]
+        [Fact]
         public void RTrimNTest()
         {
             const string input = "1.1.1.1";
             const int howmany = 2;
             const string validoutput = "1.1.1";
             var output = StringReduce.RTrimN(input, howmany);
-            Assert.AreEqual(expected: validoutput, output);
+            Assert.Equal(expected: validoutput, output);
         }
 
-        [TestMethod()]
+        [Fact]
         public void RTrimOneTest()
         {
             const string input = "1.1.1.1";
             const string validoutput = "1.1.1.";
             var output = StringReduce.RTrimOne(input);
-            Assert.AreEqual(expected: validoutput, output);
+            Assert.Equal(expected: validoutput, output);
         }
 
-        [TestMethod()]
+        [Fact]
         public void LTrimOneTest()
         {
             const string input = "1.1.1.1";
             const string validoutput = ".1.1.1";
             var output = StringReduce.LTrimOne(input);
-            Assert.AreEqual(expected: validoutput, output);
+            Assert.Equal(expected: validoutput, output);
         }
     }
 }

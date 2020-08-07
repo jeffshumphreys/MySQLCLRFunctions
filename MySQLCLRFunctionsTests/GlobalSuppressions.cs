@@ -6,3 +6,7 @@
 using System.Diagnostics.CodeAnalysis;
 
 [assembly: SuppressMessage("Naming", "ET002:Namespace does not match file path or default namespace", Justification = "<Pending>", Scope = "namespace", Target = "~N:MySQLCLRFunctions.Tests")]
+[assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>", Scope = "type", Target = "~T:MySQLCLRFunctions.Tests._MyAssertFunctions")]
+[assembly: SuppressMessage("Style", "RCS1196:Call extension method as instance method.", Justification = "<Pending>", Scope = "member", Target = "~M:MySQLCLRFunctions.Tests.CharacterTransformTests.ReplaceFirstCTest")]
+[assembly: SuppressMessage("Style", "RCS1196:Call extension method as instance method.", Justification = "<Pending>", Scope = "member", Target = "~M:MySQLCLRFunctions.Tests.CharacterTransformTests.ReplaceLastCTest")]
+[assembly: SuppressMessage("Naming", "ET001:Type name does not match file name", Justification = "<Pending>", Scope = "type", Target = "~T:MySQLCLRFunctions.Tests.PositiveTestAttribute")]

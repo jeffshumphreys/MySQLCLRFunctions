@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Xunit;
 using MySQLCLRFunctions;
 using System;
 using System.Collections.Generic;
@@ -8,50 +8,47 @@ using System.Threading.Tasks;
 
 namespace MySQLCLRFunctions.Tests
 {
-    [TestClass()]
     public class StringFormatTests
     {
-        [TestMethod()]
-        //[DataSource(@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source=C:\Projects\MyBank\TestData\AccountsTest.accdb","AddIntegerHelperData")]
-        [Timeout(100)]
+        [Fact]
         public void RPadTest()
         {
             const string input = "Joseph Jr.";
             var output = StringFormat.RPad(input, input.Length + 1);
-            Assert.AreEqual(expected: input + " ", actual: output);
+            Assert.Equal(expected: input + " ", actual: output);
         }
 
-        [TestMethod()]
-        public void RPadCharTest()
+        [Fact]
+        public void RPadCTest()
         {
             const string input = "Joseph Jr.";
             var output = StringFormat.RPadC(input, input.Length + 1, 'x');
-            Assert.AreEqual(expected: input + "x", output);
+            Assert.Equal(expected: input + "x", output);
         }
 
-        [TestMethod()]
+        [Fact]
         public void LPadTest()
         {
             const string input = "Joseph Jr.";
             var output = StringFormat.LPad(input, input.Length + 1);
-            Assert.AreEqual(expected: " " + input, output);
+            Assert.Equal(expected: " " + input, output);
         }
 
         // Assert.ThrowsException<System.ArgumentException>(() => account.Withdraw(20.0));
-        [TestMethod()]
+        [Fact]
         public void LPadCharTest()
         {
             const string input = "Joseph Jr.";
             var output = StringFormat.LPadC(input, input.Length + 1, 'x');
-            Assert.AreEqual(expected: "x" + input, output);
+            Assert.Equal(expected: "x" + input, output);
         }
 
-        [TestMethod()]
+        [Fact]
         public void TitleTest()
         {
             const string input = "joseph Jr.";
             var output = StringFormat.Title(input);
-            Assert.AreEqual(expected: "Joseph Jr.", actual: output, ignoreCase: false);
+            Assert.Equal(expected: "Joseph Jr.", actual: output, ignoreCase: false);
         }
     }
 }

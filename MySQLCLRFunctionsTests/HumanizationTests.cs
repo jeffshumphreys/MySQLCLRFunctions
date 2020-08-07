@@ -1,20 +1,19 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Xunit;
+using static MySQLCLRFunctions.Tests._MyAssertFunctions;
 using MySQLCLRFunctions;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
+// TODO: Convert to Xunit: Assert.Throws<InvalidOperationException>(() => operation()); // VS 2008
 namespace MySQLCLRFunctions.Tests
 {
-    [TestClass()]
     public class HumanizationTests
     {
-        [TestMethod()]
+        [Fact]
         public void HumanizeDateTimeDiffTest()
         {
-            Assert.Fail();
+            DateTime input = DateTime.Now;
+            var output = Humanization.HumanizeDateTimeDiff(input);
+            Assert.Matches(expectedRegexPattern: "[45] milliseconds ago", actualString: output);
         }
     }
 }

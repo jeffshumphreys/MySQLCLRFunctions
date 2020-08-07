@@ -15,7 +15,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		TestValueSettings.localuseonly = TestValueSettings.localuseonly
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MySQLCLRFunctionsTests", "MySQLCLRFunctionsTests\MySQLCLRFunctionsTests.csproj", "{3D1EB882-6064-4EBA-8421-1DC11A3955E9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MySQLCLRFunctionsTests", "MySQLCLRFunctionsTests\MySQLCLRFunctionsTests.csproj", "{83804E3C-9CBF-4071-8995-B612A38C69BE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,10 +27,10 @@ Global
 		{6AEAE0BF-82E7-4793-8E9D-E649ABD0A807}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6AEAE0BF-82E7-4793-8E9D-E649ABD0A807}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6AEAE0BF-82E7-4793-8E9D-E649ABD0A807}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3D1EB882-6064-4EBA-8421-1DC11A3955E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3D1EB882-6064-4EBA-8421-1DC11A3955E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3D1EB882-6064-4EBA-8421-1DC11A3955E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3D1EB882-6064-4EBA-8421-1DC11A3955E9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{83804E3C-9CBF-4071-8995-B612A38C69BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{83804E3C-9CBF-4071-8995-B612A38C69BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{83804E3C-9CBF-4071-8995-B612A38C69BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{83804E3C-9CBF-4071-8995-B612A38C69BE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Xunit;
 using MySQLCLRFunctions;
 using System;
 using System.Collections.Generic;
@@ -8,19 +8,26 @@ using System.Threading.Tasks;
 
 namespace MySQLCLRFunctions.Tests
 {
-    [TestClass()]
     public class CharacterTransformTests
     {
-        [TestMethod()]
+        [Fact]
+        [PositiveTest]
         public void ReplaceFirstCTest()
         {
-            Assert.Fail();
+            const string input = "Jeff Humphreys";
+            const string validoutput = "Heff Humphreys";
+            var output = CharacterTransform.ReplaceFirstC(input, 'H');
+            Assert.Equal(expected: validoutput, output);
         }
 
-        [TestMethod()]
+        [Fact]
+        [PositiveTest]
         public void ReplaceLastCTest()
         {
-            Assert.Fail();
+            const string input = "Jeff Humphreys";
+            const string validoutput = "Jeff Humphreyz";
+            var output = CharacterTransform.ReplaceLastC(input, 'z');
+            Assert.Equal(expected: validoutput, output);
         }
     }
 }
