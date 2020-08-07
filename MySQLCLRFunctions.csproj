@@ -50,6 +50,7 @@
   <ItemGroup>
     <Compile Include="ActiveDirectory.cs" />
     <Compile Include="Adaptors.cs" />
+    <Compile Include="AssemblyTools.cs" />
     <Compile Include="CharacterExtract.cs" />
     <Compile Include="CharacterTest.cs" />
     <Compile Include="CharacterTransform.cs" />
