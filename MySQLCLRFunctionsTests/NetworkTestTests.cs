@@ -11,9 +11,10 @@ namespace MySQLCLRFunctions.Tests
     public class NetworkTestTests
     {
         [Fact]
+        [PositiveTest]
         public void PingTest()
         {
-            Assert.False(true);
+            Assert.True(NetworkTest.Ping("64.68.90.1").IsTrue);
         }
     }
 }
