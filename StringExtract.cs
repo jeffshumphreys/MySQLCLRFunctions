@@ -311,6 +311,15 @@ namespace MySQLCLRFunctions
             return new string(inputAsCharArray);
         }
 
+        private static string SafeSubstring(string input, int from, int howmanychar)
+        {
+            if (from < 0 || from >= input.Length || howmanychar + from > input.Length || howmanychar < 0)
+            {
+                ;
+            }
+
+            return input.Substring(from, howmanychar);
+        }
         /***************************************************************************************************************************************************************************************************
          * 
          * This is not at all the BASIC function Mid, but what the hey.  I need a snippet from a string, and I want the cleverness of supporting negatives as it's intuitive.
@@ -328,7 +337,7 @@ namespace MySQLCLRFunctions
             {
                 if (input.Length - from + to <= 0) return string.Empty; // They ran past each other.
 #pragma warning disable RCS1032 // Remove redundant parentheses.
-                string x = input.Substring(from, (input.Length - (from + Abs(to)))); // Yikes!
+                string x = SafeSubstring(input, from, input.Length - (from + Abs(to))); // Yikes!
 #pragma warning restore RCS1032 // Remove redundant parentheses.
                 return x;
             }
@@ -336,11 +345,16 @@ namespace MySQLCLRFunctions
             if (from < 0 && to < 0)
             {
                 int i = -from;
-                string x = input.Right(i).Substring(0, -(from - to)); // This use of "to" is very confusing!
+                string x = SafeSubstring(input.Right(i), 0, -(from - to)); // This use of "to" is very confusing!
                 return x;
             }
 
-            if (to > from) return input.Substring(from + BACKSET_FOR_ZEROBASED, to - from + ADJUST_POINTER_TO_INCLUDE);
+            if (to > from)
+            {
+                int adj_from = from + BACKSET_FOR_ZEROBASED;
+                int converted_to_length = to - from;
+                return SafeSubstring(input, adj_from, converted_to_length);
+            }
 
             throw new ArgumentOutOfRangeException("Unable to determine what Mid from and to parameters are requesting.");
         }
