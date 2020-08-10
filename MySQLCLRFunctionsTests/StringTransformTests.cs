@@ -11,7 +11,7 @@ namespace MySQLCLRFunctions.Tests
     public class StringTransformTests
     {
         [Fact]
-        public void ReplaceMatchTest()
+        public void ReplaceMatchXTest()
         {
             const string input = "ThisIsIt";
             const string validoutput = "Th!s!s!t";
@@ -20,7 +20,7 @@ namespace MySQLCLRFunctions.Tests
         }
 
         [Fact]
-        public void ReplaceRecursiveTest()
+        public void ReplaceRecursiveSTest()
         {
             const string input = "This is                a test  of the     emergency  ";
             const string validoutput = "This is a test of the emergency ";
