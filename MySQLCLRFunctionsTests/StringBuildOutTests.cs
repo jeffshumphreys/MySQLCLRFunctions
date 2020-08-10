@@ -13,7 +13,15 @@ namespace MySQLCLRFunctions.Tests
         [Fact]
         public void AppendWithSeparatorTest()
         {
-            Assert.False(true);
+            const string colhdr = "";
+            const string col1 = "ProductId";
+            const string col2 = "Customer";
+            string validoutput2 = "ProductId, Customer";
+            string sep = ",";
+
+            var output1 = StringBuildOut.AppendWithSeparator(colhdr, col1, sep);
+            var output2 = StringBuildOut.AppendWithSeparator(colhdr, col2, sep);
+            Assert.Equal(expected: validoutput2, actual: output2);
         }
     }
 }
