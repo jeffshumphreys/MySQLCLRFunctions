@@ -172,16 +172,14 @@ namespace MySQLCLRFunctions
 
             int nofpieces = stringPieces.Count;
             var pieces = new List<PiecesWithMatchesRecord>(nofpieces);
-            int nextPieceStartsAt = 0;
-            const string matchAtStartOfPiece = null;
-
+            int lastMatchEndedAt = 0;
             for (int i = 0; i < nofpieces; i++)
             {
-                string matchAtEndOfPiece = stringPieces[i].Value;
-                int matchAtEndOfPieceAt = stringPieces[i].Index;
-                var piece = input.MID(from: nextPieceStartsAt + UPSET_TO_ONEBASED_FROM_ZEROBASED, to: matchAtEndOfPieceAt + UPSET_TO_ONEBASED_FROM_ZEROBASED);
-                nextPieceStartsAt = matchAtEndOfPieceAt + matchAtEndOfPiece.Length;
-                pieces.Add(new PiecesWithMatchesRecord(lpieceOrderNo: i + 1, lpreviousPiece: null, lmatchAtStartOfPiece: matchAtStartOfPiece, lpiece: piece, lmatchAtEndOfPiece: matchAtEndOfPiece, lnextPiece: null));
+                string piece = stringPieces[i].Value;
+                int pieceStartsAt = stringPieces[i].Index;
+                string seperatingStringInFrontOfPiece = input.MID(from: lastMatchEndedAt + UPSET_TO_ONEBASED_FROM_ZEROBASED, to: pieceStartsAt + UPSET_TO_ONEBASED_FROM_ZEROBASED);
+                lastMatchEndedAt = pieceStartsAt + piece.Length;
+                pieces.Add(new PiecesWithMatchesRecord(lpieceOrderNo: i + 1, lpreviousPiece: null, lmatchAtStartOfPiece: seperatingStringInFrontOfPiece, lpiece: piece, lmatchAtEndOfPiece: piece, lnextPiece: null));
             }
 
             // Fill in the context information from previous and next pieces and matches.  This makes function use in SQL easier.
