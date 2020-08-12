@@ -138,7 +138,7 @@ namespace MySQLCLRFunctions
          * - Not much else I can think of that I would split other than strings, so drop the "String" suffix.  DateTime_Split?  Numeric_Split?  Bit_Split?  Maybe.
          * 
          **************************************************************************************************************************************************************************************/
-        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true, FillRowMethodName = nameof(PiecesAsSQLRow))]
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true, FillRowMethodName = nameof(PiecesAsSQLRow), TableDefinition = "piece NVARCHAR(MAX), int pieceorderno")]
         public static IEnumerable PiecesX(string input, string pattern)
         {
             returnpieceorderno = 1;
@@ -162,8 +162,9 @@ namespace MySQLCLRFunctions
           * Created to support splitting out a message string for formatting into a RAISERROR format, but letting the caller use SQL_VARIANT for genericity.
           * 
           **************************************************************************************************************************************************************************************/
-        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true, FillRowMethodName = nameof(PieceWithMatchesAsSQLRow))]
-        public static IEnumerable PiecesWithMatchesX(string input, string pattern)
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true, FillRowMethodName = nameof(PieceWithMatchesAsSQLRow)
+            , TableDefinition ="pieceOrderNo int, previousPiece NVARCHAR(MAX), string matchAtStartOfPiece NVARCHAR(MAX), piece NVARCHAR(MAX), matchAtEndOfPiece NVARCHAR(MAX), nextPiece NVARCHAR(MAX)")]
+         public static IEnumerable PiecesWithMatchesX(string input, string pattern)
         {
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(pattern)) return input;
@@ -202,8 +203,7 @@ namespace MySQLCLRFunctions
         }
 
         // Called from SQL Server only
-        private static void PieceWithMatchesAsSQLRow(Object obj, out SqlInt32 pieceorderNo, out SqlString previousPiece
-            , out SqlString matchAtStartOfPiece, out SqlString piece, out SqlString matchAtEndOfPiece, out SqlString nextPiece)
+        private static void PieceWithMatchesAsSQLRow(Object obj, out SqlInt32 pieceorderNo, out SqlString previousPiece, out SqlString matchAtStartOfPiece, out SqlString piece, out SqlString matchAtEndOfPiece, out SqlString nextPiece)
         {
             var pieceContext = obj as PiecesWithMatchesRecord;
             pieceorderNo = pieceContext.pieceOrderNo;
