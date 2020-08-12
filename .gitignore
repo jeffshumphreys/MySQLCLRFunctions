@@ -9,6 +9,8 @@
 *.user
 *.userosscache
 *.sln.docstates
+
+# Private stuff!
 *.localuseonly
 
 # User-specific files (MonoDevelop/Xamarin Studio)
@@ -339,3 +341,6 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
+
+# Private stuff!
+/MySQLCLRFunctionsTests/_MyTestValues.json
