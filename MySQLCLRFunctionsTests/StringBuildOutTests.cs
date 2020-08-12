@@ -1,10 +1,5 @@
 ﻿using Xunit;
-using MySQLCLRFunctions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using static MySQLCLRFunctions.StringBuildOut;
 
 namespace MySQLCLRFunctions.Tests
 {
@@ -19,8 +14,8 @@ namespace MySQLCLRFunctions.Tests
             string validoutput2 = "ProductId, Customer";
             string sep = ",";
 
-            var output1 = StringBuildOut.AppendWithSeparator(colhdr, col1, sep);
-            var output2 = StringBuildOut.AppendWithSeparator(colhdr, col2, sep);
+            var output1 = AppendWithSeparator(colhdr, col1, sep);
+            var output2 = AppendWithSeparator(colhdr, col2, sep);
             Assert.Equal(expected: validoutput2, actual: output2);
         }
     }

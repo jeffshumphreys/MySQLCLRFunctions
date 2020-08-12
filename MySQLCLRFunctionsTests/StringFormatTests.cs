@@ -1,10 +1,5 @@
 ﻿using Xunit;
-using MySQLCLRFunctions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using static MySQLCLRFunctions.StringFormat;
 
 namespace MySQLCLRFunctions.Tests
 {
@@ -14,7 +9,7 @@ namespace MySQLCLRFunctions.Tests
         public void RPadTest()
         {
             const string input = "Joseph Jr.";
-            var output = StringFormat.RPad(input, input.Length + 1);
+            var output = RPad(input, input.Length + 1);
             Assert.Equal(expected: input + " ", actual: output);
         }
 
@@ -22,7 +17,7 @@ namespace MySQLCLRFunctions.Tests
         public void RPadCTest()
         {
             const string input = "Joseph Jr.";
-            var output = StringFormat.RPadC(input, input.Length + 1, 'x');
+            var output = RPadC(input, input.Length + 1, 'x');
             Assert.Equal(expected: input + "x", output);
         }
 
@@ -30,7 +25,7 @@ namespace MySQLCLRFunctions.Tests
         public void LPadTest()
         {
             const string input = "Joseph Jr.";
-            var output = StringFormat.LPad(input, input.Length + 1);
+            var output = LPad(input, input.Length + 1);
             Assert.Equal(expected: " " + input, output);
         }
 
@@ -39,7 +34,7 @@ namespace MySQLCLRFunctions.Tests
         public void LPadCharTest()
         {
             const string input = "Joseph Jr.";
-            var output = StringFormat.LPadC(input, input.Length + 1, 'x');
+            var output = LPadC(input, input.Length + 1, 'x');
             Assert.Equal(expected: "x" + input, output);
         }
 
@@ -47,7 +42,7 @@ namespace MySQLCLRFunctions.Tests
         public void TitleTest()
         {
             const string input = "joseph Jr.";
-            var output = StringFormat.Title(input);
+            var output = Title(input);
             Assert.Equal(expected: "Joseph Jr.", actual: output, ignoreCase: false);
         }
     }

@@ -1,10 +1,5 @@
 ﻿using Xunit;
-using MySQLCLRFunctions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using static MySQLCLRFunctions.StringTransform;
 
 namespace MySQLCLRFunctions.Tests
 {
@@ -15,7 +10,7 @@ namespace MySQLCLRFunctions.Tests
         {
             const string input = "ThisIsIt";
             const string validoutput = "Th!s!s!t";
-            var output = StringTransform.ReplaceMatchX(input, "[it]", "!");
+            var output = ReplaceMatchX(input, "[it]", "!");
             Assert.Equal(expected: validoutput, output);
         }
 
@@ -24,7 +19,7 @@ namespace MySQLCLRFunctions.Tests
         {
             const string input = "This is                a test  of the     emergency  ";
             const string validoutput = "This is a test of the emergency ";
-            var output = StringTransform.ReplaceRecursiveS(input, "  ", " ");
+            var output = ReplaceRecursiveS(input, "  ", " ");
             Assert.Equal(expected: validoutput, output);
         }
     }

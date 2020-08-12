@@ -1,10 +1,5 @@
 ﻿using Xunit;
-using MySQLCLRFunctions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using static MySQLCLRFunctions.StringReduceCustomizations;
 
 namespace MySQLCLRFunctions.Tests
 {

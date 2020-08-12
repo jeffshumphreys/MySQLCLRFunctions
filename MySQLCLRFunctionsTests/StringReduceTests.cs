@@ -1,10 +1,5 @@
 ﻿using Xunit;
-using MySQLCLRFunctions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using static MySQLCLRFunctions.StringReduce;
 
 namespace MySQLCLRFunctions.Tests
 {
@@ -15,7 +10,7 @@ namespace MySQLCLRFunctions.Tests
         {
             const string input = "[test]";
             const string validoutput = "test";
-            var output = StringReduce.TrimBrackets(input);
+            var output = TrimBrackets(input);
             Assert.Equal(expected: validoutput, output);
         }
 
@@ -25,7 +20,7 @@ namespace MySQLCLRFunctions.Tests
             const string input = "-This is a test";
             const string marker = "-";
             const string validoutput = "This is a test";
-            var output = StringReduce.LTrimIfStartsWithS(input, marker);
+            var output = LTrimIfStartsWithS(input, marker);
             Assert.Equal(expected: validoutput, output);
         }
 
@@ -53,7 +48,7 @@ namespace MySQLCLRFunctions.Tests
             const string input = "1.2.1.1";
             const string marker = "1xy.";
             const string validoutput = "1.2";
-            var output = StringReduce.RTrimAnyC(input, marker); // So it's recursive.
+            var output = RTrimAnyC(input, marker); // So it's recursive.
             Assert.Equal(expected: validoutput, output);
         }
 
@@ -63,7 +58,7 @@ namespace MySQLCLRFunctions.Tests
             const string input = "1.1.1.1";
             const int howmany = 2;
             const string validoutput = "1.1.1";
-            var output = StringReduce.RTrimN(input, howmany);
+            var output = RTrimN(input, howmany);
             Assert.Equal(expected: validoutput, output);
         }
 
@@ -72,7 +67,7 @@ namespace MySQLCLRFunctions.Tests
         {
             const string input = "1.1.1.1";
             const string validoutput = "1.1.1.";
-            var output = StringReduce.RTrimOne(input);
+            var output = RTrimOne(input);
             Assert.Equal(expected: validoutput, output);
         }
 
@@ -81,7 +76,7 @@ namespace MySQLCLRFunctions.Tests
         {
             const string input = "1.1.1.1";
             const string validoutput = ".1.1.1";
-            var output = StringReduce.LTrimOne(input);
+            var output = LTrimOne(input);
             Assert.Equal(expected: validoutput, output);
         }
     }

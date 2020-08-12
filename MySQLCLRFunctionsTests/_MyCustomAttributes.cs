@@ -11,4 +11,10 @@ namespace MySQLCLRFunctions.Tests
     internal class NegativeTestAttribute : Attribute
     {
     }
+
+    [AttributeUsage(AttributeTargets.All, AllowMultiple = false)]
+    public class CountTestAttribute : Attribute
+    {
+    }
+
 }

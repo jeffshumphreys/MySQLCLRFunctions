@@ -15,7 +15,14 @@ namespace MySQLCLRFunctions
         * WARNING: Empty string is not a character!
         * 
         ***************************************************************************************************************************************************************************************************/
-        public static char? FirstC(this string input)
+        internal static char? FIRSTC(this string input)
+        {
+            if (StringTest.IsNullOrEmpty(input)) return null; // Empty string is not a character!
+
+            return input[0];
+        }
+
+        public static char? FirstC(string input)
         {
             if (StringTest.IsNullOrEmpty(input)) return null; // Empty string is not a character!
 

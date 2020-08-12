@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using Xunit;
+using static MySQLCLRFunctions.NetworkTest;
 
 namespace MySQLCLRFunctions.Tests
 {

@@ -119,7 +119,7 @@ namespace MySQLCLRFunctions
            * Methods are language.  Don't use a screwdriver as a hammer just to save walking back to your truck.  Do it right!  And in a way that is readable to other humans!
            * 
            **************************************************************************************************************************************************************************************/
-        public static string Left(this string input, int howmany)
+        public static string Left(string input, int howmany)
         {
             if (IsNullOrWhiteSpaceOrEmpty(input)) return input;
             if (howmany == 0) return string.Empty;
@@ -154,7 +154,7 @@ namespace MySQLCLRFunctions
             int firstindex = input.IndexOfAny(markerchars.ToCharArray());
             if (firstindex < 1) return null;
 
-            return input.Left(firstindex);
+            return Left(input, firstindex);
         }
 
         /***************************************************************************************************************************************************************************************************
@@ -252,7 +252,7 @@ namespace MySQLCLRFunctions
 
             var tupin = input.Reverse();
 
-            return tupin.Left(howmany).Reverse();
+            return Left(tupin, howmany).Reverse();
         }
 
         /***************************************************************************************************************************************************************************************************

@@ -8,7 +8,7 @@ namespace MySQLCLRFunctions
 {
     public static class CharacterTransform
     {
-        public static string ReplaceFirstC(this string input, char replacement)
+        public static string ReplaceFirstC(string input, char replacement)
         {
             if (IsNullOrEmpty(input)) return input;
 
@@ -19,7 +19,7 @@ namespace MySQLCLRFunctions
             return replacement + LTrimOne(input);
         }
 
-        public static string ReplaceLastC(this string input, char replacement)
+        public static string ReplaceLastC(string input, char replacement)
         {
             if (IsNullOrEmpty(input)) return input;
 

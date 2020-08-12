@@ -69,9 +69,18 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AdaptorsTests.cs" />
+    <Compile Include="AssemblyToolsTests.cs" />
+    <Compile Include="CharacterExtractTests.cs" />
+    <Compile Include="CharacterTestTests.cs" />
     <Compile Include="CharacterTransformTests.cs" />
+    <Compile Include="ComparesTests.cs" />
+    <Compile Include="EnvironmentalTests.cs" />
+    <Compile Include="FileNameExtractTests.cs" />
+    <Compile Include="FilesTests.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="HumanizationTests.cs" />
+    <Compile Include="NetworkCollectTests.cs" />
     <Compile Include="NetworkTestTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StringBuildOutTests.cs" />
@@ -83,10 +92,11 @@
     <Compile Include="StringReduceCustomizationsTests.cs" />
     <Compile Include="StringReduceTests.cs" />
     <Compile Include="StringTestTests.cs" />
+    <Compile Include="StringTransformCustomizationsTests.cs" />
     <Compile Include="StringTransformTests.cs" />
-    <Compile Include="_MyAssertFunctions.cs" />
     <Compile Include="_MyCustomAttributes.cs" />
     <Compile Include="_MyTestValuesLoader.cs" />
+    <Compile Include="_NewFunctionsToTryTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="_GenericTestValues.json" />

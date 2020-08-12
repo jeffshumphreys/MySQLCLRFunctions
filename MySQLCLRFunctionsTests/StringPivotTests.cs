@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 using static MySQLCLRFunctions.StringPivot;
@@ -23,15 +22,15 @@ namespace MySQLCLRFunctions.Tests
         [Fact]
         public void PiecesXTest()
         {
-            var pieces = StringPivot.PiecesX("This is input", "\b");
+            var pieces = PiecesX("This is input", "\b");
             Assert.NotNull(pieces);
         }
 
-        [Counts]
+        [CountTest]
         [Fact]
         public void PiecesXTestCount()
         {
-            var pieces = (string[])StringPivot.PiecesX("This is input", " ");
+            var pieces = (string[])PiecesX("This is input", " ");
             Assert.Equal(expected: 3, pieces.Length);
         }
 
@@ -39,7 +38,7 @@ namespace MySQLCLRFunctions.Tests
         [Fact]
         public void PiecesXTestFirst()
         {
-            var pieces = (string[])StringPivot.PiecesX("This is input", " ");
+            var pieces = (string[])PiecesX("This is input", " ");
             Assert.Equal(expected: "This", pieces[0]);
         }
 

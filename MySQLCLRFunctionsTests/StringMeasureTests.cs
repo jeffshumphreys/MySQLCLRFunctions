@@ -1,5 +1,6 @@
 ﻿using MySQLCLRFunctions;
 using Xunit;
+using static MySQLCLRFunctions.StringMeasure;
 
 namespace MySQLCLRFunctions.Tests
 {
@@ -10,7 +11,7 @@ namespace MySQLCLRFunctions.Tests
         {
             const string input = "This.3.3.3";
             const int validoutput = 3;
-            var output = StringMeasure.HowManyS(input, ".");
+            var output = HowManyS(input, ".");
             Assert.Equal(expected: validoutput, output);
         }
 
@@ -19,7 +20,7 @@ namespace MySQLCLRFunctions.Tests
         {
             var inputs = new int[] { 1, 2, 3 };
             const int validoutput = 1;
-            var output = StringMeasure.Min(inputs);
+            var output = Min(inputs);
             Assert.Equal(expected: validoutput, output);
         }
 
@@ -28,7 +29,7 @@ namespace MySQLCLRFunctions.Tests
         {
             int[] inputs = new int[] { 0, -1, 4 };
             const int validoutput = 0;
-            var output = StringMeasure.MinOver(0, inputs);
+            var output = MinOver(0, inputs);
             Assert.Equal(expected: validoutput, output);
         }
 
@@ -37,7 +38,7 @@ namespace MySQLCLRFunctions.Tests
         {
             var inputs = new int[] { 0, -1, 4 };
             const int validoutput = 4;
-            var output = StringMeasure.Max(inputs);
+            var output = Max(inputs);
             Assert.Equal(expected: validoutput, output);
         }
 
@@ -46,7 +47,7 @@ namespace MySQLCLRFunctions.Tests
         {
             const string input = "Print the %s for %d times.";
             const int validoutput = 2;
-            var output = StringMeasure.HowManyX(input, "(%s|%d)");
+            var output = HowManyX(input, "(%s|%d)");
             Assert.Equal(expected: validoutput, output);
         }
     }

@@ -1,10 +1,5 @@
 ﻿using Xunit;
-using MySQLCLRFunctions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using static MySQLCLRFunctions.StringExtract;
 
 namespace MySQLCLRFunctions.Tests
 {
@@ -50,7 +45,7 @@ namespace MySQLCLRFunctions.Tests
         {
             const string input = "GetTHEMIDDLEofthis";
             const string validoutput = "THEMIDDLE";
-            var output = StringExtract.Mid(input, 4, 12);
+            var output = Mid(input, 4, 12);
             Assert.Equal(expected: validoutput, output);
         }
 
@@ -59,7 +54,7 @@ namespace MySQLCLRFunctions.Tests
         {
             const string input = "GetTHEMIDDLEofthis";
             const string validoutput = "th";
-            var output = StringExtract.Mid(input, -4, -2);
+            var output = Mid(input, -4, -2);
             Assert.Equal(expected: validoutput, output);
         }
 
@@ -68,7 +63,7 @@ namespace MySQLCLRFunctions.Tests
         {
             const string input = "[test]";
             const string validoutput = "test";
-            var output = StringExtract.Mid(input, 1, -1);
+            var output = Mid(input, 1, -1);
             Assert.Equal(expected: validoutput, output);
         }
 
@@ -86,7 +81,7 @@ namespace MySQLCLRFunctions.Tests
         {
             const string input = "Jeff Humphreys";
             const string validoutput = "Jeff";
-            var output = StringExtract.GetFirstName(input);
+            var output = GetFirstName(input);
             Assert.Equal(expected: validoutput, output);
         }
 
@@ -95,7 +90,7 @@ namespace MySQLCLRFunctions.Tests
         {
             const string input = "Humphreys, Jeff";
             const string validoutput = "Jeff";
-            var output = StringExtract.GetFirstName(input);
+            var output = GetFirstName(input);
             Assert.Equal(expected: validoutput, output);
         }
 
@@ -104,7 +99,7 @@ namespace MySQLCLRFunctions.Tests
         {
             const string input = "Humphreys, Jeff S.";
             const string validoutput = "Jeff";
-            var output = StringExtract.GetFirstName(input);
+            var output = GetFirstName(input);
             Assert.Equal(expected: validoutput, output);
         }
 
@@ -114,7 +109,7 @@ namespace MySQLCLRFunctions.Tests
             const string input = "Humphreys, Jeff S.";
             const string validoutput = "Hum";
 #pragma warning disable RCS1196 // Call extension method as instance method.
-            var output = StringExtract.Left(input, 3);
+            var output = Left(input, 3);
 #pragma warning restore RCS1196 // Call extension method as instance method.
             Assert.Equal(expected: validoutput, output);
         }
@@ -124,7 +119,7 @@ namespace MySQLCLRFunctions.Tests
         {
             const string input = "Humphreys, Jeff S.";
             const string validoutput = "Humphreys";
-            var output = StringExtract.FirstWordW(input);
+            var output = FirstWordW(input);
             Assert.Equal(expected: validoutput, output);
         }
 
@@ -133,7 +128,7 @@ namespace MySQLCLRFunctions.Tests
         {
             const string input = "Humphreys, Jeff S.";
             const string validoutput = "Humphreys";
-            var output = StringExtract.PieceNumberX(input, ",", 1);
+            var output = PieceNumberX(input, ",", 1);
             Assert.Equal(expected: validoutput, output);
         }
 
@@ -142,7 +137,7 @@ namespace MySQLCLRFunctions.Tests
         {
             const string input = "Humphreys, Jeff S.";
             const string validoutput = " Jeff S.";
-            var output = StringExtract.LastPieceX(input, ",");
+            var output = LastPieceX(input, ",");
             Assert.Equal(expected: validoutput, output);
         }
 
@@ -151,7 +146,7 @@ namespace MySQLCLRFunctions.Tests
         {
             const string input = "Humphreys, Jeff S.";
             const string validoutput = "Humphreys, ";
-            var output = StringExtract.FirstWordBeforeS(input, "Je");
+            var output = FirstWordBeforeS(input, "Je");
             Assert.Equal(expected: validoutput, output);
         }
 
@@ -160,7 +155,7 @@ namespace MySQLCLRFunctions.Tests
         {
             const string input = "Humphreys, Jeff S.";
             const string validoutput = "Humphr";
-            var output = StringExtract.FirstWordBeforeAnyC(input, "e,.");
+            var output = FirstWordBeforeAnyC(input, "e,.");
             Assert.Equal(expected: validoutput, output);
         }
 
@@ -169,7 +164,7 @@ namespace MySQLCLRFunctions.Tests
         {
             const string input = "Humphreys, Jeff S.";
             const string validoutput = " Jeff S.";
-            var output = StringExtract.EverythingAfterX(input, ",");
+            var output = EverythingAfterX(input, ",");
             Assert.Equal(expected: validoutput, output);
         }
     }

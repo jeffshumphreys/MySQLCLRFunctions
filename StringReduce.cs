@@ -2,6 +2,7 @@
 using System;
 using System.Linq;
 using static MySQLCLRFunctions.StringTest;
+using static MySQLCLRFunctions.StringExtract;
 using static MySQLCLRFunctions._SharedConstants;
 
 namespace MySQLCLRFunctions
@@ -22,7 +23,7 @@ namespace MySQLCLRFunctions
         public static string TrimBrackets(string input)
         {
             // https://en.wikipedia.org/wiki/Bracket
-            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
+            if (IsNullOrWhiteSpaceOrEmpty(input)) return input;
 
             if (input.First() == '[' && input.Last() == ']' ) return input.MID(1, -1);
             if (input.First() == '⦋' && input.Last() == '⦌'  ) return input.MID(1, -1);
@@ -54,9 +55,9 @@ namespace MySQLCLRFunctions
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
         public static string BlankOut(string input, string blankanyofthese, string sep)
         {
-            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
-            if (StringTest.IsNullOrWhiteSpaceOrEmpty(blankanyofthese)) return input;
-            if (StringTest.IsNullOrWhiteSpaceOrEmpty(sep)) return input;
+            if (IsNullOrWhiteSpaceOrEmpty(input)) return input;
+            if (IsNullOrWhiteSpaceOrEmpty(blankanyofthese)) return input;
+            if (IsNullOrWhiteSpaceOrEmpty(sep)) return input;
 
             foreach (string i in blankanyofthese.Split(new string[] { sep }, StringSplitOptions.RemoveEmptyEntries))
             {
@@ -77,7 +78,7 @@ namespace MySQLCLRFunctions
             if (IsNullOrEmpty(input)) return input;
             if (howmany >= input.Length) return string.Empty;
 
-            return input.Left(input.Length - howmany);
+            return Left(input, input.Length - howmany);
         }
 
         /***************************************************************************************************************************************************************************************************
@@ -90,7 +91,7 @@ namespace MySQLCLRFunctions
         {
             if (IsNullOrEmpty(input)) return input;
 
-            return input.Left(input.Length - 1);
+            return Left(input, input.Length - 1);
         }
 
         /***************************************************************************************************************************************************************************************************

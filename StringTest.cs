@@ -4,7 +4,7 @@ using System.Data.SqlTypes;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
-
+using static MySQLCLRFunctions.CharacterTransform;
 namespace MySQLCLRFunctions
 {
     // Functions that take input, are non-mutating, do not involve floating point or date time data, and return either true or false.
@@ -141,7 +141,7 @@ namespace MySQLCLRFunctions
 
             if (rule == "SQL Server Server Name")
             {
-                if ((bool)input.FirstC().NotInX("[a-zA-Z_#@]")) return false;
+                if ((bool)input.FIRSTC().NOTINX("[a-zA-Z_#@]")) return false;
                 // Instance portion Cannot be Default or MSSQLServer
                 // Instance be up to 16 characters, Unicode Standard 2.0, decimal numbers basic latin or other national scripts, $, #, _
                 // First character must be letter, &, _, #
@@ -202,8 +202,8 @@ namespace MySQLCLRFunctions
             foreach (string pattern in patterns.Split(new string[] { inputsep }, StringSplitOptions.RemoveEmptyEntries))
             {
                 string regexpattern = pattern;
-                if (regexpattern.StartsWith("%")) regexpattern = regexpattern.ReplaceFirstC('^');
-                if (regexpattern.EndsWith("%")) regexpattern = regexpattern.ReplaceLastC ('$');
+                if (regexpattern.StartsWith("%")) regexpattern = ReplaceFirstC(regexpattern, '^');
+                if (regexpattern.EndsWith("%")) regexpattern = ReplaceLastC (regexpattern, '$');
                 regexpattern = regexpattern.Replace("%", ".+"); // Not a great solution.  Need to test variations.
 
                 foreach (string input in inputsasarray)

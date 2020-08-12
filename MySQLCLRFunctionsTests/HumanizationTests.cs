@@ -1,7 +1,5 @@
-﻿using Xunit;
-using static MySQLCLRFunctions.Tests._MyAssertFunctions;
-using MySQLCLRFunctions;
-using System;
+﻿using System;
+using Xunit;
 
 // TODO: Convert to Xunit: Assert.Throws<InvalidOperationException>(() => operation()); // VS 2008
 namespace MySQLCLRFunctions.Tests

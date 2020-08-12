@@ -3,6 +3,11 @@ using System;
 
 namespace MySQLCLRFunctions
 {
+    /*************************************************************************
+     * 
+     * These don't work, but they can be changed to call actual sound functions.
+     * 
+     *************************************************************************/
     public static class Environmental
     {
         [SqlFunction(DataAccess = DataAccessKind.None)]

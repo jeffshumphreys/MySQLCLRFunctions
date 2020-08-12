@@ -11,8 +11,4 @@ namespace MySQLCLRFunctions
         internal const int UPSET_TO_ONEBASED_FROM_ZEROBASED = 1;
         internal const int ADJUST_POINTER_TO_INCLUDE = 1;  // So if the index of function returns a zero-based pointer, then to grab the value pointed at, we need to add one to include it.
     }
-    [AttributeUsage(AttributeTargets.All, AllowMultiple = false)]
-    public class CountsAttribute : Attribute
-    {
-    }
 }
