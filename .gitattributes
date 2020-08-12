@@ -20,8 +20,21 @@
 # https://developer.github.com/v3/repos/#list-languages
 # https://docs.github.com/en/rest/reference/repos#list-languages
 # https://github.com/github/linguist#overrides
+# Update: (8/12/20) GitHub is no longer calling it PLSQL, but TSQL.  That's good.
 ###############################################################################
 *.sql linguist-language=TSQL
+
+###############################################################################
+# Attempt to exclude my documentation HTML files that are frequently generated (in other words, up-to-date) but 
+# keep blowing GitHub's Language guess.
+#
+# https://stackoverflow.com/questions/19052834/is-it-possible-to-exclude-files-from-git-language-statistics#26948938
+# Is it possible to exclude files from git language statistics?
+# By default, Linguist treats all of the paths defined in vendor.yml as vendored and therefore doesn't include them in the language statistics for a repository.
+#
+###############################################################################
+
+*.html linguist-vendored=false
 
 ###############################################################################
 # Set the merge driver for project and solution files
