@@ -54,6 +54,25 @@ namespace MySQLCLRFunctions.Tests
         }
 
         [Fact]
+        public void PiecesWithMatchesXTest2()
+        {
+            var input = "Joan Joyce Julia June Karen Katherine (Kathy) Laura Louise Marilyn Mary Moira Molly Monica Nancy Natalie Norma Pamela (Pam) Patricia (Pat) Paula Ruth Sally Sarah Sophia Susan (Sue) Teresa (Terry) Valerie Veronica Vivian Vickie Wanda Wilma Yvonne";
+            IEnumerable<PiecesWithMatchesRecord> pieces = (IEnumerable<PiecesWithMatchesRecord>)PiecesWithMatchesX(input, @"(\([^)]+\)|\w+)");
+
+            foreach (PiecesWithMatchesRecord piece in pieces.Skip(1).Take(1))
+                Assert.Equal(expected: "Joyce", actual: piece.piece);
+        }
+
+        [Fact]
+        public void PiecesWithMatchesXTest3()
+        {
+            var input = "Joan Joyce Julia June Karen Katherine (Kathy) Laura Louise Marilyn Mary Moira Molly Monica Nancy Natalie Norma Pamela (Pam) Patricia (Pat) Paula Ruth Sally Sarah Sophia Susan (Sue) Teresa (Terry) Valerie Veronica Vivian Vickie Wanda Wilma Yvonne";
+            IEnumerable<PiecesWithMatchesRecord> pieces = (IEnumerable<PiecesWithMatchesRecord>)PiecesWithMatchesX(input, @"(\([^)]+\)|\w+)");
+
+            foreach (PiecesWithMatchesRecord piece in pieces.Skip(6).Take(1))
+                Assert.Equal(expected: "(Kathy)", actual: piece.piece);
+        }
+        [Fact]
         public void GetWordsTest()
         {
             Assert.False(true);
