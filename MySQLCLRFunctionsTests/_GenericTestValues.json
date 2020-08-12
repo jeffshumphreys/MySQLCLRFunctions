@@ -1,0 +1,23 @@
+[
+  {
+    "Ping": {
+      "ValidAddresses": [
+        {
+          "expected": "True",
+          "input": "<a DNS name here>"
+        },
+        {
+          "expected": "True",
+          "input": "localhost"
+        }
+      ],
+      "BadAddresses": [
+        {
+          "expected": "False",
+          "input": "1.2.3.4"
+        }
+      ]
+
+    }
+  }
+]

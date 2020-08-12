@@ -11,7 +11,7 @@
     <ProjectGuid>{83804E3C-9CBF-4071-8995-B612A38C69BE}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MySQLCLRFunctionsTests</RootNamespace>
+    <RootNamespace>MySQLCLRFunctions.Tests</RootNamespace>
     <AssemblyName>MySQLCLRFunctionsTests</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -42,6 +42,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
@@ -82,8 +86,11 @@
     <Compile Include="StringTransformTests.cs" />
     <Compile Include="_MyAssertFunctions.cs" />
     <Compile Include="_MyCustomAttributes.cs" />
+    <Compile Include="_MyTestValuesLoader.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="_GenericTestValues.json" />
+    <None Include="_MyTestValues.json" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

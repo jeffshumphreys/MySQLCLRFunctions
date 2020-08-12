@@ -1,10 +1,5 @@
-﻿using Xunit;
-using MySQLCLRFunctions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq;
+using Xunit;
 
 namespace MySQLCLRFunctions.Tests
 {
@@ -12,10 +7,21 @@ namespace MySQLCLRFunctions.Tests
     {
         [Fact]
         [PositiveTest]
-        public void PingTest()
+        public void PingPositiveTestList()
         {
-            Assert.False(true);
-            //Assert.True(NetworkTest.Ping(NetworkTestPing).IsTrue);
+            var testvalues = _MyTestValuesLoader.Instance.PingableValidAddresses as TestSet[];
+            
+            // Verify all good addresses ping good.  But then we won't know which failed??
+            Assert.True(testvalues.Where(v => NetworkTest.Ping(v.input).IsFalse).Count() == 0);
+        }
+        [Fact]
+        [NegativeTest]
+        public void PingNegativeTestList()
+        {
+            var testvalues = _MyTestValuesLoader.Instance.UnpingableAddresses as TestSet[];
+
+            // Verify all bad addresses fail.
+            Assert.True(testvalues.Where(v => NetworkTest.Ping(v.input).IsTrue).Count() == 0);
         }
     }
 }
