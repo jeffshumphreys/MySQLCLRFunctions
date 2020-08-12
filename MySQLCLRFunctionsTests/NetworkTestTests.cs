@@ -8,13 +8,14 @@ using System.Threading.Tasks;
 
 namespace MySQLCLRFunctions.Tests
 {
-    public class NetworkTestTests
+    public class NetworkTestTests 
     {
         [Fact]
         [PositiveTest]
         public void PingTest()
         {
-            Assert.True(NetworkTest.Ping("64.68.90.1").IsTrue);
+            Assert.False(true);
+            //Assert.True(NetworkTest.Ping(NetworkTestPing).IsTrue);
         }
     }
 }
