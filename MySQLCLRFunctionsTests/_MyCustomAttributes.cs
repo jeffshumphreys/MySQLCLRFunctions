@@ -6,4 +6,9 @@ namespace MySQLCLRFunctions.Tests
     internal class PositiveTestAttribute : Attribute
     {
     }
+
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+    internal class NegativeTestAttribute : Attribute
+    {
+    }
 }
