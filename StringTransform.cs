@@ -3,6 +3,16 @@ using System;
 using System.Text;
 using System.Text.RegularExpressions;
 
+/*
+ * Standard single-letter abbreviations:
+ * - C - Single Character, or a string of characters
+ * - S - A variable line single string treated as a single string
+ * - X - Regex expression
+ * - Ls - Series of lines in a single string with line separator
+ * 
+ * - TitleCase - Externally facing methods (if attributed with SqlFunction)
+ * - UPPERCASE - Internal fluent extension methods wrapping the external ones.
+ */
 namespace MySQLCLRFunctions
 {
     /*
@@ -16,7 +26,7 @@ namespace MySQLCLRFunctions
     public static class StringTransform
     {
         // Extensions for internal use and simpler Fluent design, but not for SQL to call
-        internal static string ReplaceMatchExt(this string input, string pattern, string replacement)
+        internal static string REPLACEMATCHX(this string input, string pattern, string replacement)
         {
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(pattern)) return input;
@@ -44,7 +54,7 @@ namespace MySQLCLRFunctions
         }
 
         // Extensions for internal use and simpler Fluent design, but not for SQL to call
-        internal unsafe static string ReplaceRecursiveExt(this string input, string marker, string replacement)
+        internal unsafe static string REPLACERECURSIVES(this string input, string marker, string replacement)
         {
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(marker)) return input;
@@ -119,6 +129,82 @@ namespace MySQLCLRFunctions
             }
 
             return input;
+        }
+        /*
+            ST('GroupUniqueId               '  AS NVARCHAR(10
+            ST('GroupHandle                 '  AS NVARCHAR(10
+            ST('GroupName                   '  AS NVARCHAR(10
+            ST('GroupDisplayName            '  AS NVARCHAR(10
+            ST('GroupDisplayNameSpaceless   '  AS NVARCHAR(10
+            ST('GroupOwnerId                '  AS NVARCHAR(10
+            ST('GroupOwnerHandle            '  AS NVARCHAR(10
+            ST('GroupOwner                  '  AS NVARCHAR(10
+            ST('GroupMemberCount            '  AS NVARCHAR(10
+            ST('GroupMembers                '  AS NVARCHAR(10
+            ST('GroupEmail                  '  AS NVARCHAR(10
+            ST('OrganizationalUnitChain     '  AS NVARCHAR(10
+            ST('GroupNotes                  '  AS NVARCHAR(10
+            ST('GroupHistory                '  AS NVARCHAR(10
+            ST('GroupCreatedOn              '  AS NVARCHAR(10
+            ST('Security1Distribution0      '  AS NVARCHAR(10
+            ST('Universal2Global1Local0     '  AS NVARCHAR(10
+            ST('ExportedToFileOn'            AS NVARCHAR(1024
+   
+            In the above slice, take all spaces before the string "'  AS" and put them after the "'"
+            This is using the Alt+Down+Drag operation in SSMS to capture a slice.
+            Lines are separated by NL or CR or LF.
+         */
+        public static string SwitchAllCInLsAroundSToAfterC(string lines, string switchC, string aroundS, string toAfterC)
+        {
+            return lines;
+        }
+
+        /*
+            UniqueId'  AS NVARCHAR(1024))
+            Handle'  AS NVARCHAR(1024))
+            Name'  AS NVARCHAR(1024))
+            DisplayName'  AS NVARCHAR(1024))
+            DisplayNameSpaceless'  AS NVARCHAR(1024))
+            OwnerId'  AS NVARCHAR(1024))
+            OwnerHandle'  AS NVARCHAR(1024))
+            Owner'  AS NVARCHAR(1024))
+            MemberCount'  AS NVARCHAR(1024))
+            Members'  AS NVARCHAR(1024))
+            Email'  AS NVARCHAR(1024))
+            izationalUnitChain'  AS NVARCHAR(1024))
+            Notes'  AS NVARCHAR(1024))
+            History'  AS NVARCHAR(1024))
+            CreatedOn'  AS NVARCHAR(1024))
+            ity1Distribution0'  AS NVARCHAR(1024))
+            rsal2Global1Local0'  AS NVARCHAR(1024))
+            tedToFileOn'            AS NVARCHAR(1024))
+
+        Alignment to the "AS"
+        becomes:
+
+            UniqueId'              AS NVARCHAR(1024))
+            Handle'                AS NVARCHAR(1024))
+            Name'                  AS NVARCHAR(1024))
+            DisplayName'           AS NVARCHAR(1024))
+            DisplayNameSpaceless'  AS NVARCHAR(1024))
+            OwnerId'               AS NVARCHAR(1024))
+            OwnerHandle'           AS NVARCHAR(1024))
+            Owner'                 AS NVARCHAR(1024))
+            MemberCount'           AS NVARCHAR(1024))
+            Members'               AS NVARCHAR(1024))
+            Email'                 AS NVARCHAR(1024))
+            izationalUnitChain'    AS NVARCHAR(1024))
+            Notes'                 AS NVARCHAR(1024))
+            History'               AS NVARCHAR(1024))
+            CreatedOn'             AS NVARCHAR(1024))
+            ity1Distribution0'     AS NVARCHAR(1024))
+            rsal2Global1Local0'    AS NVARCHAR(1024))
+            tedToFileOn'           AS NVARCHAR(1024))
+
+         */
+        public static string AlignLOnS(string lines, string alignToLongestS)
+        {
+            return lines;
         }
     }
 }
