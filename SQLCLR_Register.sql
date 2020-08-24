@@ -1,4 +1,4 @@
-﻿-- Time to execute: 5 sec
+﻿-- Time to execute: 14 sec
 :SETVAR LibName MySQLCLRFunctions
 :R TestValueSettings.localuseonly
 SELECT ThisServer = @@servername, ThisDatabase = DB_NAME(), ThisUser = ORIGINAL_LOGIN()                 
@@ -117,6 +117,10 @@ DROP FUNCTION IF EXISTS LTrimIfStartsWithS
 DROP FUNCTION IF EXISTS TrimOne
 DROP FUNCTION IF EXISTS LTrimOne
 DROP FUNCTION IF EXISTS LTrimN
+/**************************************************************************************************************************************************************************************************
+ *      String Reduce Customizations
+/***************************************************************************************************************************************************************************************************/*/
+DROP FUNCTION IF EXISTS TrimNormalizeStringInput
 /**************************************************************************************************************************************************************************************************
  *      String Build Out (dumb name)
 /***************************************************************************************************************************************************************************************************/*/
@@ -327,44 +331,81 @@ CREATE OR ALTER FUNCTION HumanizeDateTimeDiff(@from DATETIME) RETURNS NVARCHAR(5
 WITH RETURNS NULL ON NULL INPUT
 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.Humanization].HumanizeDateTimeDiff;  
 GO  
-SELECT HumanizeDataTimeDiff = dbo.HumanizeDateTimeDiff(SYSDATETIME()) UNION ALL
-SELECT HumanizeDataTimeDiff = dbo.HumanizeDateTimeDiff(DATEADD(YEAR, -1, SYSDATETIME())) UNION ALL
-SELECT HumanizeDataTimeDiff = dbo.HumanizeDateTimeDiff(DATEADD(YEAR, -10, SYSDATETIME())) UNION ALL
-SELECT HumanizeDataTimeDiff = dbo.HumanizeDateTimeDiff(DATEADD(QUARTER, -1, SYSDATETIME())) UNION ALL
-SELECT HumanizeDataTimeDiff = dbo.HumanizeDateTimeDiff(DATEADD(QUARTER, -2, SYSDATETIME())) UNION ALL
-SELECT HumanizeDataTimeDiff = dbo.HumanizeDateTimeDiff(DATEADD(MONTH, -1, SYSDATETIME())) UNION ALL
-SELECT HumanizeDataTimeDiff = dbo.HumanizeDateTimeDiff(DATEADD(MONTH, -2, SYSDATETIME())) UNION ALL
-SELECT HumanizeDataTimeDiff = dbo.HumanizeDateTimeDiff(DATEADD(WEEK, -1, SYSDATETIME())) UNION ALL
-SELECT HumanizeDataTimeDiff = dbo.HumanizeDateTimeDiff(DATEADD(WEEK, -2, SYSDATETIME())) UNION ALL
-SELECT HumanizeDataTimeDiff = dbo.HumanizeDateTimeDiff(DATEADD(WEEKDAY, -1, SYSDATETIME())) UNION ALL
-SELECT HumanizeDataTimeDiff = dbo.HumanizeDateTimeDiff(DATEADD(DAY, -1, SYSDATETIME())) UNION ALL
-SELECT HumanizeDataTimeDiff = dbo.HumanizeDateTimeDiff(DATEADD(DAY, -2, SYSDATETIME())) UNION ALL
-SELECT HumanizeDataTimeDiff = dbo.HumanizeDateTimeDiff(DATEADD(DAY, -3, SYSDATETIME())) UNION ALL
-SELECT HumanizeDataTimeDiff = dbo.HumanizeDateTimeDiff(DATEADD(HOUR, -12, SYSDATETIME())) UNION ALL
-SELECT HumanizeDataTimeDiff = dbo.HumanizeDateTimeDiff(DATEADD(HOUR, -11, SYSDATETIME())) UNION ALL
-SELECT HumanizeDataTimeDiff = dbo.HumanizeDateTimeDiff(DATEADD(HOUR, -9, SYSDATETIME())) UNION ALL
-SELECT HumanizeDataTimeDiff = dbo.HumanizeDateTimeDiff(DATEADD(HOUR, -5, SYSDATETIME())) UNION ALL
-SELECT HumanizeDataTimeDiff = dbo.HumanizeDateTimeDiff(DATEADD(HOUR, -3, SYSDATETIME())) UNION ALL
-SELECT HumanizeDataTimeDiff = dbo.HumanizeDateTimeDiff(DATEADD(HOUR, -2, SYSDATETIME())) UNION ALL
-SELECT HumanizeDataTimeDiff = dbo.HumanizeDateTimeDiff(DATEADD(HOUR, -1, SYSDATETIME())) UNION ALL
-SELECT HumanizeDataTimeDiff = dbo.HumanizeDateTimeDiff(DATEADD(MINUTE, -1, SYSDATETIME())) UNION ALL
-SELECT HumanizeDataTimeDiff = dbo.HumanizeDateTimeDiff(DATEADD(MINUTE, -11, SYSDATETIME())) UNION ALL
-SELECT HumanizeDataTimeDiff = dbo.HumanizeDateTimeDiff(DATEADD(SECOND, -1, SYSDATETIME())) UNION ALL
-SELECT HumanizeDataTimeDiff = dbo.HumanizeDateTimeDiff(DATEADD(SECOND, -2, SYSDATETIME())) UNION ALL
-SELECT HumanizeDataTimeDiff = dbo.HumanizeDateTimeDiff(DATEADD(SECOND, -31, SYSDATETIME())) UNION ALL
-SELECT HumanizeDataTimeDiff = dbo.HumanizeDateTimeDiff(DATEADD(SECOND, -59, SYSDATETIME())) UNION ALL
-SELECT HumanizeDataTimeDiff = dbo.HumanizeDateTimeDiff(DATEADD(SECOND, -(11*24+1), SYSDATETIME())) UNION ALL
-SELECT HumanizeDataTimeDiff = dbo.HumanizeDateTimeDiff(DATEADD(SECOND, -(11*24-1), SYSDATETIME())) UNION ALL
-SELECT HumanizeDataTimeDiff = dbo.HumanizeDateTimeDiff(DATEADD(SECOND, -(11*23-1), SYSDATETIME())) UNION ALL
-SELECT HumanizeDataTimeDiff = dbo.HumanizeDateTimeDiff(DATEADD(SECOND, -(23*23-1), SYSDATETIME())) UNION ALL
-SELECT HumanizeDataTimeDiff = dbo.HumanizeDateTimeDiff(DATEADD(MILLISECOND, -1, SYSDATETIME())) UNION ALL
-SELECT HumanizeDataTimeDiff = dbo.HumanizeDateTimeDiff(DATEADD(MICROSECOND, -1, SYSDATETIME())) UNION ALL
-SELECT HumanizeDataTimeDiff = dbo.HumanizeDateTimeDiff(DATEADD(MICROSECOND, -101, SYSDATETIME())) UNION ALL
-SELECT HumanizeDataTimeDiff = dbo.HumanizeDateTimeDiff(DATEADD(MICROSECOND, -1011, SYSDATETIME())) UNION ALL
-SELECT HumanizeDataTimeDiff = dbo.HumanizeDateTimeDiff(DATEADD(MICROSECOND, -10111, SYSDATETIME())) UNION ALL
-SELECT HumanizeDataTimeDiff = dbo.HumanizeDateTimeDiff(DATEADD(MICROSECOND, -101111, SYSDATETIME())) UNION ALL
-SELECT HumanizeDataTimeDiff = dbo.HumanizeDateTimeDiff(DATEADD(MICROSECOND, -1011111, SYSDATETIME())) UNION ALL
-SELECT HumanizeDataTimeDiff = dbo.HumanizeDateTimeDiff(DATEADD(NANOSECOND, -100, SYSDATETIME()))
+SELECT HumanizeDataTimeDiff1 = dbo.HumanizeDateTimeDiff(SYSDATETIME())                                     -- FAILED
+GO
+SELECT HumanizeDataTimeDiff2 = dbo.HumanizeDateTimeDiff(DATEADD(YEAR, -1, SYSDATETIME())) 
+GO
+SELECT HumanizeDataTimeDiff3 = dbo.HumanizeDateTimeDiff(DATEADD(YEAR, -10, SYSDATETIME())) 
+GO
+SELECT HumanizeDataTimeDiff4 = dbo.HumanizeDateTimeDiff(DATEADD(QUARTER, -1, SYSDATETIME())) 
+GO
+SELECT HumanizeDataTimeDiff5 = dbo.HumanizeDateTimeDiff(DATEADD(QUARTER, -2, SYSDATETIME())) 
+GO
+SELECT HumanizeDataTimeDiff6 = dbo.HumanizeDateTimeDiff(DATEADD(MONTH, -1, SYSDATETIME())) 
+GO
+SELECT HumanizeDataTimeDiff7 = dbo.HumanizeDateTimeDiff(DATEADD(MONTH, -2, SYSDATETIME())) 
+GO
+SELECT HumanizeDataTimeDiff8 = dbo.HumanizeDateTimeDiff(DATEADD(WEEK, -1, SYSDATETIME())) 
+GO
+SELECT HumanizeDataTimeDiff9 = dbo.HumanizeDateTimeDiff(DATEADD(WEEK, -2, SYSDATETIME())) 
+GO
+SELECT HumanizeDataTimeDiff10 = dbo.HumanizeDateTimeDiff(DATEADD(WEEKDAY, -1, SYSDATETIME())) 
+GO
+SELECT HumanizeDataTimeDiff11 = dbo.HumanizeDateTimeDiff(DATEADD(DAY, -1, SYSDATETIME())) 
+GO
+SELECT HumanizeDataTimeDiff12 = dbo.HumanizeDateTimeDiff(DATEADD(DAY, -2, SYSDATETIME())) 
+GO
+SELECT HumanizeDataTimeDiff13 = dbo.HumanizeDateTimeDiff(DATEADD(DAY, -3, SYSDATETIME())) 
+GO
+SELECT HumanizeDataTimeDiff14 = dbo.HumanizeDateTimeDiff(DATEADD(HOUR, -12, SYSDATETIME())) 
+GO
+SELECT HumanizeDataTimeDiff15 = dbo.HumanizeDateTimeDiff(DATEADD(HOUR, -11, SYSDATETIME())) 
+GO
+SELECT HumanizeDataTimeDiff16 = dbo.HumanizeDateTimeDiff(DATEADD(HOUR, -9, SYSDATETIME())) 
+GO
+SELECT HumanizeDataTimeDiff17 = dbo.HumanizeDateTimeDiff(DATEADD(HOUR, -5, SYSDATETIME())) 
+GO
+SELECT HumanizeDataTimeDiff18 = dbo.HumanizeDateTimeDiff(DATEADD(HOUR, -3, SYSDATETIME())) 
+GO
+SELECT HumanizeDataTimeDiff19 = dbo.HumanizeDateTimeDiff(DATEADD(HOUR, -2, SYSDATETIME())) 
+GO
+SELECT HumanizeDataTimeDiff20 = dbo.HumanizeDateTimeDiff(DATEADD(HOUR, -1, SYSDATETIME())) 
+GO
+SELECT HumanizeDataTimeDiff21 = dbo.HumanizeDateTimeDiff(DATEADD(MINUTE, -1, SYSDATETIME())) 
+GO
+SELECT HumanizeDataTimeDiff22 = dbo.HumanizeDateTimeDiff(DATEADD(MINUTE, -11, SYSDATETIME())) 
+GO
+SELECT HumanizeDataTimeDiff23 = dbo.HumanizeDateTimeDiff(DATEADD(SECOND, -1, SYSDATETIME())) 
+GO
+SELECT HumanizeDataTimeDiff24 = dbo.HumanizeDateTimeDiff(DATEADD(SECOND, -2, SYSDATETIME())) 
+GO
+SELECT HumanizeDataTimeDiff25 = dbo.HumanizeDateTimeDiff(DATEADD(SECOND, -31, SYSDATETIME())) 
+GO
+SELECT HumanizeDataTimeDiff26 = dbo.HumanizeDateTimeDiff(DATEADD(SECOND, -59, SYSDATETIME())) 
+GO
+SELECT HumanizeDataTimeDiff27 = dbo.HumanizeDateTimeDiff(DATEADD(SECOND, -(11*24+1), SYSDATETIME())) 
+GO
+SELECT HumanizeDataTimeDiff28 = dbo.HumanizeDateTimeDiff(DATEADD(SECOND, -(11*24-1), SYSDATETIME())) 
+GO
+SELECT HumanizeDataTimeDiff29 = dbo.HumanizeDateTimeDiff(DATEADD(SECOND, -(11*23-1), SYSDATETIME())) 
+GO
+SELECT HumanizeDataTimeDiff30 = dbo.HumanizeDateTimeDiff(DATEADD(SECOND, -(23*23-1), SYSDATETIME())) 
+GO
+SELECT HumanizeDataTimeDiff31 = dbo.HumanizeDateTimeDiff(DATEADD(MILLISECOND, -1, SYSDATETIME())) 
+GO
+SELECT HumanizeDataTimeDiff32 = dbo.HumanizeDateTimeDiff(DATEADD(MICROSECOND, -1, SYSDATETIME())) 
+GO
+SELECT HumanizeDataTimeDiff33 = dbo.HumanizeDateTimeDiff(DATEADD(MICROSECOND, -101, SYSDATETIME())) 
+GO
+SELECT HumanizeDataTimeDiff34 = dbo.HumanizeDateTimeDiff(DATEADD(MICROSECOND, -1011, SYSDATETIME()))          -- FAILED
+GO
+SELECT HumanizeDataTimeDiff35 = dbo.HumanizeDateTimeDiff(DATEADD(MICROSECOND, -10111, SYSDATETIME())) 
+GO
+SELECT HumanizeDataTimeDiff36 = dbo.HumanizeDateTimeDiff(DATEADD(MICROSECOND, -101111, SYSDATETIME())) 
+GO
+SELECT HumanizeDataTimeDiff37 = dbo.HumanizeDateTimeDiff(DATEADD(MICROSECOND, -1011111, SYSDATETIME())) 
+GO
+SELECT HumanizeDataTimeDiff38 = dbo.HumanizeDateTimeDiff(DATEADD(NANOSECOND, -100, SYSDATETIME()))
 GO
 /**************************************************************************************************************************************************************************************************
  *
@@ -400,7 +441,7 @@ CREATE OR ALTER FUNCTION TempFilePath() RETURNS NVARCHAR(MAX)
 WITH RETURNS NULL ON NULL INPUT
 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.Files].TempFilePath;  
 GO  
-SELECT dbo.TempFilePath() --> C:\Users\~humphrej2\AppData\Local\Temp\tmpD28B.tmp
+SELECT TempFilePath____________________________________________ = dbo.TempFilePath() --> C:\Users\~humphrej2\AppData\Local\Temp\tmpD28B.tmp
 GO
 /**************************************************************************************************************************************************************************************************
  *
@@ -411,8 +452,8 @@ CREATE OR ALTER FUNCTION AnyOfTheseSAreAnyOfThoseS(@inputs NVARCHAR(MAX), @marke
 WITH RETURNS NULL ON NULL INPUT
 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTest].AnyOfTheseSAreAnyOfThoseS;  
 GO
-SELECT dbo.AnyOfTheseSAreAnyOfThoseS('hi;there;', 'not;here;', ';') --> 0
-SELECT dbo.AnyOfTheseSAreAnyOfThoseS('hi;there;', 'not;there;', ';') --> 1
+SELECT AnyOfTheseSAreAnyOfThoseS___________________________ = dbo.AnyOfTheseSAreAnyOfThoseS('hi;there;', 'not;here;', ';') --> 0
+SELECT AnyOfTheseSAreAnyOfThoseS____________________________ = dbo.AnyOfTheseSAreAnyOfThoseS('hi;there;', 'not;there;', ';') --> 1
 GO
 CREATE OR ALTER FUNCTION StartsWithS(@input NVARCHAR(MAX), @searchFor NVARCHAR(MAX)) RETURNS BIT
 WITH RETURNS NULL ON NULL INPUT
@@ -424,7 +465,7 @@ CREATE OR ALTER FUNCTION EndsWithS(@input NVARCHAR(MAX), @searchFor NVARCHAR(MAX
 WITH RETURNS NULL ON NULL INPUT
 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTest].EndsWithS;  
 GO
-SELECT dbo.EndsWithS('x', 'x') -- 1
+SELECT EndsWithS______________  = dbo.EndsWithS('x', 'x') -- 1
 GO
 CREATE OR ALTER FUNCTION IsIP4(@input NVARCHAR(256)) RETURNS BIT
 WITH RETURNS NULL ON NULL INPUT
@@ -470,15 +511,15 @@ CREATE OR ALTER FUNCTION PieceNumberX(@input NVARCHAR(MAX), @pattern NVARCHAR(40
 WITH RETURNS NULL ON NULL INPUT
 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].PieceNumberX;  
 GO  
-SELECT dbo.PieceNumberX('this is 100 times, or maybe 1503', '(\d+)', 1) AS PieceNumber1     --> 2 rows match:100, matchat: 8, match:1503, matchat:28
-SELECT dbo.PieceNumberX('this is 100 times, or maybe 1503', '(\d+)', 100) AS PieceNumber100
-SELECT dbo.PieceNumberX('this is 100 times, or maybe 1503', '(\d+)', 2) AS PieceNumber2
+SELECT PieceNumberX_____________ = dbo.PieceNumberX('this is 100 times, or maybe 1503', '(\d+)', 1)      --> 2 rows match:100, matchat: 8, match:1503, matchat:28
+SELECT PieceNumberX_____________ = dbo.PieceNumberX('this is 100 times, or maybe 1503', '(\d+)', 100) 
+SELECT PieceNumberX_____________ = dbo.PieceNumberX('this is 100 times, or maybe 1503', '(\d+)', 2) 
 GO
 CREATE OR ALTER FUNCTION LastPieceX(@input NVARCHAR(MAX), @pattern NVARCHAR(4000)) RETURNS NVARCHAR(MAX) 
 WITH RETURNS NULL ON NULL INPUT
 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].LastPieceX;  
 GO  
-SELECT dbo.LastPieceX('this is 100 times, or maybe 1503', '(\d+)') AS LastPieceX
+SELECT LastPieceX__________________ = dbo.LastPieceX('this is 100 times, or maybe 1503', '(\d+)') 
 GO
 CREATE OR ALTER FUNCTION GetFirstName(@FullName NVARCHAR(500)) RETURNS NVARCHAR(500) 
 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].GetFirstName;  
@@ -651,6 +692,17 @@ SELECT TrimEnd_______________________________________________________________ = 
 GO
 /**************************************************************************************************************************************************************************************************
  *
+ *       String custom reductions for more special use cases.
+ *
+/***************************************************************************************************************************************************************************************************/*/
+CREATE OR ALTER FUNCTION TrimNormalizeStringInput(@input NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
+WITH RETURNS NULL ON NULL INPUT
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringReduceCustomizations].TrimNormalizeStringInput; 
+GO
+SELECT TrimNormalizeStringInput_______________________________________________________________ = dbo.TrimNormalizeStringInput('   Hi   There! ')
+GO
+/**************************************************************************************************************************************************************************************************
+ *
  *       String build outs, which always increase the size of a string.
  *
 /***************************************************************************************************************************************************************************************************/*/
@@ -700,8 +752,8 @@ CREATE OR ALTER FUNCTION Title(@input NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
 WITH RETURNS NULL ON NULL INPUT
 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringFormat].Title; 
 GO
-SELECT Title_______________________________________________________________ = dbo.Title('test')     -->Test<--
-SELECT Title_______________________________________________________________ = dbo.Title('Abigail')     -->Test<--
+SELECT [Input] = 'test', Title_______________________________________________________________ = dbo.Title('test')   
+SELECT Title_______________________________________________________________ = dbo.Title('Abigail')    
 GO
 /**************************************************************************************************************************************************************************************************
  *
@@ -712,13 +764,13 @@ CREATE OR ALTER FUNCTION ReplaceRecursiveS(@input NVARCHAR(MAX), @find NVARCHAR(
 WITH RETURNS NULL ON NULL INPUT
 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTransform].ReplaceRecursiveS; 
 GO
-SELECT dbo.ReplaceRecursiveS('This is                a test  of the     emergency  ', '  ', '')    -->This is a test of the emergency <--
+SELECT ReplaceRecursiveS_____________________ = dbo.ReplaceRecursiveS('This is                a test  of the     emergency  ', '  ', '')    -->This is a test of the emergency <--
 GO
 CREATE OR ALTER FUNCTION ReplaceMatchX(@input NVARCHAR(MAX), @find NVARCHAR(MAX), @replacement NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
 WITH RETURNS NULL ON NULL INPUT
 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTransform].ReplaceMatchX; 
 GO
-SELECT dbo.ReplaceMatchX('SELECT * FROM $1.$10', '\$1~[0-9]', 'Merry')    -->  ????
+SELECT ReplaceMatchX________________ = dbo.ReplaceMatchX('SELECT * FROM $1.$10', '\$1~[0-9]', 'Merry')    -->  ????
 GO
 /**************************************************************************************************************************************************************************************************
  *
@@ -728,6 +780,8 @@ GO
 CREATE OR ALTER FUNCTION RemoveSQLServerNameDelimiters(@input NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) 
 WITH RETURNS NULL ON NULL INPUT
 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTransformCustomizations].RemoveSQLServerNameDelimiters;  
+GO
+SELECT [Input] = '[Dave]', RemoveSQLServerNameDelimiters_____________ = dbo.RemoveSQLServerNameDelimiters('[Dave]')
 GO
 CREATE OR ALTER FUNCTION ExpandSQLParameterString(@sqlwithparametersembedded NVARCHAR(MAX), @paramno INT, @newvalue NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) 
 WITH RETURNS NULL ON NULL INPUT
