@@ -63,6 +63,7 @@
     <Compile Include="Humanization.cs" />
     <Compile Include="NetworkCollect.cs" />
     <Compile Include="NetworkTest.cs" />
+    <Compile Include="StackExtract.cs" />
     <Compile Include="StringAggregate.cs" />
     <Compile Include="_NewFunctionsToTry.cs" />
     <Compile Include="_SharedConstants.cs" />
