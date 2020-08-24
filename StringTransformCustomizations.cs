@@ -69,9 +69,9 @@ namespace MySQLCLRFunctions
 
             if (toSingleLine)
             {
-                var temps = String.Join(" ", cleanlines).ReplaceRecursiveExt("  ", " "); // After tabs newlines converted to spaces
+                var temps = String.Join(" ", cleanlines).REPLACERECURSIVES("  ", " "); // After tabs newlines converted to spaces
                 return temps.Replace(", ", ",").Replace(" =", "=").Replace("= ", "=").Replace(" (", "(").Replace("[", "").Replace("]", "").Replace(" begin ", "{")
-                    .Replace(" end ", "}").ReplaceMatchExt("\bend\b?$", "}");
+                    .Replace(" end ", "}").REPLACEMATCHX("\bend\b?$", "}");
             }
             return String.Join(Environment.NewLine, cleanlines);
         }
