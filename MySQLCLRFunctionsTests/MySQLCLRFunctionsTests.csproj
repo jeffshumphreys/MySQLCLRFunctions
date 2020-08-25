@@ -78,6 +78,7 @@
     <Compile Include="EnvironmentalTests.cs" />
     <Compile Include="FileNameExtractTests.cs" />
     <Compile Include="FilesTests.cs" />
+    <Compile Include="FullPersonsNameParseOutTests.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="HumanizationTests.cs" />
     <Compile Include="NetworkCollectTests.cs" />
