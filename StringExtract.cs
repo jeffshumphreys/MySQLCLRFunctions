@@ -1,5 +1,6 @@
 ﻿using Microsoft.SqlServer.Server;
 using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 using static MySQLCLRFunctions._SharedConstants;
 using static MySQLCLRFunctions.StringTest;
@@ -393,14 +394,14 @@ namespace MySQLCLRFunctions
 
         // Convenience and clarity function
 
-        private static string[] SingleStringAsArray(string element1)
+        public static string[] SingleStringAsArray(string element1)
         {
             var arr = new string[1];
             arr[0] = element1;
             return arr;
         }
 
-        private static int FindIndexOf(this string input, string marker)
+        public static int FindIndexOf(this string input, string marker)
         {
             return input.IndexOf(marker);
         }
@@ -410,6 +411,20 @@ namespace MySQLCLRFunctions
             if (IsNullOrWhiteSpaceOrEmpty(input)) return NOT_FOUND;
 
             return input.Length - 1;
+        }
+
+        public static (string, string) SplitIn2OnC(this string input, char marker, bool trim = true)
+        {
+            string[] parts = input.Split(marker.ToArray());
+            if (parts.Length != 2)
+            {
+                throw new ArgumentOutOfRangeException();
+            }
+
+            if (trim)
+                return (parts[0].Trim(), parts[1].Trim());
+            else
+                return (parts[0], parts[1]);
         }
     }
 }
