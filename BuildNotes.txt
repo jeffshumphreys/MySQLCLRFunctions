@@ -1,0 +1,17 @@
+This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.
+
+
+Attempting to gather dependency information for package 'Microsoft.Net.Compilers.Toolset.3.6.0' with respect to project 'MySQLCLRFunctionsTests', targeting '.NETFramework,Version=v4.8'
+Gathering dependency information took 109 ms
+Attempting to resolve dependencies for package 'Microsoft.Net.Compilers.Toolset.3.6.0' with DependencyBehavior 'Lowest'
+Resolving dependency information took 0 ms
+Resolving actions to install package 'Microsoft.Net.Compilers.Toolset.3.6.0'
+Resolved actions to install package 'Microsoft.Net.Compilers.Toolset.3.6.0'
+  GET https://api.nuget.org/v3-flatcontainer/microsoft.net.compilers.toolset/3.6.0/microsoft.net.compilers.toolset.3.6.0.nupkg
+  OK https://api.nuget.org/v3-flatcontainer/microsoft.net.compilers.toolset/3.6.0/microsoft.net.compilers.toolset.3.6.0.nupkg 221ms
+Installing Microsoft.Net.Compilers.Toolset 3.6.0.
+Adding package 'Microsoft.Net.Compilers.Toolset.3.6.0' to folder 'C:\Users\jeffh\Source\Repos\jeffshumphreys\MySQLCLRFunctions\packages'
+Added package 'Microsoft.Net.Compilers.Toolset.3.6.0' to folder 'C:\Users\jeffh\Source\Repos\jeffshumphreys\MySQLCLRFunctions\packages'
+Added package 'Microsoft.Net.Compilers.Toolset.3.6.0' to 'packages.config'
+Successfully installed 'Microsoft.Net.Compilers.Toolset 3.6.0' to MySQLCLRFunctionsTests
+Executing nuget actions took 5.45 sec
