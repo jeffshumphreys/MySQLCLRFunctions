@@ -4,6 +4,8 @@ using System.Linq;
 using static MySQLCLRFunctions.StringTest;
 using static MySQLCLRFunctions._SharedConstants;
 using static MySQLCLRFunctions.StringReduce;
+using static MySQLCLRFunctions.CharacterTest;
+
 namespace MySQLCLRFunctions
 {
     public static class CharacterTransform
@@ -28,6 +30,19 @@ namespace MySQLCLRFunctions
             char lastC = input.Last();
             if (lastC == replacement) return input;
             return RTrimOne(input) + replacement;
+        }
+
+        public static char[] ToArray(this char input) // No reason to convert a nullable character
+        {
+            if (input.ISNULLORWHITESPACE()) return new char[] { };
+
+            return new char[] { (char)input };
+        }
+        public static char[] ToArray(this char? input) // No reason to convert a nullable character
+        {
+            if (input.ISNULLORWHITESPACE()) return new char[] { };
+
+            return new char[] { (char)input };
         }
     }
 }
