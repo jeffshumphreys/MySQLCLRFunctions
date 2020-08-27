@@ -66,6 +66,7 @@
     <Compile Include="StackExtract.cs" />
     <Compile Include="StringAggregate.cs" />
     <Compile Include="StringCastIntoStruct\FullPersonsNameParseOut.cs" />
+    <Compile Include="StringSplit.cs" />
     <Compile Include="_NewFunctionsToTry.cs" />
     <Compile Include="_SharedConstants.cs" />
     <Compile Include="StringBuildOut.cs" />

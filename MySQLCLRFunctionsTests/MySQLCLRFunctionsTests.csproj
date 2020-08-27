@@ -97,6 +97,7 @@
     <Compile Include="StringPivotTests.cs" />
     <Compile Include="StringReduceCustomizationsTests.cs" />
     <Compile Include="StringReduceTests.cs" />
+    <Compile Include="StringSplitTests.cs" />
     <Compile Include="StringTestTests.cs" />
     <Compile Include="StringTransformCustomizationsTests.cs" />
     <Compile Include="StringTransformTests.cs" />
