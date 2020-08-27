@@ -15,6 +15,7 @@ using System.Text.RegularExpressions;
  */
 namespace MySQLCLRFunctions
 {
+
     /*
      * 
      * Naming conventions for regex parameters
@@ -25,6 +26,15 @@ namespace MySQLCLRFunctions
      */
     public static class StringTransform
     {
+        // Convenience and clarity function
+
+        public static string[] SingleStringAsArray(string element1)
+        {
+            var arr = new string[1];
+            arr[0] = element1;
+            return arr;
+        }
+
         // Extensions for internal use and simpler Fluent design, but not for SQL to call
         internal static string REPLACEMATCHX(this string input, string pattern, string replacement)
         {
