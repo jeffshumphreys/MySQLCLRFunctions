@@ -443,23 +443,5 @@ namespace MySQLCLRFunctions
             }
         }
 
-        /******************************************************************************************************************************************************************
-         * 
-         *     Internal pivoters that just make arrays for internal use and not exposed sets for SQL Server.
-         *
-         *****************************************************************************************************************************************************************/
-
-        internal static string[] GetWordsW(this string input)
-        {
-            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return new string[0];
-
-            return input.SplitX(@"\W");
-        }
-
-        internal static string[] SplitX(this string input, string pattern)
-        {
-            if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return new string[0];
-            return Regex.Split(input, pattern, RegexOptions.None);
-        }
     }
 }
