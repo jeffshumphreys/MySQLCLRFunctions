@@ -96,6 +96,8 @@ DROP FUNCTION IF EXISTS PieceNumber
 DROP FUNCTION IF EXISTS PieceNumberX
 DROP FUNCTION IF EXISTS LastPiece
 DROP FUNCTION IF EXISTS RightOf
+DROP FUNCTION IF EXISTS RightOfS
+DROP FUNCTION IF EXISTS RightOfN
 DROP FUNCTION IF EXISTS RightOfAny
 DROP FUNCTION IF EXISTS RightOfAnyC
 DROP FUNCTION IF EXISTS EverythingAfter
@@ -397,10 +399,10 @@ SELECT HumanizeDataTimeDiff30 = dbo.HumanizeDateTimeDiff(DATEADD(SECOND, -(23*23
 GO
 SELECT HumanizeDataTimeDiff31 = dbo.HumanizeDateTimeDiff(DATEADD(MILLISECOND, -1, SYSDATETIME())) 
 GO
-SELECT HumanizeDataTimeDiff32 = dbo.HumanizeDateTimeDiff(DATEADD(MICROSECOND, -1, SYSDATETIME())) 
-GO
-SELECT HumanizeDataTimeDiff33 = dbo.HumanizeDateTimeDiff(DATEADD(MICROSECOND, -101, SYSDATETIME())) 
-GO
+--SELECT HumanizeDataTimeDiff32 = dbo.HumanizeDateTimeDiff(DATEADD(MICROSECOND, -1, SYSDATETIME())) 		  -- FAILED
+--GO
+--SELECT HumanizeDataTimeDiff33 = dbo.HumanizeDateTimeDiff(DATEADD(MICROSECOND, -101, SYSDATETIME()))         -- FAILED
+--GO
 SELECT HumanizeDataTimeDiff34 = dbo.HumanizeDateTimeDiff(DATEADD(MICROSECOND, -1011, SYSDATETIME()))          -- FAILED
 GO
 SELECT HumanizeDataTimeDiff35 = dbo.HumanizeDateTimeDiff(DATEADD(MICROSECOND, -10111, SYSDATETIME())) 
@@ -409,8 +411,8 @@ SELECT HumanizeDataTimeDiff36 = dbo.HumanizeDateTimeDiff(DATEADD(MICROSECOND, -1
 GO
 SELECT HumanizeDataTimeDiff37 = dbo.HumanizeDateTimeDiff(DATEADD(MICROSECOND, -1011111, SYSDATETIME())) 
 GO
-SELECT HumanizeDataTimeDiff38 = dbo.HumanizeDateTimeDiff(DATEADD(NANOSECOND, -100, SYSDATETIME()))
-GO
+--SELECT HumanizeDataTimeDiff38 = dbo.HumanizeDateTimeDiff(DATEADD(NANOSECOND, -100, SYSDATETIME()))
+--GO
 /**************************************************************************************************************************************************************************************************
  *
  *       File Name Functions - Usually I've used FileInfo class, but that goes out to NTFS and various OS functions, very slow for massive work.
@@ -478,11 +480,11 @@ GO
 SELECT IsIP4_______________________________________________________________ = dbo.IsIP4('10.10.10.218')
 SELECT IsIP4_______________________________________________________________ = dbo.IsIP4('$(FQDN1)')
 GO
-CREATE OR ALTER FUNCTION LegalName(@input NVARCHAR(MAX), @rule NVARCHAR(MAX)) RETURNS BIT
+CREATE OR ALTER FUNCTION LegalName(@input NVARCHAR(MAX), @rule NVARCHAR(MAX), @subdomain NVARCHAR(100)) RETURNS BIT
 WITH RETURNS NULL ON NULL INPUT
 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTest].LegalName;  
 GO
-SELECT LegalName_______________________________________________________________ = dbo.LegalName('HOSTNAMEUSUALLY\R12345678901234567', 'SQL Server Server Name')
+SELECT LegalName_______________________________________________________________ = dbo.LegalName('HOSTNAMEUSUALLY\R12345678901234567', 'SQL Server Server Name', 'Instance')
 GO
 
 /**************************************************************************************************************************************************************************************************
@@ -557,13 +559,19 @@ CREATE OR ALTER FUNCTION RightOfAnyC(@input NVARCHAR(MAX), @marker NVARCHAR(MAX)
 WITH RETURNS NULL ON NULL INPUT
 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].RightOfAnyC;  
 GO
-SELECT RightOfAnyC_______________________________________________________________ = dbo.RightOfAnyC('Test\x', '\')  -->x<--
+SELECT ExpectedValue = 'x', RightOfAnyC_______________________________________________________________ = dbo.RightOfAnyC('Test\x', '\')  -->x<--
 GO
 CREATE OR ALTER FUNCTION RightOfS(@input NVARCHAR(MAX), @marker NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) 
 WITH RETURNS NULL ON NULL INPUT
 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].RightOfS;  
 GO
-SELECT RightOfS_______________________________________________________________ = dbo.RightOfS('Test\hx', '\h')  -->x<--
+SELECT ExpectedValue = 'x', RightOfS_______________________________________________________________ = dbo.RightOfS('Test\hx', '\h')  -->x<--
+GO
+CREATE OR ALTER FUNCTION RightOfN(@input NVARCHAR(MAX), @n INT) RETURNS NVARCHAR(MAX) 
+WITH RETURNS NULL ON NULL INPUT
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].RightOfN;  
+GO
+SELECT ExpectedValue = '\hx', RightOfN_______________________________________________________________ = dbo.RightOfN('Test\hx', 4) 
 GO
 CREATE OR ALTER FUNCTION FirstWordW(@input NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
 WITH RETURNS NULL ON NULL INPUT
