@@ -99,12 +99,18 @@ namespace MySQLCLRFunctions
          * Same as SQL Server IN clause.
          * 
          ***************************************************************************************************************************************************************************************************/
-        public static bool? In(this string input, params string[] markers)
+        public static bool? IN(this string input, params string[] markers)
         {
-            return input.InL(markers);
+            return input.INL(markers);
         }
 
-        public static bool? InL(this string input, string[] markers)
+        /*********************************************************************************************************************************************************************************************
+         * 
+         * For the ridiculous scenario whereby you want to pass in an array instead of a list of strings (implicit array).  The two calling forms are not compatible.
+         * Okay not ridiculous.
+         * 
+         *********************************************************************************************************************************************************************************************/
+        public static bool? INL(this string input, string[] markers)
         {
             if (IsNull(input)) return null;
             if (IsEmpty(input)) return false;    // Something can never be in nothing. Can empty = empty? No.
@@ -115,6 +121,11 @@ namespace MySQLCLRFunctions
             }
 
             return false;
+        }
+
+        public static bool? InL(string input, string[] markers)
+        {
+            return input.INL(markers);
         }
         /***************************************************************************************************************************************************************************************************
          * 
