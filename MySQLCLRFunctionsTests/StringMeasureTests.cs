@@ -63,7 +63,7 @@ namespace MySQLCLRFunctions.Tests
             string[] possiblegenerationalsuffixes = new string[] { "I", "II", "III", "IV", "JR", "SR", "Jr", "Sr" };
             string input = "Jr";
             bool? validoutput = true;
-            var output = input.InL(possiblegenerationalsuffixes);
+            var output = input.INL(possiblegenerationalsuffixes);
             Assert.Equal(expected: validoutput, output);
         }
         [Fact()]
@@ -73,7 +73,7 @@ namespace MySQLCLRFunctions.Tests
             string[] possiblegenerationalsuffixes = new string[] { "I", "II", "III", "IV", "JR", "SR", "Jr", "Sr" };
             string input = "jR";
             bool? validoutput = false;
-            var output = input.InL(possiblegenerationalsuffixes);
+            var output = input.INL(possiblegenerationalsuffixes);
             Assert.Equal(expected: validoutput, output);
         }
     }
