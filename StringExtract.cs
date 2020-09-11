@@ -232,6 +232,23 @@ namespace MySQLCLRFunctions
 
         /***************************************************************************************************************************************************************************************************
          * 
+         *  Any string after this point is extracted. Either from the left or from the right.
+         * 
+         ***************************************************************************************************************************************************************************************************/
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
+        public static string RightOfN(string input, int n)
+        {
+            if (IsNullOrWhiteSpaceOrEmpty(input)) return input;
+            if (n == 0) return input;
+            if (n < 0 && Abs(n) >= input.Length) return input;
+            if (n > input.Length) return input;  // No need to throw an exception.
+            if (n < 0) return input.Right(Abs(n));  // See?  Simple.  If the negative was an error, then we'll have to deal with that.
+
+            return input.Substring(n);
+        }
+
+        /***************************************************************************************************************************************************************************************************
+         * 
          *  Any of the characters in marker, any string after any of those.
          * 
          ***************************************************************************************************************************************************************************************************/
