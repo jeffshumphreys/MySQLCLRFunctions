@@ -519,7 +519,7 @@ TestTitle, Test
                             return u;
                         }
 
-                        if ((bool)namepart.piece.In("I", "II", "III", "IV", "JR", "SR", "Jr", "Sr")) u.GenerationalSuffix = namepart.piece;
+                        if ((bool)namepart.piece.IN("I", "II", "III", "IV", "JR", "SR", "Jr", "Sr")) u.GenerationalSuffix = namepart.piece;
                             
                         howmanywordsbeforecomma = namepart.pieceOrderNo + 1;
                     }
