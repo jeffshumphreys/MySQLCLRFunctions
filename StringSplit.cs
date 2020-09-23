@@ -106,5 +106,66 @@ namespace MySQLCLRFunctions
             }
         }
 
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true, FillRowMethodName = nameof(Pieces8AsSQLRow), TableDefinition = "col1 NVARCHAR(MAX), col2 NVARCHAR(MAX), col3 NVARCHAR(MAX), col4 NVARCHAR(MAX), col5 NVARCHAR(MAX), col6 NVARCHAR(MAX), col7 NVARCHAR(MAX), col8 NVARCHAR(MAX)")]
+        public static IEnumerable SplitTo8ColumnsX(string input, string pattern)
+        {
+            MatchCollection regexmatches = Regex.Matches(input, pattern, RegexOptions.IgnoreCase, TimeSpan.FromSeconds(10));
+            int nofmatches = regexmatches.Count;
+            string[] distinctfieldvalues = new string[8];
+
+            var rowoffields = new List<Pieces8Record>(1);
+            if (nofmatches < 1) return rowoffields.ToArray();
+            int j = 0;
+            foreach (Group group in regexmatches[0].Groups)
+            {
+                if (j == 0) { j++; continue; } // Skip the first global capture
+                var fieldvalue = group.ToString();
+                distinctfieldvalues[j - 1] = fieldvalue;  // Store in 0th element
+                j++;
+            }
+
+            Pieces8Record fieldsasrecord = new Pieces8Record(distinctfieldvalues[0], distinctfieldvalues[1], distinctfieldvalues[2], distinctfieldvalues[3]
+                , distinctfieldvalues[4], distinctfieldvalues[5], distinctfieldvalues[6], distinctfieldvalues[7]);
+            rowoffields.Add(fieldsasrecord);
+            return rowoffields.ToArray();
+        }
+
+        // Called from SQL Server only
+        private static void Pieces8AsSQLRow(Object obj, out SqlString col1, out SqlString col2, out SqlString col3, out SqlString col4, out SqlString col5, out SqlString col6, out SqlString col7, out SqlString col8)
+        {
+            var pieces = obj as Pieces8Record;
+            col1 = pieces.col1;
+            col2 = pieces.col2;
+            col3 = pieces.col3;
+            col4 = pieces.col4;
+            col5 = pieces.col5;
+            col6 = pieces.col6;
+            col7 = pieces.col7;
+            col8 = pieces.col8;
+        }
+
+        public class Pieces8Record
+        {
+            public string col1;
+            public string col2;
+            public string col3;
+            public string col4;
+            public string col5;
+            public string col6;
+            public string col7;
+            public string col8;
+
+            public Pieces8Record(string lcol1, string lcol2, string lcol3, string lcol4, string lcol5, string lcol6, string lcol7, string lcol8)
+            {
+                col1 = lcol1;
+                col2 = lcol2;
+                col3 = lcol3;
+                col4 = lcol4;
+                col5 = lcol5;
+                col6 = lcol6;
+                col7 = lcol7;
+                col8 = lcol8;
+            }
+        }
     }
 }
