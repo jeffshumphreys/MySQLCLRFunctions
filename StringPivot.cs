@@ -313,27 +313,30 @@ namespace MySQLCLRFunctions
 
             int nofmatches = regexmatches.Count;
             var matches = new List<CapturesRecord>(nofmatches);
+
+            int ij = 0;
             for (int i = 0; i < nofmatches; i++)
             {
-                string match;
-                int startsat;
-                //TOCONSIDERDOING: string nextMatch = null;
-                //TOCONSIDERDOING: string previousMatch = null;
-                if (regexmatches[i].Groups.Count >= 1)
+                for (int j = 1; j <= regexmatches[i].Groups.Count; j++)
                 {
-                    match = regexmatches[i].Groups[1].Value;
-                    startsat = regexmatches[i].Groups[1].Index;
-                }
-                else
-                {
-                    match = "";
-                    startsat = -1;
-                }
 
-                //if (i < nofmatches - 1) nextMatch = regexmatches[i + 1].Groups[1].Value;
-                //if (i > 0) previousMatch = regexmatches[i - 1].Groups[1].Value;
 
-                matches.Add(new CapturesRecord(lmatchOrderNo: i + 1, lcapturedMatch: match, lcapturedmatchstartsat: startsat));
+                    string match;
+                    int startsat;
+                    int endsat;
+                    match = regexmatches[i].Groups[j].Value;
+                    startsat = regexmatches[i].Groups[j].Index;
+                    endsat = regexmatches[i].Groups[j].Index + regexmatches[i].Groups[j].Length;
+                    if (match.Length == 0 && startsat == 0)
+                    {
+                        // I get this weird empties
+                    }
+                    else
+                    {
+                        matches.Add(new CapturesRecord(lmatchOrderNo: ij + 1, lcapturedMatch: match, lcapturedmatchstartsat: startsat));
+                        ij++;
+                    }
+                }
             }
             return matches.ToArray();
         }
