@@ -71,6 +71,7 @@ DROP FUNCTION IF EXISTS NearX
  *      String Splits
 /***************************************************************************************************************************************************************************************************/*/
 DROP FUNCTION IF EXISTS SplitTo4ColumnsX
+DROP FUNCTION IF EXISTS SplitTo8ColumnsX
 /**************************************************************************************************************************************************************************************************
  *      String Extract
 /***************************************************************************************************************************************************************************************************/*/
@@ -648,6 +649,7 @@ CREATE OR ALTER FUNCTION CapturesX(@input NVARCHAR(MAX), @pattern NVARCHAR(4000)
 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringPivot].CapturesX;  
 GO  
 SELECT * FROM CapturesX('div class="browsename"><span class="listname"><a href="/name/abbey">ABBEY</a></span> <span class="listgender">', '\<span class\="listname"\>\<a href=\"\/name\/(\w+)"') AS ssore
+SELECT * FROM CapturesX('Violation of UNIQUE KEY constraint ''UQ__Permissi__FCC616D996C97B78''. Cannot insert duplicate key in object ''ETLStepCaptures.Permissions''. The duplicate key value is (7671075, <NULL>, Add rows, 1, db_ssisoperator, 16, msdb, OCC01DB004).', 'constraint ''(.+?)''.+?Cannot insert duplicate key in object ''(.+?)''') AS ssore
 GO
 CREATE OR ALTER FUNCTION KeyValuePairsWithMultiValuesS(@input NVARCHAR(MAX), @betweeneachkeyvaluepair NVARCHAR(4000), @betweenkeyandvalue NVARCHAR(4000), @betweensubvalues NVARCHAR(4000)) 
 RETURNS TABLE(pieceorderNo INT, keystring NVARCHAR(MAX), valuestring NVARCHAR(MAX)) 
@@ -672,6 +674,12 @@ EndProject
 '
 ,   '\("{(?<folderGUID>.*?)}"\) = "(?<FolderName>.*?)", "(?<ProjectPath>.*?)", "{(?<ParentFolderId>.*?)}"'
 ) 
+AS ssore
+GO
+CREATE OR ALTER FUNCTION SplitTo8ColumnsX(@input NVARCHAR(MAX), @pattern NVARCHAR(4000)) RETURNS TABLE(col1 NVARCHAR(MAX), col2 NVARCHAR(MAX), col3 NVARCHAR(MAX), col4 NVARCHAR(MAX),col5 NVARCHAR(MAX), col6 NVARCHAR(MAX), col7 NVARCHAR(MAX), col8 NVARCHAR(MAX)) 
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringSplit].SplitTo8ColumnsX;  
+GO  
+SELECT * FROM SplitTo8ColumnsX('1435079, <NULL>', '(.+?), (.+?), (.+?), (.+?)') 
 AS ssore
 GO
 
