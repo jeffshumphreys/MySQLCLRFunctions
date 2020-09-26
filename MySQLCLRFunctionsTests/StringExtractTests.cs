@@ -6,38 +6,56 @@ namespace MySQLCLRFunctions.Tests
     public class StringExtractTests
     {
         [Fact]
-        public void LeftOfTest()
+        public void LeftOfSTest()
         {
-            Assert.False(true);
+            const string input = "GetTHEMIDDLEofthis";
+            const string validoutput = "GetTHEMIDDLE";
+            var output = LeftOfS(input, "of");
+            Assert.Equal(expected: validoutput, output);
         }
 
         [Fact]
-        public void LeftOfNthTest()
+        public void LeftOfNthSTest()
         {
-            Assert.False(true);
+            const string input = "I,JJJJ,K";
+            const string validoutput = "I,JJJJ";
+            var output = LeftOfNthS(input, ",", 2);
+            Assert.Equal(expected: validoutput, output);
         }
 
         [Fact]
-        public void LeftMOfNthTest()
+        public void LeftMOfNthSTest()
         {
-            Assert.False(true);
+            const string input = "EDWPROD.UserData.x.y";
+            const string validoutput = "EDWPROD.UserData";
+            var output = LeftMOfNthS(input, ".", 2, 2); 
+            Assert.Equal(expected: validoutput, output);
         }
         [Fact]
-        public void LeftOfAnyTest()
+        public void LeftOfAnyCTest()
         {
-            Assert.False(true);
+            const string input = "This is a,space";
+            const string validoutput = "This";
+            var output = LeftOfAnyC(input, " ,");
+            Assert.Equal(expected: validoutput, output);
         }
 
         [Fact]
-        public void RightOfTest()
+        public void RightOfSTest()
         {
-            Assert.False(true);
+            const string input = "This is a,space";
+            const string validoutput = "space";
+            var output = RightOfS(input, ",");
+            Assert.Equal(expected: validoutput, output);
         }
 
         [Fact]
-        public void RightOfAnyTest()
+        public void RightOfAnyCTest()
         {
-            Assert.False(true);
+            const string input = "So what?";
+            const string validoutput = "";
+            var output = RightOfAnyC(input, ",:#?");
+            Assert.Equal(expected: validoutput, output);
         }
 
         [Fact]
