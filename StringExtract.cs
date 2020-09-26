@@ -71,7 +71,7 @@ namespace MySQLCLRFunctions
          * 
          ***************************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static string LeftMthOfNthS(string input, string marker, int n, int howmany)
+        public static string LeftMOfNthS(string input, string marker, int n, int howmany)
         {
             int[] pointsfound = new int[n];
             if (string.IsNullOrEmpty(input)) return null;
@@ -349,7 +349,6 @@ namespace MySQLCLRFunctions
         {
             if (IsNullOrWhiteSpaceOrEmpty(input)) return input;
 
-            if (from == to) return string.Empty;
             if (from > 0 && to > 0 && from > to) return string.Empty;
             if (from < 0 && to < 0 && to < from) return string.Empty;
             if (from > 0 && to < 0)
@@ -368,10 +367,10 @@ namespace MySQLCLRFunctions
                 return x;
             }
 
-            if (to > from)
+            if (to >= from)
             {
                 int adj_from = from + BACKSET_FOR_ZEROBASED;
-                int converted_to_length = to - from;
+                int converted_to_length = to - from + 1; // Offset to grab the character "to" is on.
                 return SafeSubstring(input, adj_from, converted_to_length);
             }
 
