@@ -9,7 +9,7 @@ namespace MySQLCLRFunctions.Tests
         public void ReplaceMatchXTest()
         {
             const string input = "ThisIsIt";
-            const string validoutput = "Th!s!s!t";
+            const string validoutput = "Th!sIsI!";
             var output = ReplaceMatchX(input, "[it]", "!");
             Assert.Equal(expected: validoutput, output);
         }
