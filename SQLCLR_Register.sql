@@ -307,10 +307,20 @@ GO
  *
 /***************************************************************************************************************************************************************************************************/*/
 
-CREATE OR ALTER FUNCTION Max2DateTimes(@d1 DATETIME2, @d2 DATETIME2) RETURNS DATETIME
+CREATE OR ALTER FUNCTION Max2DateTimes(@d1 DATETIME2, @d2 DATETIME2) RETURNS DATETIME2
 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.Compares].Max2DateTimes;
 GO  
 SELECT Max2DateTimes = dbo.Max2DateTimes(GETDATE(), DATEADD(DAY, 1, GETDATE()))     --> shows tomorrow
+GO
+CREATE OR ALTER FUNCTION Max3DateTimes(@d1 DATETIME2, @d2 DATETIME2, @d3 DATETIME2) RETURNS DATETIME2
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.Compares].Max3DateTimes;
+GO  
+SELECT Max3DateTimes = dbo.Max3DateTimes(GETDATE(), DATEADD(DAY, 1, GETDATE()), DATEADD(DAY, 2, GETDATE()))     --> shows tomorrow
+GO
+CREATE OR ALTER FUNCTION Max4DateTimes(@d1 DATETIME2, @d2 DATETIME2, @d3 DATETIME2, @d4 DATETIME2) RETURNS DATETIME2
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.Compares].Max4DateTimes;
+GO  
+SELECT Max4DateTimes = dbo.Max4DateTimes(GETDATE(), DATEADD(DAY, 1, GETDATE()), DATEADD(DAY, 2, GETDATE()), DATEADD(DAY, 3, GETDATE()))     --> shows tomorrow
 GO
 /**************************************************************************************************************************************************************************************************
  *
