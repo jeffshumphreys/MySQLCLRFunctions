@@ -63,6 +63,9 @@ namespace MySQLCLRFunctions
             return Regex.Replace(input, pattern, replacement);
         }
 
+        // TODO: Create a case insensitive version
+        //public static string ReplaceMatchXi(string input, string pattern, string replacement)
+
         // Extensions for internal use and simpler Fluent design, but not for SQL to call
         internal unsafe static string REPLACERECURSIVES(this string input, string marker, string replacement)
         {
