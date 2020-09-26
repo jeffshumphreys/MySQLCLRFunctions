@@ -12,9 +12,12 @@ namespace MySQLCLRFunctions.Tests
     public class StringSplitTests
     {
         [Fact()]
-        public void SplitIn2OnCTest()
+        public void SplitIn2CTest()
         {
-            Assert.True(false, "This test needs an implementation");
+            string input = "a,b";
+            string validoutput = "b";
+            (string s1, string s2) = input.SplitIn2OnC(',');
+            Assert.Equal(expected: validoutput, actual: s2);
         }
 
         [Fact()]
@@ -25,6 +28,16 @@ namespace MySQLCLRFunctions.Tests
             var validoutput = "Cheaters";
             IEnumerable<Pieces4Record> pieces = (IEnumerable<Pieces4Record>)SplitTo4ColumnsX(input, pattern);
             Assert.Equal(expected:validoutput, actual:pieces.ToArray()[0].col2);
+        }
+
+        [Fact()]
+        public void SplitTo8ColumnsXTest()
+        {
+            string input = "1,2,3,4,5,6,7,8";
+            string pattern = "(.*?),(.*?),(.*?),(.*?),(.*?),(.*?),(.*?),(.*?)$";
+            var validoutput = "8";
+            IEnumerable<Pieces8Record> pieces = (IEnumerable<Pieces8Record>)SplitTo8ColumnsX(input, pattern);
+            Assert.Equal(expected: validoutput, actual: pieces.ToArray()[0].col8);
         }
     }
 }
