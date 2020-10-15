@@ -306,19 +306,99 @@ namespace MySQLCLRFunctions
 
         /***************************************************************************************************************************************************************************************************
         * 
+        * Extract a regex match
+        * 
+        ***************************************************************************************************************************************************************************************************/
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
+        public static string ExtractXi(string input, string pattern)
+        {
+            if (IsNullOrWhiteSpaceOrEmpty(input)) return input;
+            if (IsNullOrWhiteSpaceOrEmpty(pattern)) return input;
+
+            string[] stringpieces = Regex.Split(input, pattern, RegexOptions.IgnoreCase, TimeSpan.FromSeconds(2));
+            if (stringpieces?.Length > 0)
+            {
+                string matchedstring = stringpieces[0];
+                if (string.IsNullOrWhiteSpace(matchedstring))
+                {
+                    return null;
+                }
+                return matchedstring;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
+        public static string ExtractX(string input, string pattern)
+        {
+            if (IsNullOrWhiteSpaceOrEmpty(input)) return input;
+            if (IsNullOrWhiteSpaceOrEmpty(pattern)) return input;
+
+            string[] stringpieces = Regex.Split(input, pattern, RegexOptions.None, TimeSpan.FromSeconds(2));
+            if (stringpieces?.Length > 0)
+            {
+                string matchedstring = stringpieces[0];
+                if (string.IsNullOrWhiteSpace(matchedstring))
+                {
+                    return null;
+                }
+                return matchedstring;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /***************************************************************************************************************************************************************************************************
+        * 
         * Extract everything after a specific string
         * 
         ***************************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
-        public static string EverythingAfterX(string input, string marker)
+        public static string EverythingAfterS(string input, string marker)
         {
             if (IsNullOrWhiteSpaceOrEmpty(input)) return input;
+            if (IsNullOrWhiteSpaceOrEmpty(marker)) return input;
 
             int i = input.FindIndexOf(marker);
             if (i == -1) return string.Empty;
             if (i + marker.Length > input.Length) return string.Empty;
 
             return input.Substring(i + marker.Length);
+        }
+
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
+        public static string EverythingAfterX(string input, string pattern)
+        {
+            if (IsNullOrWhiteSpaceOrEmpty(input)) return input;
+            if (IsNullOrWhiteSpaceOrEmpty(pattern)) return input;
+
+            Match match = Regex.Match(input, pattern, RegexOptions.None, TimeSpan.FromSeconds(2));
+
+            if (match == null) return string.Empty;
+            if (!match.Success) return string.Empty;
+            return input.Substring(match.Index+match.Length);
+        }
+
+
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
+        public static string ExtractPersonsName(string input)
+        {
+            if (IsNullOrWhiteSpaceOrEmpty(input)) return input;
+            // Following tested on:
+            // - Requested by Jeff Humphreys(3/1/2017 DL 128641) => Jeff Humphreys
+            //string pattern = @"[Rr]eq.+ [Bb]y +([A-Z][a-z]+ +[A-Z][a-z]+)[(]";
+            string pattern = @"[Rr]eq.*? [Bb]y +([A-Z][a-z]+ +[A-Z][a-z]+) *?[(\d\-]";
+
+            Match match = Regex.Match(input, pattern, RegexOptions.None, TimeSpan.FromSeconds(4));
+
+            if (match == null) return string.Empty;
+            if (!match.Success) return string.Empty;
+            return match.Groups[1].Value;
         }
 
         public static string Reverse(this string input)

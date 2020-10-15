@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using MySQLCLRFunctions;
+using Xunit;
 using static MySQLCLRFunctions.StringExtract;
 
 namespace MySQLCLRFunctions.Tests
@@ -28,7 +29,7 @@ namespace MySQLCLRFunctions.Tests
         {
             const string input = "EDWPROD.UserData.x.y";
             const string validoutput = "EDWPROD.UserData";
-            var output = LeftMOfNthS(input, ".", 2, 2); 
+            var output = LeftMOfNthS(input, ".", 2, 2);
             Assert.Equal(expected: validoutput, output);
         }
         [Fact]
@@ -178,11 +179,44 @@ namespace MySQLCLRFunctions.Tests
         }
 
         [Fact]
-        public void EverythingAfterXTest()
+        public void EverythingAfterSTest()
         {
             const string input = "Humphreys, Jeff S.";
             const string validoutput = " Jeff S.";
-            var output = EverythingAfterX(input, ",");
+            var output = EverythingAfterS(input, ",");
+            Assert.Equal(expected: validoutput, output);
+        }
+
+        [Fact()]
+        public void EverythingAfterXTest()
+        {
+            const string input = "Hi,There-data";
+            const string validoutput = "There-data";
+            var output = EverythingAfterX(input, "[\\,\\-]");
+            Assert.Equal(expected: validoutput, output);
+        }
+
+        [Fact()]
+        public void ExtractXTest()
+        {
+            const string input = "Hi,There-data";
+            const string validoutput = "There-data";
+            var output = EverythingAfterX(input, "[\\,\\-]");
+            Assert.Equal(expected: validoutput, output);
+        }
+
+        [Theory]
+        [InlineData("Requested by Jeff Humphreys(3/1/2017 DL 128641)", "Jeff Humphreys")]
+        [InlineData("requested by Jeff Humphreys (7/31/19 MJ 718827)", "Jeff Humphreys")]
+        [InlineData("Req by Jeff Humphreys 4/6/2012mh", "Jeff Humphreys")]
+        [InlineData("Req by FPT#  623633", "")]
+        [InlineData("Req by Jeff Humphreys 1-7-11 (FP#342527) se PG: We need to identify a new owner of the distribution list that is from the Team", "Jeff Humphreys")]
+        [InlineData("Requested by Jeff Humphreys - 2-27-2019 AB 592618)", "Jeff Humphreys")]
+        // Requested by Humphreys, Jeff (3/12/19 BC 601941)
+        // Ownership changed to Humphreys, Jeff - 1/8/20 - SR 823688        Access to xxxxxxx List
+        public void ExtractPersonsNameTest(string input, string validoutput)
+        {
+            var output = ExtractPersonsName(input);
             Assert.Equal(expected: validoutput, output);
         }
     }

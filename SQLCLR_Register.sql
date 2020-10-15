@@ -104,6 +104,8 @@ DROP FUNCTION IF EXISTS RightOfAnyC
 DROP FUNCTION IF EXISTS EverythingAfter
 DROP FUNCTION IF EXISTS EverythingAfterS
 DROP FUNCTION IF EXISTS EverythingAfterX -- X = Regexpression
+DROP FUNCTION IF EXISTS ExtractX
+DROP FUNCTION IF EXISTS ExtractXi
 DROP FUNCTION IF EXISTS Mid
 /**************************************************************************************************************************************************************************************************
  *      String Reduce
@@ -560,11 +562,11 @@ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].LeftOfNthS;
 GO
 SELECT LeftOfNthS_______________________________________________________________ = dbo.LeftOfNthS('Test\x\', '\', 2)
 GO
-CREATE OR ALTER FUNCTION LeftMthOfNthS(@input NVARCHAR(MAX), @marker NVARCHAR(MAX), @n INT, @howmanyback INT) RETURNS NVARCHAR(MAX) 
+CREATE OR ALTER FUNCTION LeftMOfNthS(@input NVARCHAR(MAX), @marker NVARCHAR(MAX), @n INT, @howmanyback INT) RETURNS NVARCHAR(MAX) 
 WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].LeftMthOfNthS;  
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].LeftMOfNthS;  
 GO
-SELECT LeftMOfNth_______________________________________________________________ = dbo.LeftMthOfNthS('Test\x\', '\', 2, 2)
+SELECT LeftMOfNthS_______________________________________________________________ = dbo.LeftMOfNthS('Test\x\', '\', 2, 2)
 GO
 CREATE OR ALTER FUNCTION RightOfAnyC(@input NVARCHAR(MAX), @marker NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) 
 WITH RETURNS NULL ON NULL INPUT
@@ -602,11 +604,35 @@ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].FirstWordBe
 GO
 SELECT FirstWordBeforeAnyC___________________________________________________________ = dbo.FirstWordBeforeAnyC('$(FQDN3)', '.\')
 GO
-CREATE OR ALTER FUNCTION EverythingAfterX(@input NVARCHAR(MAX), @marker NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
+CREATE OR ALTER FUNCTION EverythingAfterX(@input NVARCHAR(MAX), @pattern NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
 WITH RETURNS NULL ON NULL INPUT
 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].EverythingAfterX;  
 GO
 SELECT EverythingAfterX_______________________________________________________________ = dbo.EverythingAfterX('$(FQDN2)', '.')
+GO
+CREATE OR ALTER FUNCTION EverythingAfterS(@input NVARCHAR(MAX), @marker NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
+WITH RETURNS NULL ON NULL INPUT
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].EverythingAfterS;  
+GO
+SELECT EverythingAfterS_______________________________________________________________ = dbo.EverythingAfterS('$.(FQDN2)', '.')
+GO
+CREATE OR ALTER FUNCTION ExtractX(@input NVARCHAR(MAX), @pattern NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
+WITH RETURNS NULL ON NULL INPUT
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].ExtractX;  
+GO
+SELECT ExtractX_______________________________________________________________ = dbo.ExtractX('This is referencing ticket 222223', 'referencing ticket [\f+]')
+GO
+CREATE OR ALTER FUNCTION ExtractXi(@input NVARCHAR(MAX), @pattern NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
+WITH RETURNS NULL ON NULL INPUT
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].ExtractXi;  
+GO
+SELECT ExtractXi_______________________________________________________________ = dbo.ExtractXi('referencing ticket [/d+]', '.')
+GO
+CREATE OR ALTER FUNCTION ExtractPersonsName(@input NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
+WITH RETURNS NULL ON NULL INPUT
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].ExtractPersonsName;  
+GO
+SELECT ExtractPersonsName_______________________________________________________________ = dbo.ExtractPersonsName('Requested by Jeff Humphreys (02/20/2015 mb, 568855) The QV application is planned t sunset and new groups will be created to manage permissions on a Microsoft stack')
 GO
 /*
 .Net SqlClient Data Provider: Msg 6572, Level 16, State 1, Procedure Mid, Line 557
