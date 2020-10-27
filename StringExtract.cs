@@ -338,19 +338,26 @@ namespace MySQLCLRFunctions
             if (IsNullOrWhiteSpaceOrEmpty(pattern)) return input;
 
             string[] stringpieces = Regex.Split(input, pattern, RegexOptions.None, TimeSpan.FromSeconds(2));
-            if (stringpieces?.Length > 0)
-            {
-                string matchedstring = stringpieces[0];
-                if (string.IsNullOrWhiteSpace(matchedstring))
+            int mini = 0;
+            string matchedstring = null;
+            while (true) {
+                if (stringpieces?.Length > mini)
                 {
-                    return null;
+                    matchedstring = stringpieces[mini];
+                    if (!string.IsNullOrWhiteSpace(matchedstring))
+                    {
+                        break;
+                    }
                 }
-                return matchedstring;
+                else
+                {
+                    break;
+                }
+
+                mini++;
             }
-            else
-            {
-                return null;
-            }
+
+            return matchedstring;
         }
 
         /***************************************************************************************************************************************************************************************************

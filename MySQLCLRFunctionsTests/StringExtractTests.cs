@@ -196,12 +196,12 @@ namespace MySQLCLRFunctions.Tests
             Assert.Equal(expected: validoutput, output);
         }
 
-        [Fact()]
-        public void ExtractXTest()
+        [Theory]
+        [InlineData("EXEC ETLSteps.[0001_Tickets_0001_Customers]", "ETLSteps", @"EXEC (.+)\.")]
+        [InlineData("EXEC ETLSteps.[0001_Tickets_0001_Customers]", "ETLSteps.[0001_Tickets_0001_Customers]", @"EXEC (\[?.+\]?\.\[?.+\]?)")]
+        public void ExtractXTest(string input, string validoutput, string match)
         {
-            const string input = "Hi,There-data";
-            const string validoutput = "There-data";
-            var output = EverythingAfterX(input, "[\\,\\-]");
+            var output = ExtractX(input, match);
             Assert.Equal(expected: validoutput, output);
         }
 
