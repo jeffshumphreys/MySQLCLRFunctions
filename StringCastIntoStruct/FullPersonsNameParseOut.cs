@@ -435,7 +435,7 @@ TestTitle, Test
 
             string l = input.ToString();
             var namepartsInInput = (IEnumerable<PiecesWithMatchesRecord>)PiecesWithMatchesX(l, "\\w+");
-            int nofCommas = (int)input.HOWMANYC(',');
+            int nofCommas = (int)input.ToString().HOWMANYC(',');
             if (nofCommas == 0)
             {
                 u.NameOrder = "FirstNameLast";
