@@ -57,11 +57,35 @@ namespace MySQLCLRFunctions
             if (rtnval.IsNull) return null;
             return rtnval.Value;
         }
-        internal static int? HOWMANYC(this SqlString input, char c)
+        internal static int? HOWMANYC(this string input, char c)
         {
             var rtnval = HowManyC(input.ToString(), c);   // Not very clever.
             if (rtnval.IsNull) return null;
             return rtnval.Value;
+        }
+        internal static int? HOWMANYCS(this string input, char[] cs)
+        {
+            int? rtnval = null;
+            SqlInt32 howmany;
+            int totalfound = 0;
+            foreach (char c in cs)
+            {
+                howmany = HowManyC(input.ToString(), c);   // Not very clever.
+                if (!howmany.IsNull) totalfound += howmany.Value;
+            }
+            return totalfound;
+        }
+        internal static int? HOWMANYCS(this string input, string cs)
+        {
+            int? rtnval = null;
+            SqlInt32 howmany;
+            int totalfound = 0;
+            foreach (char c in cs)
+            {
+                howmany = HowManyC(input.ToString(), c);   // Not very clever.
+                if (!howmany.IsNull) totalfound += howmany.Value;
+            }
+            return totalfound;
         }
         /***************************************************************************************************************************************************************************************************
          * 
