@@ -130,6 +130,7 @@ DROP FUNCTION IF EXISTS LTrimN
  *      String Reduce Customizations
 /***************************************************************************************************************************************************************************************************/*/
 DROP FUNCTION IF EXISTS TrimNormalizeStringInput
+DROP FUNCTION IF EXISTS CleanUpSQLServerNameDelimiters
 /**************************************************************************************************************************************************************************************************
  *      String Build Out (dumb name)
 /***************************************************************************************************************************************************************************************************/*/
@@ -773,6 +774,12 @@ WITH RETURNS NULL ON NULL INPUT
 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringReduceCustomizations].TrimNormalizeStringInput; 
 GO
 SELECT TrimNormalizeStringInput_______________________________________________________________ = dbo.TrimNormalizeStringInput('   Hi   There! ')
+GO
+CREATE OR ALTER FUNCTION CleanUpSQLServerNameDelimiters(@input NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
+WITH RETURNS NULL ON NULL INPUT
+AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringReduceCustomizations].CleanUpSQLServerNameDelimiters; 
+GO
+SELECT CleanUpSQLServerNameDelimiters_______________________________________________________________ = dbo.CleanUpSQLServerNameDelimiters('   Hi   There! ')
 GO
 /**************************************************************************************************************************************************************************************************
  *
