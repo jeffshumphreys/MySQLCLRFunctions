@@ -197,10 +197,28 @@ namespace MySQLCLRFunctions.Tests
         }
 
         [Theory]
-        [InlineData("EXEC ETLSteps.[0001_Tickets_0001_Customers]", "ETLSteps", @"EXEC (.+)\.")]
-        [InlineData("EXEC ETLSteps.[0001_Tickets_0001_Customers]", "ETLSteps.[0001_Tickets_0001_Customers]", @"EXEC (\[?.+\]?\.\[?.+\]?)")]
-        public void ExtractXTest(string input, string validoutput, string match)
+        [InlineData("EXEC ETLSteps.[0001_Tickets_0001_Customers]", "ETLSteps.[0001_Tickets_0001_Customers]")]
+        [InlineData("EXEC ETLSteps.0001_Tickets_0001_Customers @x=3", "ETLSteps.0001_Tickets_0001_Customers")]
+        [InlineData("EXEC ETLSteps.0001_Tickets_0001_Customers", "ETLSteps.0001_Tickets_0001_Customers")]
+        [InlineData("EXEC ETLSteps.0001_Tickets_0001_Customers ", "ETLSteps.0001_Tickets_0001_Customers")]
+        [InlineData("EXEC ETLSteps.0001_Tickets_0001_Customers] ", "ETLSteps.0001_Tickets_0001_Customers]")]
+        [InlineData("EXEC ETLSteps.0001_Tickets_0001_Customers] @d", "ETLSteps.0001_Tickets_0001_Customers]")]
+        [InlineData(@"EXEC ETLSteps.[0001_Tickets_0002_Journals_1_ChangeHistory+TeamMembers_1] @RebuildFromScratch = 1, @PullAndAppendNewOnly = 0
+
+CheckForTranAGAIN:
+IF @@trancount > 0
+BEGIN
+    PRINT 'Committing'
+    COMMIT TRANSACTION
+    GOTO CheckForTranAGAIN
+END
+
+/*
+	TODO: move transaction work into proc.  Convert to RebuildFromScratch = 0
+*/", "ETLSteps.[0001_Tickets_0002_Journals_1_ChangeHistory+TeamMembers_1]")]
+        public void ExtractXTestForPerfectDataObjectRemoval(string input, string validoutput)
         {
+            var match = @"EXEC (\[?.+?\]?\.\[?.+])\r|EXEC (\[?.+?\]?\.\[?.+])$|EXEC (\[?.+?\]?\.\[?.+?\]?) |EXEC (\[?.+?\]?\.\[?.+?\]?)$";
             var output = ExtractX(input, match);
             Assert.Equal(expected: validoutput, output);
         }
