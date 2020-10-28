@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace MySQLCLRFunctions
@@ -10,6 +11,112 @@ namespace MySQLCLRFunctions
 
     public static class StringTransformCustomizations
     {
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
+        public static string CleanUpSQLServerNameDelimiters(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input)) return input;
+            if (string.IsNullOrEmpty(input)) return input;
+            string[] nameparts = new string[4];
+            int howmanynameparts = 0;
+            string currentnamepart = "";
+            int currentnamepartidx = 0;
+            int howmanyleftbrackets = 0, howmanyrightbrackets = 0, howmanydots = 0;
+            int nestedintobracketslevel = 0;
+            int charactersinthispart = 0;
+            char? lastchar = null;
+            foreach (char c in input)
+            {
+                lastchar = c;
+                if (c == '.')
+                {
+                    if (nestedintobracketslevel == 0)
+                    {
+                        nameparts[currentnamepartidx] = currentnamepart;
+                        currentnamepartidx++;
+                        currentnamepart = "";
+                        charactersinthispart = 0;
+                        howmanynameparts++;
+                    }
+                }
+                else if (c == '[')
+                {
+                    if (nestedintobracketslevel == 0)
+                    {
+                        if (charactersinthispart > 0)
+                        {
+                            return $"2:error while parsing {input}: on character {c} at namepart {currentnamepart} with number of characters in part = {charactersinthispart} and nested to {nestedintobracketslevel}";
+                        }
+                        else
+                        {
+                            nestedintobracketslevel++;
+                        }
+                    }
+                    else
+                    {
+                        return $"2a:error while parsing {input}: on character {c} at namepart {currentnamepart} with number of characters in part = {charactersinthispart} and nested to {nestedintobracketslevel}";
+                    }
+                }
+                else if (c == ']')
+                {
+                    if (nestedintobracketslevel <= 0)
+                    {
+                        return $"3:error while parsing {input}: on character {c} at namepart {currentnamepart} with number of characters in part = {charactersinthispart} and nested to {nestedintobracketslevel}";
+                    }
+                    if (charactersinthispart == 0)
+                    {
+                        return $"5:error while parsing {input}: on character {c} at namepart {currentnamepart} with number of characters in part = {charactersinthispart} and nested to {nestedintobracketslevel}";
+                    }
+                    else
+                    {
+                        nestedintobracketslevel--;
+                    }
+                }
+                // instance separator?
+                else
+                {
+                    charactersinthispart++;
+                    currentnamepart += c;
+                    // if > 128, error.
+                    // Check for legal characters
+                }
+            }
+
+            if (lastchar == '.')
+            {
+                return $"4:error while parsing {input}: on last character {lastchar} at namepart {currentnamepart} with number of characters in part = {charactersinthispart} and nested to {nestedintobracketslevel}";
+            }
+
+            if (charactersinthispart > 0) {
+                howmanynameparts++;
+                nameparts[currentnamepartidx] = currentnamepart;
+            }
+
+            string rebuiltname = "";
+            int partno = 0;
+            foreach (string namepart in nameparts)
+            {
+                if (partno >= howmanynameparts) break;
+                if (string.IsNullOrWhiteSpace(namepart))
+                {
+                    if (howmanynameparts - partno == 2) rebuiltname += ".";
+                    else
+                    {
+                        return $"6:error while parsing {input}: rebuiltname = {rebuiltname} with partno {partno} on last character {lastchar} at namepart {currentnamepart} with number of characters in part = {charactersinthispart} and nested to {nestedintobracketslevel}";
+                    }
+                }
+                else
+                {
+                    if (partno > 0)
+                    {
+                        rebuiltname += '.';
+                    }
+                    rebuiltname += "[" + namepart + "]";
+                }
+                partno++;
+            }
+
+            return rebuiltname;
+        }
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
         public static string RemoveSQLServerNameDelimiters(string input)
         {
