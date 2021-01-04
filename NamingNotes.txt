@@ -1,0 +1,5 @@
+Suffixes:
+	-C        Character
+	-AnyC	  A string marker is passed in and treated as an array.  So "LeftOfAnyC('joe;taken.lot', '.;$')" would detect
+	-AnyCOr   What to do if no match on at least one marker was found.  There is no reasonable default.  Sometimes I want the original string returned, sometimes a blank to keep chain appending
+	          to, other times I want a null returned, which breaks any chained functions.

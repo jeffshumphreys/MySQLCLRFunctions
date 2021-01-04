@@ -1,8 +1,8 @@
-﻿-- Time to execute: 14 sec
+﻿-- Time to execute: 3 sec (took all tests out)
+-- Warning: WITH RETURNS NULL ON NULL INPUT is fine for the main value, but if supporting arguments are null, it will also blow out a null.
 :SETVAR LibName MySQLCLRFunctions
 :R TestValueSettings.localuseonly
 SELECT ThisServer = @@servername, ThisDatabase = DB_NAME(), ThisUser = ORIGINAL_LOGIN()                 
-GO
 SELECT name, principal_id, clr_name, permission_set, is_visible, create_date, modify_date, is_user_defined FROM sys.assemblies AS a WHERE name = '$(LibName)'
 select * from sys.trusted_assemblies
 GO
@@ -101,6 +101,7 @@ DROP FUNCTION IF EXISTS RightOfS
 DROP FUNCTION IF EXISTS RightOfN
 DROP FUNCTION IF EXISTS RightOfAny
 DROP FUNCTION IF EXISTS RightOfAnyC
+DROP FUNCTION IF EXISTS RightOfAnyCOr
 DROP FUNCTION IF EXISTS EverythingAfter
 DROP FUNCTION IF EXISTS EverythingAfterS
 DROP FUNCTION IF EXISTS EverythingAfterX -- X = Regexpression
@@ -197,24 +198,23 @@ DECLARE @errmsg NVARCHAR(2048)
 --ALTER ASSEMBLY failed because the source assembly is, according to MVID, identical to an assembly that is already registered under the name "MySQLCLRFunctions".
 BEGIN TRY
     CREATE ASSEMBLY MySQLCLRFunctions from 'C:\Users\humphrej2\Source\Repos\jeffshumphreys\MySQLCLRFunctions\bin\Release\MySQLCLRFunctions.dll' WITH PERMISSION_SET = UNSAFE
+    PRINT 'Assembly created'
 END TRY
 BEGIN CATCH
-    IF ERROR_NUMBER() = 6246 PRINT 'Already present'
-    ELSE
-    IF ERROR_NUMBER() = 6246 PRINT 'Already present'
+    IF ERROR_NUMBER() = 6246 PRINT 'Assembly already present'
     ELSE
     BEGIN
-        SET @errmsg = CONCAT('Error: CANNOT ', ERROR_MESSAGE())
+        SET @errmsg = CONCAT('Error: CANNOT CREATE ASSEMBLY ', ERROR_MESSAGE())
          PRINT @errmsg
          ;THROW 51001, @errmsg, 1
-         
     END
 END CATCH
 BEGIN TRY
-    ALTER ASSEMBLY MySQLCLRFunctions from 'C:\Users\humphrej2\Source\Repos\jeffshumphreys\MySQLCLRFunctions\bin\Release\MySQLCLRFunctions.dll' WITH PERMISSION_SET = UNSAFE, UNCHECKED DATA
+    ALTER ASSEMBLY MySQLCLRFunctions FROM 'C:\Users\humphrej2\Source\Repos\jeffshumphreys\MySQLCLRFunctions\bin\Release\MySQLCLRFunctions.dll' WITH PERMISSION_SET = UNSAFE, UNCHECKED DATA
+    PRINT 'Existing assembly updated'
 END TRY
 BEGIN CATCH
-    IF ERROR_NUMBER() = 6285 PRINT 'MVID? Says assembly identical. Ignore.'
+    IF ERROR_NUMBER() = 6285 PRINT 'MVID? Says new assembly identical to existing. Ignoring.'
     ELSE IF ERROR_NUMBER() = 6270
     BEGIN
         PRINT ERROR_MESSAGE()
@@ -225,7 +225,6 @@ BEGIN CATCH
         SET @errmsg = CONCAT('Error: CANNOT ', ERROR_MESSAGE())
          PRINT @errmsg
          ;THROW 51000, @errmsg, 1
-         
     END
 END CATCH
 GO
@@ -234,46 +233,29 @@ GO
  *       Adaptors - Technically a transformation, but also reversible in most cases.
  *
 /***************************************************************************************************************************************************************************************************/*/
-CREATE OR ALTER FUNCTION VarBin2Hex(@InputAsVarBin VARBINARY(MAX)) RETURNS NVARCHAR(MAX) 
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.Adaptors].VarBin2Hex;  
+CREATE OR ALTER FUNCTION VarBin2Hex(@InputAsVarBin VARBINARY(MAX)) RETURNS NVARCHAR(MAX) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.Adaptors].VarBin2Hex; 
+GO
+CREATE OR ALTER FUNCTION ADDateTimeString2DateTime(@InputAsStringDateTime NVARCHAR(17)) RETURNS DATETIME /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.Adaptors].ADDateTimeString2DateTime;  
 GO  
-CREATE OR ALTER FUNCTION ADDateTimeString2DateTime(@InputAsStringDateTime NVARCHAR(17)) RETURNS DATETIME
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.Adaptors].ADDateTimeString2DateTime;  
+CREATE OR ALTER FUNCTION ToDate(@InputAsStringDateTime NVARCHAR(50)) RETURNS DATETIME /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.Adaptors].ToDate;  
 GO  
 /**************************************************************************************************************************************************************************************************
  *
  *       Test Network - Check if a name actually points to a live server with ICMP running.
  *
 /***************************************************************************************************************************************************************************************************/*/
-CREATE OR ALTER FUNCTION Ping(@Machine NVARCHAR(257)) RETURNS BIT
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.NetworkTest].Ping;  
+CREATE OR ALTER FUNCTION Ping(@Machine NVARCHAR(257)) RETURNS BIT /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.NetworkTest].Ping;  
 GO  
-SELECT Ping = dbo.Ping('$(testsvr2)') 
-GO
 /**************************************************************************************************************************************************************************************************
  *
  *       Collect/Gather/Get detail from the Network about the Network
  *
 /***************************************************************************************************************************************************************************************************/*/
-
-CREATE OR ALTER FUNCTION PingGetAddress(@Machine NVARCHAR(257)) RETURNS NVARCHAR(120) 
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.NetworkCollect].PingGetAddress;  
+CREATE OR ALTER FUNCTION PingGetAddress(@Machine NVARCHAR(257)) RETURNS NVARCHAR(120) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.NetworkCollect].PingGetAddress;  
 GO  
-SELECT PingGetAddress = dbo.PingGetAddress('$(testsvr2)')                                         -->fd85:eb7f:dad9:7777::a0a:b0e
-GO
-CREATE OR ALTER FUNCTION PingGetReturnBuffer(@Machine NVARCHAR(257)) RETURNS VARBINARY(200) 
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.NetworkCollect].PingGetReturnBuffer;  
+CREATE OR ALTER FUNCTION PingGetReturnBuffer(@Machine NVARCHAR(257)) RETURNS VARBINARY(200) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.NetworkCollect].PingGetReturnBuffer;  
 GO  
-SELECT PingGetReturnBuffer = CAST(dbo.PingGetReturnBuffer('$(testsvr2)') AS VARCHAR(400))        -->abcdefghijklmnopqrstuvwabcdefghi<--
-GO
-CREATE OR ALTER FUNCTION GetHostNames(@Machine NVARCHAR(257)) RETURNS NVARCHAR(600) 
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.NetworkCollect].GetHostNames;  
+CREATE OR ALTER FUNCTION GetHostNames(@Machine NVARCHAR(257)) RETURNS NVARCHAR(600) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.NetworkCollect].GetHostNames;  
 GO  
 /*
 A .NET Framework error occurred during execution of user-defined routine or aggregate "GetHostNames": 
@@ -285,597 +267,233 @@ System.Net.Sockets.SocketException:
   SELECT GetHostNames = CAST(dbo.GetHostNames('10.10.11.14') AS VARCHAR(400))   -- Never comes back.
   GO
 */
-CREATE OR ALTER FUNCTION GetHostAliases(@Machine NVARCHAR(257)) RETURNS NVARCHAR(600) 
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.NetworkCollect].GetHostAliases;  
+CREATE OR ALTER FUNCTION GetHostAliases(@Machine NVARCHAR(257)) RETURNS NVARCHAR(600) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.NetworkCollect].GetHostAliases;  
 GO  
-SELECT GetHostAliases = CAST(dbo.GetHostAliases('$(testsvr2)') AS VARCHAR(400))
-GO
-CREATE OR ALTER FUNCTION GetHostRealName(@Machine NVARCHAR(257)) RETURNS NVARCHAR(600) 
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.NetworkCollect].GetHostRealName;  
+CREATE OR ALTER FUNCTION GetHostRealName(@Machine NVARCHAR(257)) RETURNS NVARCHAR(600) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.NetworkCollect].GetHostRealName;  
 GO  
-SELECT GetHostRealName = dbo.GetHostRealName('$(testsvr1)')
-SELECT GetHostRealName = dbo.GetHostRealName('$(testsvr1a)')
-GO
-CREATE OR ALTER FUNCTION GetMyIP4() RETURNS NVARCHAR(20)
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.NetworkCollect].GetMyIP4;  
-GO
-SELECT MyHost = dbo.GetMyIP4()
+CREATE OR ALTER FUNCTION GetMyIP4() RETURNS NVARCHAR(20) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.NetworkCollect].GetMyIP4;  
 GO
 /**************************************************************************************************************************************************************************************************
  *
  *       Comparisons - Would be lovely to be generic, but not possible.
  *
 /***************************************************************************************************************************************************************************************************/*/
-
-CREATE OR ALTER FUNCTION Max2DateTimes(@d1 DATETIME2, @d2 DATETIME2) RETURNS DATETIME2
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.Compares].Max2DateTimes;
+CREATE OR ALTER FUNCTION Max2DateTimes(@d1 DATETIME2, @d2 DATETIME2) RETURNS DATETIME2 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.Compares].Max2DateTimes;
 GO  
-SELECT Max2DateTimes = dbo.Max2DateTimes(GETDATE(), DATEADD(DAY, 1, GETDATE()))     --> shows tomorrow
-GO
-CREATE OR ALTER FUNCTION Max3DateTimes(@d1 DATETIME2, @d2 DATETIME2, @d3 DATETIME2) RETURNS DATETIME2
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.Compares].Max3DateTimes;
+CREATE OR ALTER FUNCTION Max3DateTimes(@d1 DATETIME2, @d2 DATETIME2, @d3 DATETIME2) RETURNS DATETIME2 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.Compares].Max3DateTimes;
 GO  
-SELECT Max3DateTimes = dbo.Max3DateTimes(GETDATE(), DATEADD(DAY, 1, GETDATE()), DATEADD(DAY, 2, GETDATE()))     --> shows tomorrow
-GO
-CREATE OR ALTER FUNCTION Max4DateTimes(@d1 DATETIME2, @d2 DATETIME2, @d3 DATETIME2, @d4 DATETIME2) RETURNS DATETIME2
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.Compares].Max4DateTimes;
+CREATE OR ALTER FUNCTION Max4DateTimes(@d1 DATETIME2, @d2 DATETIME2, @d3 DATETIME2, @d4 DATETIME2) RETURNS DATETIME2 AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.Compares].Max4DateTimes;
 GO  
-SELECT Max4DateTimes = dbo.Max4DateTimes(GETDATE(), DATEADD(DAY, 1, GETDATE()), DATEADD(DAY, 2, GETDATE()), DATEADD(DAY, 3, GETDATE()))     --> shows tomorrow
-GO
 /**************************************************************************************************************************************************************************************************
  *
  *       Environmental - may also be machine-specific.  Things like sound, color, videio
  *
 /***************************************************************************************************************************************************************************************************/*/
-CREATE OR ALTER FUNCTION Beep(@frequencyHz INT, @durationMs INT) RETURNS INT
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.Environmental].Beep;  
+CREATE OR ALTER FUNCTION Beep(@frequencyHz INT, @durationMs INT) RETURNS INT /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.Environmental].Beep;  
 GO  
-SELECT Beep = dbo.Beep(400, 500)
-GO
-CREATE OR ALTER FUNCTION BeepStandard() RETURNS INT
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.Environmental].BeepStandard;  
+CREATE OR ALTER FUNCTION BeepStandard() RETURNS INT /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.Environmental].BeepStandard;  
 GO  
-SELECT BeepStandard = dbo.BeepStandard()
-GO
 /**************************************************************************************************************************************************************************************************
  *
  *       Humanization - Make things more meaningful to human readers, especially with complex reports
  *
 /***************************************************************************************************************************************************************************************************/*/
-CREATE OR ALTER FUNCTION HumanizeDateTimeDiff(@from DATETIME) RETURNS NVARCHAR(500)
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.Humanization].HumanizeDateTimeDiff;  
+CREATE OR ALTER FUNCTION HumanizeDateTimeDiff(@from DATETIME) RETURNS NVARCHAR(500) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.Humanization].HumanizeDateTimeDiff;  
 GO  
-SELECT HumanizeDataTimeDiff1 = dbo.HumanizeDateTimeDiff(SYSDATETIME())                                     -- FAILED
-GO
-SELECT HumanizeDataTimeDiff2 = dbo.HumanizeDateTimeDiff(DATEADD(YEAR, -1, SYSDATETIME())) 
-GO
-SELECT HumanizeDataTimeDiff3 = dbo.HumanizeDateTimeDiff(DATEADD(YEAR, -10, SYSDATETIME())) 
-GO
-SELECT HumanizeDataTimeDiff4 = dbo.HumanizeDateTimeDiff(DATEADD(QUARTER, -1, SYSDATETIME())) 
-GO
-SELECT HumanizeDataTimeDiff5 = dbo.HumanizeDateTimeDiff(DATEADD(QUARTER, -2, SYSDATETIME())) 
-GO
-SELECT HumanizeDataTimeDiff6 = dbo.HumanizeDateTimeDiff(DATEADD(MONTH, -1, SYSDATETIME())) 
-GO
-SELECT HumanizeDataTimeDiff7 = dbo.HumanizeDateTimeDiff(DATEADD(MONTH, -2, SYSDATETIME())) 
-GO
-SELECT HumanizeDataTimeDiff8 = dbo.HumanizeDateTimeDiff(DATEADD(WEEK, -1, SYSDATETIME())) 
-GO
-SELECT HumanizeDataTimeDiff9 = dbo.HumanizeDateTimeDiff(DATEADD(WEEK, -2, SYSDATETIME())) 
-GO
-SELECT HumanizeDataTimeDiff10 = dbo.HumanizeDateTimeDiff(DATEADD(WEEKDAY, -1, SYSDATETIME())) 
-GO
-SELECT HumanizeDataTimeDiff11 = dbo.HumanizeDateTimeDiff(DATEADD(DAY, -1, SYSDATETIME())) 
-GO
-SELECT HumanizeDataTimeDiff12 = dbo.HumanizeDateTimeDiff(DATEADD(DAY, -2, SYSDATETIME())) 
-GO
-SELECT HumanizeDataTimeDiff13 = dbo.HumanizeDateTimeDiff(DATEADD(DAY, -3, SYSDATETIME())) 
-GO
-SELECT HumanizeDataTimeDiff14 = dbo.HumanizeDateTimeDiff(DATEADD(HOUR, -12, SYSDATETIME())) 
-GO
-SELECT HumanizeDataTimeDiff15 = dbo.HumanizeDateTimeDiff(DATEADD(HOUR, -11, SYSDATETIME())) 
-GO
-SELECT HumanizeDataTimeDiff16 = dbo.HumanizeDateTimeDiff(DATEADD(HOUR, -9, SYSDATETIME())) 
-GO
-SELECT HumanizeDataTimeDiff17 = dbo.HumanizeDateTimeDiff(DATEADD(HOUR, -5, SYSDATETIME())) 
-GO
-SELECT HumanizeDataTimeDiff18 = dbo.HumanizeDateTimeDiff(DATEADD(HOUR, -3, SYSDATETIME())) 
-GO
-SELECT HumanizeDataTimeDiff19 = dbo.HumanizeDateTimeDiff(DATEADD(HOUR, -2, SYSDATETIME())) 
-GO
-SELECT HumanizeDataTimeDiff20 = dbo.HumanizeDateTimeDiff(DATEADD(HOUR, -1, SYSDATETIME())) 
-GO
-SELECT HumanizeDataTimeDiff21 = dbo.HumanizeDateTimeDiff(DATEADD(MINUTE, -1, SYSDATETIME())) 
-GO
-SELECT HumanizeDataTimeDiff22 = dbo.HumanizeDateTimeDiff(DATEADD(MINUTE, -11, SYSDATETIME())) 
-GO
-SELECT HumanizeDataTimeDiff23 = dbo.HumanizeDateTimeDiff(DATEADD(SECOND, -1, SYSDATETIME())) 
-GO
-SELECT HumanizeDataTimeDiff24 = dbo.HumanizeDateTimeDiff(DATEADD(SECOND, -2, SYSDATETIME())) 
-GO
-SELECT HumanizeDataTimeDiff25 = dbo.HumanizeDateTimeDiff(DATEADD(SECOND, -31, SYSDATETIME())) 
-GO
-SELECT HumanizeDataTimeDiff26 = dbo.HumanizeDateTimeDiff(DATEADD(SECOND, -59, SYSDATETIME())) 
-GO
-SELECT HumanizeDataTimeDiff27 = dbo.HumanizeDateTimeDiff(DATEADD(SECOND, -(11*24+1), SYSDATETIME())) 
-GO
-SELECT HumanizeDataTimeDiff28 = dbo.HumanizeDateTimeDiff(DATEADD(SECOND, -(11*24-1), SYSDATETIME())) 
-GO
-SELECT HumanizeDataTimeDiff29 = dbo.HumanizeDateTimeDiff(DATEADD(SECOND, -(11*23-1), SYSDATETIME())) 
-GO
-SELECT HumanizeDataTimeDiff30 = dbo.HumanizeDateTimeDiff(DATEADD(SECOND, -(23*23-1), SYSDATETIME())) 
-GO
-SELECT HumanizeDataTimeDiff31 = dbo.HumanizeDateTimeDiff(DATEADD(MILLISECOND, -1, SYSDATETIME())) 
-GO
---SELECT HumanizeDataTimeDiff32 = dbo.HumanizeDateTimeDiff(DATEADD(MICROSECOND, -1, SYSDATETIME())) 		  -- FAILED
---GO
---SELECT HumanizeDataTimeDiff33 = dbo.HumanizeDateTimeDiff(DATEADD(MICROSECOND, -101, SYSDATETIME()))         -- FAILED
---GO
-SELECT HumanizeDataTimeDiff34 = dbo.HumanizeDateTimeDiff(DATEADD(MICROSECOND, -1011, SYSDATETIME()))          -- FAILED
-GO
-SELECT HumanizeDataTimeDiff35 = dbo.HumanizeDateTimeDiff(DATEADD(MICROSECOND, -10111, SYSDATETIME())) 
-GO
-SELECT HumanizeDataTimeDiff36 = dbo.HumanizeDateTimeDiff(DATEADD(MICROSECOND, -101111, SYSDATETIME())) 
-GO
-SELECT HumanizeDataTimeDiff37 = dbo.HumanizeDateTimeDiff(DATEADD(MICROSECOND, -1011111, SYSDATETIME())) 
-GO
---SELECT HumanizeDataTimeDiff38 = dbo.HumanizeDateTimeDiff(DATEADD(NANOSECOND, -100, SYSDATETIME()))
---GO
 /**************************************************************************************************************************************************************************************************
  *
  *       File Name Functions - Usually I've used FileInfo class, but that goes out to NTFS and various OS functions, very slow for massive work.
  *
 /***************************************************************************************************************************************************************************************************/*/
-CREATE OR ALTER FUNCTION FileNameExtension(@fullfilepath NVARCHAR(500)) RETURNS NVARCHAR(12) 
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.FileNameExtract].FileNameExtension;  
+CREATE OR ALTER FUNCTION FileNameExtension(@fullfilepath NVARCHAR(500)) RETURNS NVARCHAR(12) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.FileNameExtract].FileNameExtension;  
 GO
-CREATE OR ALTER FUNCTION FileNameWithoutExtension(@fullfilepath NVARCHAR(500)) RETURNS NVARCHAR(400)
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.FileNameExtract].FileNameWithoutExtension;
+CREATE OR ALTER FUNCTION FileNameWithoutExtension(@fullfilepath NVARCHAR(500)) RETURNS NVARCHAR(400) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.FileNameExtract].FileNameWithoutExtension;
 GO
-CREATE OR ALTER FUNCTION FileNameWithExtension(@fullfilepath NVARCHAR(500)) RETURNS NVARCHAR(500)
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.FileNameExtract].FileNameWithExtension;  
+CREATE OR ALTER FUNCTION FileNameWithExtension(@fullfilepath NVARCHAR(500)) RETURNS NVARCHAR(500) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.FileNameExtract].FileNameWithExtension;  
 GO
-CREATE OR ALTER FUNCTION FileInDirectory(@fullfilepath NVARCHAR(500)) RETURNS NVARCHAR(500)
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.FileNameExtract].FileInDirectory;  
+CREATE OR ALTER FUNCTION FileInDirectory(@fullfilepath NVARCHAR(500)) RETURNS NVARCHAR(500) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.FileNameExtract].FileInDirectory;  
 GO
-CREATE OR ALTER FUNCTION FileInFolder(@fullfilepath NVARCHAR(500)) RETURNS NVARCHAR(400)
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.FileNameExtract].FileInFolder;  
+CREATE OR ALTER FUNCTION FileInFolder(@fullfilepath NVARCHAR(500)) RETURNS NVARCHAR(400) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.FileNameExtract].FileInFolder;  
 GO
 /**************************************************************************************************************************************************************************************************
  *
  *       File functions
  *
 /***************************************************************************************************************************************************************************************************/*/
-CREATE OR ALTER FUNCTION TempFilePath() RETURNS NVARCHAR(MAX) 
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.Files].TempFilePath;  
+CREATE OR ALTER FUNCTION TempFilePath() RETURNS NVARCHAR(MAX) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.Files].TempFilePath;  
 GO  
-SELECT TempFilePath____________________________________________ = dbo.TempFilePath() --> C:\Users\~humphrej2\AppData\Local\Temp\tmpD28B.tmp
-GO
 /**************************************************************************************************************************************************************************************************
  *
  *       String tests for conditions, contents, meanings
  *
 /***************************************************************************************************************************************************************************************************/*/
-CREATE OR ALTER FUNCTION AnyOfTheseSAreAnyOfThoseS(@inputs NVARCHAR(MAX), @markers NVARCHAR(MAX), @sep NVARCHAR(MAX)) RETURNS BIT
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTest].AnyOfTheseSAreAnyOfThoseS;  
+CREATE OR ALTER FUNCTION AnyOfTheseSAreAnyOfThoseS(@inputs NVARCHAR(MAX), @markers NVARCHAR(MAX), @sep NVARCHAR(MAX)) RETURNS BIT /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTest].AnyOfTheseSAreAnyOfThoseS;  
 GO
-SELECT AnyOfTheseSAreAnyOfThoseS___________________________ = dbo.AnyOfTheseSAreAnyOfThoseS('hi;there;', 'not;here;', ';') --> 0
-SELECT AnyOfTheseSAreAnyOfThoseS____________________________ = dbo.AnyOfTheseSAreAnyOfThoseS('hi;there;', 'not;there;', ';') --> 1
+CREATE OR ALTER FUNCTION StartsWithS(@input NVARCHAR(MAX), @searchFor NVARCHAR(MAX)) RETURNS BIT /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTest].StartsWithS;  
 GO
-CREATE OR ALTER FUNCTION StartsWithS(@input NVARCHAR(MAX), @searchFor NVARCHAR(MAX)) RETURNS BIT
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTest].StartsWithS;  
+CREATE OR ALTER FUNCTION EndsWithS(@input NVARCHAR(MAX), @searchFor NVARCHAR(MAX)) RETURNS BIT /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTest].EndsWithS;  
 GO
-SELECT StartsWithS_______________________________________________________________ = dbo.StartsWithS('test', 't')
+CREATE OR ALTER FUNCTION IsIP4(@input NVARCHAR(256)) RETURNS BIT /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTest].IsIP4;  
 GO
-CREATE OR ALTER FUNCTION EndsWithS(@input NVARCHAR(MAX), @searchFor NVARCHAR(MAX)) RETURNS BIT
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTest].EndsWithS;  
+CREATE OR ALTER FUNCTION LegalName(@input NVARCHAR(MAX), @rule NVARCHAR(MAX), @subdomain NVARCHAR(100)) RETURNS BIT /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTest].LegalName;  
 GO
-SELECT EndsWithS______________  = dbo.EndsWithS('x', 'x') -- 1
-GO
-CREATE OR ALTER FUNCTION IsIP4(@input NVARCHAR(256)) RETURNS BIT
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTest].IsIP4;  
-GO
-SELECT IsIP4_______________________________________________________________ = dbo.IsIP4('10.10.10.218')
-SELECT IsIP4_______________________________________________________________ = dbo.IsIP4('$(FQDN1)')
-GO
-CREATE OR ALTER FUNCTION LegalName(@input NVARCHAR(MAX), @rule NVARCHAR(MAX), @subdomain NVARCHAR(100)) RETURNS BIT
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTest].LegalName;  
-GO
-SELECT LegalName_______________________________________________________________ = dbo.LegalName('HOSTNAMEUSUALLY\R12345678901234567', 'SQL Server Server Name', 'Instance')
-GO
-
 /**************************************************************************************************************************************************************************************************
  *
  *       T-SQL String Measure (which creates a new value, deterministically, but not reversibly)
  *
 /***************************************************************************************************************************************************************************************************/*/
-CREATE OR ALTER FUNCTION HowManyS(@input NVARCHAR(MAX), @marker NVARCHAR(MAX)) RETURNS INT
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringMeasure].HowManyS;  
+CREATE OR ALTER FUNCTION HowManyS(@input NVARCHAR(MAX), @marker NVARCHAR(MAX)) RETURNS INT /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringMeasure].HowManyS;  
 GO  
-SELECT HowManyS = dbo.HowManyS('hi!', '!')
-SELECT HowManyS = dbo.HowManyS('Hell%%%%o', '%%')
-SELECT HowManyS = dbo.HowManyS('Hell%%%o', '%%')
-GO
-
-CREATE OR ALTER FUNCTION HowManyX(@input NVARCHAR(MAX), @pattern NVARCHAR(MAX)) RETURNS INT
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringMeasure].HowManyX;  
+CREATE OR ALTER FUNCTION HowManyX(@input NVARCHAR(MAX), @pattern NVARCHAR(MAX)) RETURNS INT /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringMeasure].HowManyX;  
 GO  
-SELECT HowManyX = dbo.HowManyX('Created for raiserror generator so that %s with %d would generate', '(%s|%d)') -- 2
-GO
-
 /**************************************************************************************************************************************************************************************************
  *
  *       T-SQL String Extractions (sort of a transformation)
  *
 /***************************************************************************************************************************************************************************************************/*/
-CREATE OR ALTER FUNCTION PieceNumberX(@input NVARCHAR(MAX), @pattern NVARCHAR(4000), @selectionindex INT) RETURNS NVARCHAR(MAX) 
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].PieceNumberX;  
+CREATE OR ALTER FUNCTION PieceNumberX(@input NVARCHAR(MAX), @pattern NVARCHAR(4000), @selectionindex INT) RETURNS NVARCHAR(MAX) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].PieceNumberX;  
 GO  
-SELECT PieceNumberX_____________ = dbo.PieceNumberX('this is 100 times, or maybe 1503', '(\d+)', 1)      --> 2 rows match:100, matchat: 8, match:1503, matchat:28
-SELECT PieceNumberX_____________ = dbo.PieceNumberX('this is 100 times, or maybe 1503', '(\d+)', 100) 
-SELECT PieceNumberX_____________ = dbo.PieceNumberX('this is 100 times, or maybe 1503', '(\d+)', 2) 
-GO
-CREATE OR ALTER FUNCTION LastPieceX(@input NVARCHAR(MAX), @pattern NVARCHAR(4000)) RETURNS NVARCHAR(MAX) 
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].LastPieceX;  
+CREATE OR ALTER FUNCTION LastPieceX(@input NVARCHAR(MAX), @pattern NVARCHAR(4000)) RETURNS NVARCHAR(MAX) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].LastPieceX;  
 GO  
-SELECT LastPieceX__________________ = dbo.LastPieceX('this is 100 times, or maybe 1503', '(\d+)') 
-GO
-CREATE OR ALTER FUNCTION GetFirstName(@FullName NVARCHAR(500)) RETURNS NVARCHAR(500) 
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].GetFirstName;  
+CREATE OR ALTER FUNCTION GetFirstName(@FullName NVARCHAR(500)) RETURNS NVARCHAR(500) AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].GetFirstName;  
 GO  
-SELECT GetFirstName = dbo.GetFirstName('Humphreys, Jeff')
+CREATE OR ALTER FUNCTION LeftOfS(@input NVARCHAR(MAX), @marker NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].LeftOfS;  
 GO
-CREATE OR ALTER FUNCTION LeftOfS(@input NVARCHAR(MAX), @marker NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) 
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].LeftOfS;  
+CREATE OR ALTER FUNCTION LeftOfAnyC(@input NVARCHAR(MAX), @marker NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].LeftOfAnyC;  
 GO
-SELECT LeftOfS_______________________________________________________________ = dbo.LeftOfS('Test\x', '\')
+CREATE OR ALTER FUNCTION LeftOfNthS(@input NVARCHAR(MAX), @marker NVARCHAR(MAX), @n INT) RETURNS NVARCHAR(MAX) AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].LeftOfNthS;  
 GO
-CREATE OR ALTER FUNCTION LeftOfAnyC(@input NVARCHAR(MAX), @marker NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) 
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].LeftOfAnyC;  
+CREATE OR ALTER FUNCTION LeftMOfNthS(@input NVARCHAR(MAX), @marker NVARCHAR(MAX), @n INT, @howmanyback INT) RETURNS NVARCHAR(MAX) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].LeftMOfNthS;  
 GO
-SELECT LeftOfAnyC_______________________________________________________________ = dbo.LeftOfAnyC('Test\x', '\')
+CREATE OR ALTER FUNCTION RightOfAnyC(@input NVARCHAR(MAX), @marker NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].RightOfAnyC;  
 GO
-CREATE OR ALTER FUNCTION LeftOfNthS(@input NVARCHAR(MAX), @marker NVARCHAR(MAX), @n INT) RETURNS NVARCHAR(MAX) 
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].LeftOfNthS;  
+CREATE OR ALTER FUNCTION RightOfAnyCOr(@input NVARCHAR(MAX), @marker NVARCHAR(MAX), @ifnotfoundreturnthis NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].RightOfAnyCOr;  
 GO
-SELECT LeftOfNthS_______________________________________________________________ = dbo.LeftOfNthS('Test\x\', '\', 2)
+CREATE OR ALTER FUNCTION RightOfS(@input NVARCHAR(MAX), @marker NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].RightOfS;  
 GO
-CREATE OR ALTER FUNCTION LeftMOfNthS(@input NVARCHAR(MAX), @marker NVARCHAR(MAX), @n INT, @howmanyback INT) RETURNS NVARCHAR(MAX) 
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].LeftMOfNthS;  
+CREATE OR ALTER FUNCTION RightOfN(@input NVARCHAR(MAX), @n INT) RETURNS NVARCHAR(MAX) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].RightOfN;  
 GO
-SELECT LeftMOfNthS_______________________________________________________________ = dbo.LeftMOfNthS('Test\x\', '\', 2, 2)
+CREATE OR ALTER FUNCTION FirstWordW(@input NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].FirstWordW;  
 GO
-CREATE OR ALTER FUNCTION RightOfAnyC(@input NVARCHAR(MAX), @marker NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) 
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].RightOfAnyC;  
+CREATE OR ALTER FUNCTION FirstWordBeforeS(@input NVARCHAR(MAX), @marker NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].FirstWordBeforeS;  
 GO
-SELECT ExpectedValue = 'x', RightOfAnyC_______________________________________________________________ = dbo.RightOfAnyC('Test\x', '\')  -->x<--
+CREATE OR ALTER FUNCTION FirstWordBeforeAnyC(@input NVARCHAR(MAX), @marker NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].FirstWordBeforeAnyC;  
 GO
-CREATE OR ALTER FUNCTION RightOfS(@input NVARCHAR(MAX), @marker NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) 
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].RightOfS;  
+CREATE OR ALTER FUNCTION EverythingAfterX(@input NVARCHAR(MAX), @pattern NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].EverythingAfterX;  
 GO
-SELECT ExpectedValue = 'x', RightOfS_______________________________________________________________ = dbo.RightOfS('Test\hx', '\h')  -->x<--
+CREATE OR ALTER FUNCTION EverythingAfterS(@input NVARCHAR(MAX), @marker NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].EverythingAfterS;  
 GO
-CREATE OR ALTER FUNCTION RightOfN(@input NVARCHAR(MAX), @n INT) RETURNS NVARCHAR(MAX) 
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].RightOfN;  
+CREATE OR ALTER FUNCTION ExtractX(@input NVARCHAR(MAX), @pattern NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].ExtractX;  
 GO
-SELECT ExpectedValue = '\hx', RightOfN_______________________________________________________________ = dbo.RightOfN('Test\hx', 4) 
+CREATE OR ALTER FUNCTION ExtractXi(@input NVARCHAR(MAX), @pattern NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].ExtractXi;  
 GO
-CREATE OR ALTER FUNCTION FirstWordW(@input NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].FirstWordW;  
+CREATE OR ALTER FUNCTION ExtractPersonsName(@input NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].ExtractPersonsName;  
 GO
-SELECT FirstWordW_______________________________________________________________ = dbo.FirstWordW('126.334.333 Hi!')
-GO
-CREATE OR ALTER FUNCTION FirstWordBeforeS(@input NVARCHAR(MAX), @marker NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].FirstWordBeforeS;  
-GO
-SELECT FirstWordBeforeS_______________________________________________________________ = dbo.FirstWordBeforeS('$(FQDN2)', '.')
-GO
-CREATE OR ALTER FUNCTION FirstWordBeforeAnyC(@input NVARCHAR(MAX), @marker NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].FirstWordBeforeAnyC;  
-GO
-SELECT FirstWordBeforeAnyC___________________________________________________________ = dbo.FirstWordBeforeAnyC('$(FQDN3)', '.\')
-GO
-CREATE OR ALTER FUNCTION EverythingAfterX(@input NVARCHAR(MAX), @pattern NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].EverythingAfterX;  
-GO
-SELECT EverythingAfterX_______________________________________________________________ = dbo.EverythingAfterX('$(FQDN2)', '.')
-GO
-CREATE OR ALTER FUNCTION EverythingAfterS(@input NVARCHAR(MAX), @marker NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].EverythingAfterS;  
-GO
-SELECT EverythingAfterS_______________________________________________________________ = dbo.EverythingAfterS('$.(FQDN2)', '.')
-GO
-CREATE OR ALTER FUNCTION ExtractX(@input NVARCHAR(MAX), @pattern NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].ExtractX;  
-GO
-SELECT ExtractX_______________________________________________________________ = dbo.ExtractX('This is referencing ticket 222223', 'referencing ticket [\f+]')
-GO
-CREATE OR ALTER FUNCTION ExtractXi(@input NVARCHAR(MAX), @pattern NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].ExtractXi;  
-GO
-SELECT ExtractXi_______________________________________________________________ = dbo.ExtractXi('referencing ticket [/d+]', '.')
-GO
-CREATE OR ALTER FUNCTION ExtractPersonsName(@input NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].ExtractPersonsName;  
-GO
-SELECT ExtractPersonsName_______________________________________________________________ = dbo.ExtractPersonsName('Requested by Jeff Humphreys (02/20/2015 mb, 568855) The QV application is planned t sunset and new groups will be created to manage permissions on a Microsoft stack')
-GO
-/*
-.Net SqlClient Data Provider: Msg 6572, Level 16, State 1, Procedure Mid, Line 557
-More than one method, property or field was found with name 'Mid' in class 'MySQLCLRFunctions.StringExtract' in assembly 'MySQLCLRFunctions'. Overloaded methods, properties or fields are not supported.
-.Net SqlClient Data Provider: Msg 4121, Level 16, State 1, Line 561
-Cannot find either column "dbo" or the user-defined function or aggregate "dbo.Mid", or the name is ambiguous.
-*/
-CREATE OR ALTER FUNCTION Mid(@input NVARCHAR(MAX), @from INT, @to INT) RETURNS NVARCHAR(MAX)
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].Mid;  
-GO
-SELECT Mid_______________________________________________________________ = dbo.Mid('this is my face', 2, 6)
+CREATE OR ALTER FUNCTION Mid(@input NVARCHAR(MAX), @from INT, @to INT) RETURNS NVARCHAR(MAX) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringExtract].Mid;  
 GO
 /**************************************************************************************************************************************************************************************************
  *
  *       Pivot substrings into rows and metadata.
  *
 /***************************************************************************************************************************************************************************************************/*/
-CREATE OR ALTER FUNCTION PiecesX(@input NVARCHAR(MAX), @pattern NVARCHAR(4000)) 
-RETURNS TABLE (piece NVARCHAR(MAX), pieceorderno INT) 
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringPivot].PiecesX;  
+CREATE OR ALTER FUNCTION PiecesX(@input NVARCHAR(MAX), @pattern NVARCHAR(4000)) RETURNS TABLE (piece NVARCHAR(MAX), pieceorderno INT) AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringPivot].PiecesX;  
 GO  
-SELECT ssore.piece, ssore.pieceorderno FROM PiecesX('this is 100 times, or maybe 1503', '(\d+)') AS ssore
-GO
-CREATE OR ALTER FUNCTION PiecesWithContextX(@input NVARCHAR(MAX), @regexsplitterpattern NVARCHAR(4000)) RETURNS TABLE (pieceorderno INT, previousPiece NVARCHAR(MAX), piece NVARCHAR(MAX), nextPiece NVARCHAR(MAX)) 
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringPivot].PiecesWithContextX;  
+CREATE OR ALTER FUNCTION PiecesWithContextX(@input NVARCHAR(MAX), @regexsplitterpattern NVARCHAR(4000)) RETURNS TABLE (pieceorderno INT, previousPiece NVARCHAR(MAX), piece NVARCHAR(MAX), nextPiece NVARCHAR(MAX)) AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringPivot].PiecesWithContextX;  
 GO  
-SELECT ssore.piece, ssore.pieceorderno FROM PiecesWithContextX('this is 100 times, or maybe 1503', '(\d+)') AS ssore
-GO
-CREATE OR ALTER FUNCTION PiecesWithMatchesX(@stringtoextractmatchesintorows NVARCHAR(MAX), @pattern NVARCHAR(4000)) RETURNS TABLE(pieceorderNo INT, previousPiece NVARCHAR(MAX)
-, matchAtStartOfPiece NVARCHAR(MAX), piece NVARCHAR(MAX), matchAtEndOfPiece NVARCHAR(MAX), nextPiece NVARCHAR(MAX)) 
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringPivot].PiecesWithMatchesX;  
+CREATE OR ALTER FUNCTION PiecesWithMatchesX(@stringtoextractmatchesintorows NVARCHAR(MAX), @pattern NVARCHAR(4000)) RETURNS TABLE(pieceorderNo INT, previousPiece NVARCHAR(MAX), matchAtStartOfPiece NVARCHAR(MAX), piece NVARCHAR(MAX), matchAtEndOfPiece NVARCHAR(MAX), nextPiece NVARCHAR(MAX)) AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringPivot].PiecesWithMatchesX;  
 GO  
-SELECT * FROM PiecesWithMatchesX('this is 100 times, or maybe 1503', '(\d+)') AS ssore
-GO
-CREATE OR ALTER FUNCTION MatchesX(@input NVARCHAR(MAX), @pattern NVARCHAR(4000)) RETURNS TABLE(matchorderno INT, capturedMatch NVARCHAR(MAX), capturedmatchstartsat INT) 
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringPivot].MatchesX;  
+CREATE OR ALTER FUNCTION MatchesX(@input NVARCHAR(MAX), @pattern NVARCHAR(4000)) RETURNS TABLE(matchorderno INT, capturedMatch NVARCHAR(MAX), capturedmatchstartsat INT) AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringPivot].MatchesX;  
 GO  
-SELECT matchorderno, ssore.capturedMatch, ssore.capturedmatchstartsat FROM MatchesX('this is 100 times, or maybe 1503', '(\d+)') AS ssore
-SELECT * FROM MatchesX('this is 100 times, or maybe 1503', '(\d+)') AS ssore
-GO
-CREATE OR ALTER FUNCTION NearX(@input NVARCHAR(MAX), @pattern NVARCHAR(4000)) RETURNS TABLE(matchorderno INT, [match] NVARCHAR(MAX), matchstartsat INT, matchcontextstartsat INT, matchcontextendsat INT, matchcontext NVARCHAR(MAX)) 
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringPivot].NearX;  
+CREATE OR ALTER FUNCTION NearX(@input NVARCHAR(MAX), @pattern NVARCHAR(4000)) RETURNS TABLE(matchorderno INT, [match] NVARCHAR(MAX), matchstartsat INT, matchcontextstartsat INT, matchcontextendsat INT, matchcontext NVARCHAR(MAX)) AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringPivot].NearX;  
 GO  
-SELECT * FROM NearX('this is 100 times, or maybe emailed you 1503
-
-Don''t forget to mailout', 'mail') AS ssore
-GO
-CREATE OR ALTER FUNCTION CapturesX(@input NVARCHAR(MAX), @pattern NVARCHAR(4000)) RETURNS TABLE(matchorderno INT, capturedMatch NVARCHAR(MAX), capturedmatchstartsat INT) 
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringPivot].CapturesX;  
+CREATE OR ALTER FUNCTION CapturesX(@input NVARCHAR(MAX), @pattern NVARCHAR(4000)) RETURNS TABLE(matchorderno INT, capturedMatch NVARCHAR(MAX), capturedmatchstartsat INT) AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringPivot].CapturesX;  
 GO  
-SELECT * FROM CapturesX('div class="browsename"><span class="listname"><a href="/name/abbey">ABBEY</a></span> <span class="listgender">', '\<span class\="listname"\>\<a href=\"\/name\/(\w+)"') AS ssore
-SELECT * FROM CapturesX('Violation of UNIQUE KEY constraint ''UQ__Permissi__FCC616D996C97B78''. Cannot insert duplicate key in object ''ETLStepCaptures.Permissions''. The duplicate key value is (7671075, <NULL>, Add rows, 1, db_ssisoperator, 16, msdb, OCC01DB004).', 'constraint ''(.+?)''.+?Cannot insert duplicate key in object ''(.+?)''') AS ssore
-GO
-CREATE OR ALTER FUNCTION KeyValuePairsWithMultiValuesS(@input NVARCHAR(MAX), @betweeneachkeyvaluepair NVARCHAR(4000), @betweenkeyandvalue NVARCHAR(4000), @betweensubvalues NVARCHAR(4000)) 
-RETURNS TABLE(pieceorderNo INT, keystring NVARCHAR(MAX), valuestring NVARCHAR(MAX)) 
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringPivot].KeyValuePairsWithMultiValuesS;  
+CREATE OR ALTER FUNCTION KeyValuePairsWithMultiValuesS(@input NVARCHAR(MAX), @betweeneachkeyvaluepair NVARCHAR(4000), @betweenkeyandvalue NVARCHAR(4000), @betweensubvalues NVARCHAR(4000)) RETURNS TABLE(pieceorderNo INT, keystring NVARCHAR(MAX), valuestring NVARCHAR(MAX)) AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringPivot].KeyValuePairsWithMultiValuesS;  
 GO  
-SELECT * FROM KeyValuePairsWithMultiValuesS('Edward => Ned, Ed, Eddy, Eddie
-Henry => Harry, Hal
-Jacob => Jake
-', NULL, NULL, NULL) AS ssore
-GO
 /**************************************************************************************************************************************************************************************************
  *
  *       String splits, take line input and turn it into columnar output.
  *
 /***************************************************************************************************************************************************************************************************/*/
-CREATE OR ALTER FUNCTION SplitTo4ColumnsX(@input NVARCHAR(MAX), @pattern NVARCHAR(4000)) RETURNS TABLE(col1 NVARCHAR(MAX), col2 NVARCHAR(MAX), col3 NVARCHAR(MAX), col4 NVARCHAR(MAX)) 
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringSplit].SplitTo4ColumnsX;  
+CREATE OR ALTER FUNCTION SplitTo4ColumnsX(@input NVARCHAR(MAX), @pattern NVARCHAR(4000)) RETURNS TABLE(col1 NVARCHAR(MAX), col2 NVARCHAR(MAX), col3 NVARCHAR(MAX), col4 NVARCHAR(MAX)) AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringSplit].SplitTo4ColumnsX;  
 GO  
-SELECT * FROM SplitTo4ColumnsX(
-    '("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Meta", "Meta", "{5ADEF8D7-EBCC-4958-B0CC-060914E4FEE7}"
-EndProject
-'
-,   '\("{(?<folderGUID>.*?)}"\) = "(?<FolderName>.*?)", "(?<ProjectPath>.*?)", "{(?<ParentFolderId>.*?)}"'
-) 
-AS ssore
-GO
-CREATE OR ALTER FUNCTION SplitTo8ColumnsX(@input NVARCHAR(MAX), @pattern NVARCHAR(4000)) RETURNS TABLE(col1 NVARCHAR(MAX), col2 NVARCHAR(MAX), col3 NVARCHAR(MAX), col4 NVARCHAR(MAX),col5 NVARCHAR(MAX), col6 NVARCHAR(MAX), col7 NVARCHAR(MAX), col8 NVARCHAR(MAX)) 
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringSplit].SplitTo8ColumnsX;  
+CREATE OR ALTER FUNCTION SplitTo8ColumnsX(@input NVARCHAR(MAX), @pattern NVARCHAR(4000)) RETURNS TABLE(col1 NVARCHAR(MAX), col2 NVARCHAR(MAX), col3 NVARCHAR(MAX), col4 NVARCHAR(MAX),col5 NVARCHAR(MAX), col6 NVARCHAR(MAX), col7 NVARCHAR(MAX), col8 NVARCHAR(MAX)) AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringSplit].SplitTo8ColumnsX;  
 GO  
-SELECT * FROM SplitTo8ColumnsX('1435079, <NULL>', '(.+?), (.+?), (.+?), (.+?)') 
-AS ssore
-GO
-
 /**************************************************************************************************************************************************************************************************
  *
  *       String decoding.
  *
 /***************************************************************************************************************************************************************************************************/*/
-CREATE OR ALTER FUNCTION RevealNonPrintables(@input NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)                -->                                                                                                test<--
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringDecode].RevealNonPrintables;  
-GO
-SELECT RevealNonprintables_______________________________________________________________ = dbo.RevealNonPrintables('test'+ CHAR(10) + CHAR(13))     -->test1013                                                                                               <--
+CREATE OR ALTER FUNCTION RevealNonPrintables(@input NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringDecode].RevealNonPrintables;  
 GO
 /**************************************************************************************************************************************************************************************************
  *
  *       String reductions, actions that will always result in the same or shorter string.
  *
 /***************************************************************************************************************************************************************************************************/*/
-CREATE OR ALTER FUNCTION BlankOut(@input NVARCHAR(MAX), @blankanyofthese NVARCHAR(MAX), @sep NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) 
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringReduce].BlankOut;  
+CREATE OR ALTER FUNCTION BlankOut(@input NVARCHAR(MAX), @blankanyofthese NVARCHAR(MAX), @sep NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringReduce].BlankOut;  
 GO
-CREATE OR ALTER FUNCTION RTrimAnyC(@input NVARCHAR(MAX), @trimAllOccFromRight NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringReduce].RTrimAnyC;  
+CREATE OR ALTER FUNCTION RTrimAnyC(@input NVARCHAR(MAX), @trimAllOccFromRight NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringReduce].RTrimAnyC;  
 GO  
-SELECT RTrimAnyC = CAST(dbo.RTrimAnyC('100.20000000', '0') AS DECIMAL(10,2))     --> 100.20
+CREATE OR ALTER FUNCTION TrimBrackets(@input NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringReduce].TrimBrackets;  
 GO
-CREATE OR ALTER FUNCTION TrimBrackets(@input NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)                -->                                                                                                test<--
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringReduce].TrimBrackets;  
+CREATE OR ALTER FUNCTION LTrimIfStartsWithS(@input NVARCHAR(MAX), @marker NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringReduce].LTrimIfStartsWithS; 
 GO
-SELECT TrimBrackets_______________________________________________________________ = dbo.TrimBrackets('[test]')-->test<--               dbo.TrimIfStartsWith(PingableAddress, '\032')
-GO
-CREATE OR ALTER FUNCTION LTrimIfStartsWithS(@input NVARCHAR(MAX), @marker NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringReduce].LTrimIfStartsWithS; 
-GO
-SELECT LTrimIfStartsWithS_______________________________________________________________ = dbo.LTrimIfStartsWithS('$(FQDN4)', '\032')
-GO
-CREATE OR ALTER FUNCTION TrimEnd(@input NVARCHAR(MAX), @howmanycharactersofftheend INT) RETURNS NVARCHAR(MAX)
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringReduce].TrimEnd; 
-GO
-SELECT TrimEnd_______________________________________________________________ = dbo.TrimEnd('$(FQDN5)', 1)
+CREATE OR ALTER FUNCTION TrimEnd(@input NVARCHAR(MAX), @howmanycharactersofftheend INT) RETURNS NVARCHAR(MAX) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringReduce].TrimEnd; 
 GO
 /**************************************************************************************************************************************************************************************************
  *
  *       String custom reductions for more special use cases.
  *
 /***************************************************************************************************************************************************************************************************/*/
-CREATE OR ALTER FUNCTION TrimNormalizeStringInput(@input NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringReduceCustomizations].TrimNormalizeStringInput; 
+CREATE OR ALTER FUNCTION TrimNormalizeStringInput(@input NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringReduceCustomizations].TrimNormalizeStringInput; 
 GO
-SELECT TrimNormalizeStringInput_______________________________________________________________ = dbo.TrimNormalizeStringInput('   Hi   There! ')
-GO
-CREATE OR ALTER FUNCTION CleanUpSQLServerNameDelimiters(@input NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringReduceCustomizations].CleanUpSQLServerNameDelimiters; 
-GO
-SELECT CleanUpSQLServerNameDelimiters_______________________________________________________________ = dbo.CleanUpSQLServerNameDelimiters('   Hi   There! ')
+CREATE OR ALTER FUNCTION CleanUpSQLServerNameDelimiters(@input NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTransformCustomizations].CleanUpSQLServerNameDelimiters; 
 GO
 /**************************************************************************************************************************************************************************************************
  *
  *       String build outs, which always increase the size of a string.
  *
 /***************************************************************************************************************************************************************************************************/*/
-CREATE OR ALTER FUNCTION AppendWithSeparator(@input NVARCHAR(MAX), @newfield NVARCHAR(MAX), @sep NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringBuildOut].AppendWithSeparator; 
+CREATE OR ALTER FUNCTION AppendWithSeparator(@input NVARCHAR(MAX), @newfield NVARCHAR(MAX), @sep NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringBuildOut].AppendWithSeparator; 
 GO
-DECLARE @LineHeader VARCHAR(300) = dbo.AppendWithSeparator('', 'FirstField', ', ')
-SELECT AppendWithSeparator_______________________________________________________________ = dbo.AppendWithSeparator('', 'FirstField', ', ')
-SELECT AppendWithSeparator_______________________________________________________________ = dbo.AppendWithSeparator(@LineHeader, 'SecondField', ', ')
+CREATE OR ALTER FUNCTION AppendWithComma(@input NVARCHAR(MAX), @newfield NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringBuildOut].AppendWithComma; 
 GO
-CREATE OR ALTER FUNCTION AppendWithComma(@input NVARCHAR(MAX), @newfield NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringBuildOut].AppendWithComma; 
+CREATE OR ALTER FUNCTION AppendWithTab(@input NVARCHAR(MAX), @newfield NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringBuildOut].AppendWithTab; 
 GO
-DECLARE @LineHeader VARCHAR(300) = dbo.AppendWithComma('', 'FirstField')
-SELECT AppendWithComma_______________________________________________________________ = dbo.AppendWithComma('', 'FirstField')
-SELECT AppendWithComma_______________________________________________________________ = dbo.AppendWithComma(@LineHeader, 'SecondField')
-GO
-CREATE OR ALTER FUNCTION AppendWithTab(@input NVARCHAR(MAX), @newfield NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringBuildOut].AppendWithTab; 
-GO
-DECLARE @LineHeader VARCHAR(300) = dbo.AppendWithTab('', 'FirstField')
-SELECT AppendWithTab_______________________________________________________________ = dbo.AppendWithTab('', 'FirstField')
-SELECT AppendWithTab_______________________________________________________________ = dbo.AppendWithTab(@LineHeader, 'SecondField')
-GO
-
 /**************************************************************************************************************************************************************************************************
  *
  *       String formatting (which probably should include date humanization)
  *
 /***************************************************************************************************************************************************************************************************/*/
-CREATE OR ALTER FUNCTION LPad(@input NVARCHAR(MAX), @padToLen INT) RETURNS NVARCHAR(MAX) 
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringFormat].LPad;  
+CREATE OR ALTER FUNCTION LPad(@input NVARCHAR(MAX), @padToLen INT) RETURNS NVARCHAR(MAX) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringFormat].LPad;  
 GO
-SELECT LPad_______________________________________________________________ = dbo.LPad('test', 100)
+CREATE OR ALTER FUNCTION RPad(@input NVARCHAR(MAX), @padToLen INT) RETURNS NVARCHAR(MAX) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringFormat].RPad;  
 GO
-CREATE OR ALTER FUNCTION RPad(@input NVARCHAR(MAX), @padToLen INT) RETURNS NVARCHAR(MAX)                -->                                                                                                test<--
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringFormat].RPad;  
-GO
-SELECT RPad_______________________________________________________________ = dbo.RPad('test', 100)     -->test                                                                                                <--
-GO
-CREATE OR ALTER FUNCTION Title(@input NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) 
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringFormat].Title; 
-GO
-SELECT [Input] = 'test', Title_______________________________________________________________ = dbo.Title('test')   
-SELECT Title_______________________________________________________________ = dbo.Title('Abigail')    
+CREATE OR ALTER FUNCTION Title(@input NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringFormat].Title; 
 GO
 /**************************************************************************************************************************************************************************************************
  *
  *      General transformations
  *
 /***************************************************************************************************************************************************************************************************/*/
-CREATE OR ALTER FUNCTION ReplaceRecursiveS(@input NVARCHAR(MAX), @find NVARCHAR(MAX), @replacement NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) 
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTransform].ReplaceRecursiveS; 
+CREATE OR ALTER FUNCTION ReplaceRecursiveS(@input NVARCHAR(MAX), @find NVARCHAR(MAX), @replacement NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTransform].ReplaceRecursiveS; 
 GO
-SELECT ReplaceRecursiveS_____________________ = dbo.ReplaceRecursiveS('This is                a test  of the     emergency  ', '  ', '')    -->This is a test of the emergency <--
-GO
-CREATE OR ALTER FUNCTION ReplaceMatchX(@input NVARCHAR(MAX), @find NVARCHAR(MAX), @replacement NVARCHAR(MAX)) RETURNS NVARCHAR(MAX)
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTransform].ReplaceMatchX; 
-GO
-SELECT ReplaceMatchX________________ = dbo.ReplaceMatchX('SELECT * FROM $1.$10', '\$1~[0-9]', 'Merry')    -->  ????
+CREATE OR ALTER FUNCTION ReplaceMatchX(@input NVARCHAR(MAX), @find NVARCHAR(MAX), @replacement NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTransform].ReplaceMatchX; 
 GO
 /**************************************************************************************************************************************************************************************************
  *
  *       T-SQL (Microsoft) Specific transformations
  *
 /***************************************************************************************************************************************************************************************************/*/
-CREATE OR ALTER FUNCTION RemoveSQLServerNameDelimiters(@input NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) 
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTransformCustomizations].RemoveSQLServerNameDelimiters;  
+CREATE OR ALTER FUNCTION RemoveSQLServerNameDelimiters(@input NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTransformCustomizations].RemoveSQLServerNameDelimiters;  
 GO
-SELECT [Input] = '[Dave]', RemoveSQLServerNameDelimiters_____________ = dbo.RemoveSQLServerNameDelimiters('[Dave]')
+CREATE OR ALTER FUNCTION ExpandSQLParameterString(@sqlwithparametersembedded NVARCHAR(MAX), @paramno INT, @newvalue NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTransformCustomizations].ExpandSQLParameterString;  
 GO
-CREATE OR ALTER FUNCTION ExpandSQLParameterString(@sqlwithparametersembedded NVARCHAR(MAX), @paramno INT, @newvalue NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) 
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTransformCustomizations].ExpandSQLParameterString;  
+CREATE OR ALTER FUNCTION ExpandSQLParameter(@sqlwithparametersembedded NVARCHAR(MAX), @paramno INT, @newvalue NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTransformCustomizations].ExpandSQLParameter;  
 GO
-CREATE OR ALTER FUNCTION ExpandSQLParameter(@sqlwithparametersembedded NVARCHAR(MAX), @paramno INT, @newvalue NVARCHAR(MAX)) RETURNS NVARCHAR(MAX) 
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTransformCustomizations].ExpandSQLParameter;  
+CREATE OR ALTER FUNCTION TrimSQL(@input NVARCHAR(MAX), @toSingleLine BIT, @dropFullLineComments BIT) RETURNS NVARCHAR(MAX) /* WITH RETURNS NULL ON NULL INPUT */ AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTransformCustomizations].TrimSQL; 
 GO
-CREATE OR ALTER FUNCTION TrimSQL(@input NVARCHAR(MAX), @toSingleLine BIT, @dropFullLineComments BIT) RETURNS NVARCHAR(MAX) 
-WITH RETURNS NULL ON NULL INPUT
-AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringTransformCustomizations].TrimSQL; 
-GO
-
 /*
     Buggy still.
 */
