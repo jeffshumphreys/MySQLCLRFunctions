@@ -26,7 +26,7 @@ namespace MySQLCLRFunctions
             // 20021031003422
             try
             {
-                return DateTime.ParseExact(InputAsStringDateTime.Substring(0, 14), "yyyyMMddHHmmss", CultureInfo.InvariantCulture);
+                return DateTime.ParseExact(InputAsStringDateTime, "yyyyMMddHHmmss", CultureInfo.InvariantCulture);
             }
             catch (FormatException)
             {
@@ -39,6 +39,12 @@ namespace MySQLCLRFunctions
                 new string [] {"yyyyMMddHHmmssfffffff", "21" }
               , new string [] { "yyyyMMddHHmmssfff", "17" }
               , new string [] {"yyyyMMddHHmmss", "14" }
+              , new string [] {"yyyyMMdd", "8" }
+              , new string [] { "yyMMdd", "6" }
+              , new string [] { "MMddyyyy", "8" }
+              , new string [] { "MMddyy", "6" }
+              , new string [] {"MM/dd/yy", "8" }
+              , new string [] {"MM/dd/yyyy", "10" }
               , new string [] {"ddd dd MMM yyyy h:mm tt zzz", "0" }
               , new string [] {"MMddyyyyHHmmss", "14" }
               , new string [] {"dd/MM/yyyy HH:mm:ss.ffffff", "0"}
@@ -62,8 +68,7 @@ namespace MySQLCLRFunctions
                         return DateTime.ParseExact(InputAsStringDateTime, _format[0], CultureInfo.InvariantCulture);
                     else
                     {
-                        int len = int.Parse(_format[1]);
-                        return DateTime.ParseExact(InputAsStringDateTime.Substring(0, len), _format[0], CultureInfo.InvariantCulture);
+                        return DateTime.ParseExact(InputAsStringDateTime, _format[0], CultureInfo.InvariantCulture);
                     }
                 }
                 catch (FormatException)

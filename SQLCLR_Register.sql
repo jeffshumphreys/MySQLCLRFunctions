@@ -402,7 +402,7 @@ CREATE OR ALTER FUNCTION PiecesWithContextX(@input NVARCHAR(MAX), @regexsplitter
 GO  
 CREATE OR ALTER FUNCTION PiecesWithMatchesX(@stringtoextractmatchesintorows NVARCHAR(MAX), @pattern NVARCHAR(4000)) RETURNS TABLE(pieceorderNo INT, previousPiece NVARCHAR(MAX), matchAtStartOfPiece NVARCHAR(MAX), piece NVARCHAR(MAX), matchAtEndOfPiece NVARCHAR(MAX), nextPiece NVARCHAR(MAX)) AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringPivot].PiecesWithMatchesX;  
 GO  
-CREATE OR ALTER FUNCTION MatchesX(@input NVARCHAR(MAX), @pattern NVARCHAR(4000)) RETURNS TABLE(matchorderno INT, capturedMatch NVARCHAR(MAX), capturedmatchstartsat INT) AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringPivot].MatchesX;  
+CREATE OR ALTER FUNCTION MatchesX(@input NVARCHAR(MAX), @pattern NVARCHAR(4000)) RETURNS TABLE(matchorderno INT, match NVARCHAR(MAX), matchType NVARCHAR(MAX), capturedmatchstartsat INT, recNo INT) AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringPivot].MatchesX;  
 GO  
 CREATE OR ALTER FUNCTION NearX(@input NVARCHAR(MAX), @pattern NVARCHAR(4000)) RETURNS TABLE(matchorderno INT, [match] NVARCHAR(MAX), matchstartsat INT, matchcontextstartsat INT, matchcontextendsat INT, matchcontext NVARCHAR(MAX)) AS EXTERNAL NAME MySQLCLRFunctions.[MySQLCLRFunctions.StringPivot].NearX;  
 GO  

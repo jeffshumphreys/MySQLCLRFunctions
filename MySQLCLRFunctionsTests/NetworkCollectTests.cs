@@ -8,37 +8,55 @@ namespace MySQLCLRFunctions.Tests
         [Fact()]
         public void PingGetAddressTest()
         {
-            Assert.True(false, "This test needs an implementation");
+            const string input = "input";
+            const string validoutput = input + "not implemented";
+            var output = "not implemented yet";
+            Assert.Equal(expected: validoutput, output);
         }
 
         [Fact()]
         public void GetMyIP4Test()
         {
-            Assert.True(false, "This test needs an implementation");
+            const string input = "input";
+            const string validoutput = input + "not implemented";
+            var output = "not implemented yet";
+            Assert.Equal(expected: validoutput, output);
         }
 
         [Fact()]
         public void PingGetReturnBufferTest()
         {
-            Assert.True(false, "This test needs an implementation");
+            const string input = "input";
+            const string validoutput = input + "not implemented";
+            var output = "not implemented yet";
+            Assert.Equal(expected: validoutput, output);
         }
 
         [Fact()]
         public void GetHostNamesTest()
         {
-            Assert.True(false, "This test needs an implementation");
+            const string input = "input";
+            const string validoutput = input + "not implemented";
+            var output = "not implemented yet";
+            Assert.Equal(expected: validoutput, output);
         }
 
         [Fact()]
         public void GetHostAliasesTest()
         {
-            Assert.True(false, "This test needs an implementation");
+            const string input = "input";
+            const string validoutput = input + "not implemented";
+            var output = "not implemented yet";
+            Assert.Equal(expected: validoutput, output);
         }
 
         [Fact()]
         public void GetHostRealNameTest()
         {
-            Assert.True(false, "This test needs an implementation");
+            const string input = "input";
+            const string validoutput = input + "not implemented";
+            var output = "not implemented yet";
+            Assert.Equal(expected: validoutput, output);
         }
     }
 }

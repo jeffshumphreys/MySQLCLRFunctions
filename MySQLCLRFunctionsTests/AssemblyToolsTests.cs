@@ -8,7 +8,10 @@ namespace MySQLCLRFunctions.Tests
         [Fact()]
         public void SaveAssemblyTest()
         {
-            Assert.True(false, "This test needs an implementation");
+            const string input = "input";
+            const string validoutput = input + "not implemented";
+            var output = "not implemented yet";
+            Assert.Equal(expected: validoutput, output);
         }
     }
 }

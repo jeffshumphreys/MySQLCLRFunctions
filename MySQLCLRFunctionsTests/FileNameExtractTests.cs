@@ -8,37 +8,55 @@ namespace MySQLCLRFunctions.Tests
         [Fact()]
         public void FileNameExtensionTest()
         {
-            Assert.True(false, "This test needs an implementation");
+            const string input = "input";
+            const string validoutput = input + "not implemented";
+            var output = "not implemented yet";
+            Assert.Equal(expected: validoutput, output);
         }
 
         [Fact()]
         public void FileNameWithoutExtensionTest()
         {
-            Assert.True(false, "This test needs an implementation");
+            const string input = "input";
+            const string validoutput = input + "not implemented";
+            var output = "not implemented yet";
+            Assert.Equal(expected: validoutput, output);
         }
 
         [Fact()]
         public void IsLegalFileNameTest()
         {
-            Assert.True(false, "This test needs an implementation");
+            const string input = "input";
+            const string validoutput = input + "not implemented";
+            var output = "not implemented yet";
+            Assert.Equal(expected: validoutput, output);
         }
 
         [Fact()]
         public void FileNameWithExtensionTest()
         {
-            Assert.True(false, "This test needs an implementation");
+            const string input = "input";
+            const string validoutput = input + "not implemented";
+            var output = "not implemented yet";
+            Assert.Equal(expected: validoutput, output);
         }
 
         [Fact()]
         public void FileInDirectoryTest()
         {
-            Assert.True(false, "This test needs an implementation");
+            const string input = "input";
+            const string validoutput = input + "not implemented";
+            var output = "not implemented yet";
+            Assert.Equal(expected: validoutput, output);
         }
 
         [Fact()]
         public void FileInFolderTest()
         {
-            Assert.True(false, "This test needs an implementation");
+            const string input = "input";
+            const string validoutput = input + "not implemented";
+            var output = "not implemented yet";
+            Assert.Equal(expected: validoutput, output);
         }
     }
 }

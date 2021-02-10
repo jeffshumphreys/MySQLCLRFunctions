@@ -8,15 +8,31 @@ namespace MySQLCLRFunctions.Tests
     public class StringPivotTests
     {
         [Fact]
-        public void MatchesTest()
+        public void MatchesXTest()
         {
-            Assert.False(true);
+            const string pattern = @"\((.*?)\)";
+            const string input = "203-393-4949 (cell)";
+            string validoutput = "cell";
+            var output = ((IEnumerable<MatchesRecord>)MatchesX(input, pattern)).ToArray()[0].capturedMatch;
+            
+            Assert.Equal(expected: validoutput, actual: output);
         }
 
         [Fact]
-        public void PiecesWithContextTest()
+        public void PiecesWithContextXTest()
         {
-            Assert.False(true);
+
+            const string pattern = "[ ]";
+            const string input = "input this";
+            const string validoutput = "input";
+            var unformed_output = PiecesWithContextX(input, pattern);
+            Assert.IsNotType<string>(unformed_output);
+            var staged_output = ((IEnumerable<PiecesWithContextRecord>)unformed_output);
+            Assert.NotNull(staged_output);
+            var arrayed_output = staged_output.ToArray();
+            Assert.Equal(expected: 2, actual: arrayed_output.Count());
+            var output = arrayed_output[0].piece;
+            Assert.Equal(expected: validoutput, actual: output);
         }
 
         [Fact]
@@ -74,25 +90,37 @@ namespace MySQLCLRFunctions.Tests
         [Fact]
         public void GetWordsTest()
         {
-            Assert.False(true);
+            const string input = "input";
+            const string validoutput = input + "not implemented";
+            var output = "not implemented yet";
+            Assert.Equal(expected: validoutput, output);
         }
 
         [Fact]
         public void SplitTest()
         {
-            Assert.False(true);
+            const string input = "input";
+            const string validoutput = input + "not implemented";
+            var output = "not implemented yet";
+            Assert.Equal(expected: validoutput, output);
         }
 
         [Fact]
         public void KeyValuePairsWithMultiValuesTest()
         {
-            Assert.False(true);
+            const string input = "input";
+            const string validoutput = input + "not implemented";
+            var output = "not implemented yet";
+            Assert.Equal(expected: validoutput, output);
         }
 
         [Fact]
         public void CapturesTest()
         {
-            Assert.False(true);
+            const string input = "input";
+            const string validoutput = input + "not implemented";
+            var output = "not implemented yet";
+            Assert.Equal(expected: validoutput, output);
         }
     }
 }

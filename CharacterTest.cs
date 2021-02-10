@@ -16,7 +16,7 @@ namespace MySQLCLRFunctions
             if (IsNull(pattern)) throw new ArgumentNullException("pattern cannot be null");
             if (IsEmpty(pattern)) throw new ArgumentNullException("pattern cannot be empty. characters cannot contain and empty string. Get over it.");
 
-            return Regex.IsMatch(input.ToString(), pattern);
+            return !Regex.IsMatch(input.ToString(), pattern);
         }
 
         internal static bool? NOTINX(this char? input, string pattern)

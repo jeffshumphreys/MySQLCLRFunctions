@@ -6,28 +6,38 @@ namespace MySQLCLRFunctions.Tests
 {
     public class StringTransformCustomizationsTests
     {
-        [Fact()]
-        public void RemoveSQLServerNameDelimitersTest()
+        [Theory]
+        [InlineData("dbo.[TableName]", "dbo.TableName")]
+        public void RemoveSQLServerNameDelimitersTest(string input, string validoutput)
         {
-            Assert.True(false, "This test needs an implementation");
+            var output = RemoveSQLServerNameDelimiters(input);
+            Assert.Equal(expected: validoutput, output);
         }
 
-        [Fact()]
-        public void ExpandSQLParameterStringTest()
+        [Theory]
+        [InlineData("SELECT * FROM x where TABLE_NAME = ''$1''", 1, "I couldn't believe it", "SELECT * FROM x where TABLE_NAME = 'I couldn''t believe it'")]
+        public void ExpandSQLParameterStringTest(string input, int indexno, string expansion, string validoutput)
         {
-            Assert.True(false, "This test needs an implementation");
+            var output = ExpandSQLParameterString(input, indexno, expansion);
+            Assert.Equal(expected: validoutput, output);
         }
 
         [Fact()]
         public void ExpandSQLParameterTest()
         {
-            Assert.True(false, "This test needs an implementation");
+            const string input = "input";
+            const string validoutput = input + "not implemented";
+            var output = "not implemented yet";
+            Assert.Equal(expected: validoutput, output);
         }
 
         [Fact()]
         public void TrimSQLTest()
         {
-            Assert.True(false, "This test needs an implementation");
+            const string input = "input";
+            const string validoutput = input + "not implemented";
+            var output = "not implemented yet";
+            Assert.Equal(expected: validoutput, output);
         }
 
         [Theory]

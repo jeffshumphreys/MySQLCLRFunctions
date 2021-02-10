@@ -26,7 +26,18 @@ namespace MySQLCLRFunctions
         // The attribute [FillRowMethodName] is used only by Microsoft Visual Studio to automatically register the specified method as a TVF. It is not used by SQL Server.
         // For table-valued functions, the columns of the return table type cannot include timestamp columns or non-Unicode string data type columns (such as char, varchar, and text). 
         // The NOT NULL constraint is not supported.
-        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true, FillRowMethodName = nameof(MatchesAsSQLRow))]
+        // Called from SQL Server only
+        private static void MatchesAsSQLRow(Object ob, out SqlInt32 matchOrderNo, out SqlString match, out SqlString matchType, out SqlInt32 capturedMatchStartsAt, out SqlInt32 recNo)
+        {
+            var capturedMatch = ob as MatchesRecord;
+            matchOrderNo = capturedMatch.matchOrderNo;
+            match = new SqlString(capturedMatch.capturedMatch);
+            matchType = new SqlString(capturedMatch.matchType);
+            capturedMatchStartsAt = capturedMatch.capturedMatchStartsAt;
+            recNo = capturedMatch.recNo;
+        }
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true, FillRowMethodName = nameof(MatchesAsSQLRow)
+            , TableDefinition = "matchOrderNo int, match NVARCHAR(MAX), matchType NVARCHAR(MAX), capturedMatchStartsAt int, recNo int")]
         public static IEnumerable MatchesX(string input, string pattern)
         {
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
@@ -36,40 +47,61 @@ namespace MySQLCLRFunctions
 
             int nofmatches = regexmatches.Count;
             var matches = new List<MatchesRecord>(nofmatches);
+            int recno = 0;
             for (int i = 0; i < nofmatches; i++)
             {
-                string match = regexmatches[i].Captures[0].ToString();
-                int startsat = regexmatches[i].Captures[0].Index;
-                //string nextMatch;
-                //if (i < nofmatches - 1) nextMatch = regexmatches[i + 1].Captures[0].ToString();
-                //string previousMatch;
-                //if (i > 0) previousMatch = regexmatches[i - 1].Captures[0].ToString();
-
-                matches.Add(new MatchesRecord(lmatchOrderNo: i + 1, lcapturedMatch: match, lcapturedMatchStartsAt: startsat));
+                if (regexmatches[i].Groups.Count > 1)
+                {
+                    for (int j = 1; j < regexmatches[i].Groups.Count; j++)
+                    {
+                        string match = regexmatches[i].Groups[j].ToString();
+                        int startsat = regexmatches[i].Groups[j].Index;
+                        string matchtype = "content";
+                        recno++;
+                        matches.Add(new MatchesRecord(lmatchOrderNo: i + 1, lcapturedMatch: match, lmatchType: matchtype, lcapturedMatchStartsAt: startsat, lrecNo: recno));
+                    }
+                }
+                else if (regexmatches[i].Groups.Count == 1)
+                {
+                    for (int j = 0; j < regexmatches[i].Groups.Count; j++)
+                    {
+                        string match = regexmatches[i].Groups[j].ToString();
+                        int startsat = regexmatches[i].Groups[j].Index;
+                        string matchtype = "entirematchincludingmatchtriggers";
+                        recno++;
+                        matches.Add(new MatchesRecord(lmatchOrderNo: i + 1, lcapturedMatch: match, lmatchType: matchtype, lcapturedMatchStartsAt: startsat, lrecNo: recno));
+                    }
+                }
+                else if (regexmatches[i].Groups.Count == 0)
+                {
+                    for (int j = 0; j < regexmatches[i].Captures.Count; j++)
+                    {
+                        string match = regexmatches[i].Captures[j].ToString();
+                        int startsat = regexmatches[i].Captures[j].Index;
+                        string matchtype = "capture";
+                        recno++;
+                        matches.Add(new MatchesRecord(lmatchOrderNo: i + 1, lcapturedMatch: match, lmatchType: matchtype, lcapturedMatchStartsAt: startsat, lrecNo: recno));
+                    }
+                }
             }
             return matches.ToArray();
-        }
-
-        // Called from SQL Server only
-        private static void MatchesAsSQLRow(Object ob, out SqlInt32 matchorderNo, out SqlString match, out SqlInt32 capturedMatchStartsAt)
-        {
-            var capturedMatch = ob as MatchesRecord;
-            matchorderNo = capturedMatch.matchOrderNo;
-            match = new SqlString(capturedMatch.capturedMatch);
-            capturedMatchStartsAt = capturedMatch.capturedMatchStartsAt;
         }
 
         public class MatchesRecord
         {
             public int matchOrderNo;
             public string capturedMatch;
+            public string matchType;
             public int capturedMatchStartsAt;
+            public int recNo;
 
-            public MatchesRecord(int lmatchOrderNo, string lcapturedMatch, int lcapturedMatchStartsAt)
+            public MatchesRecord(int lmatchOrderNo, string lcapturedMatch, string lmatchType, int lcapturedMatchStartsAt, int lrecNo)
             {
                 matchOrderNo = lmatchOrderNo;
                 capturedMatch = lcapturedMatch;
+                matchType = lmatchType;
                 capturedMatchStartsAt = lcapturedMatchStartsAt;
+                recNo = lrecNo;
             }
         }
 
@@ -78,7 +110,19 @@ namespace MySQLCLRFunctions
          * Pull Out Pieces by Regexing the separators and include the pieces before and after the matched separation string, making it easier to detect patterns.
          * 
          **************************************************************************************************************************************************************************************/
-        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true, FillRowMethodName = nameof(PiecesWithContextAsSQLRow))]
+        // Cannot change from private to public without breaking assembly.
+        // .Net SqlClient Data Provider: Msg 51000, Level 16, State 1, Line 95 Error: CANNOT ALTER ASSEMBLY failed because the required method "PieceWithMatchesFillRow" in type "MySQLCLRFunctions.StringPivot" was not found with the same signature in the updated assembly.
+        // Called from SQL Server only
+        private static void PiecesWithContextAsSQLRow(Object ob, out SqlInt32 pieceorderNo, out SqlString previousPiece, out SqlString piece, out SqlString nextPiece)
+        {
+            var pieceContext = ob as PiecesWithContextRecord;
+            pieceorderNo = pieceContext.pieceOrderNo;
+            previousPiece = pieceContext.previousPiece;
+            piece = pieceContext.piece;
+            nextPiece = pieceContext.nextPiece;
+        }
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true, FillRowMethodName = nameof(PiecesWithContextAsSQLRow)
+            , TableDefinition = "pieceOrderNo int, previousPiece NVARCHAR(MAX), piece NVARCHAR(MAX), nextPiece NVARCHAR(MAX)")]
         public static IEnumerable PiecesWithContextX(String input, String pattern)
         {
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
@@ -99,18 +143,6 @@ namespace MySQLCLRFunctions
             }
 
             return pieces.ToArray();
-        }
-
-        // Cannot change from private to public without breaking assembly.
-        // .Net SqlClient Data Provider: Msg 51000, Level 16, State 1, Line 95 Error: CANNOT ALTER ASSEMBLY failed because the required method "PieceWithMatchesFillRow" in type "MySQLCLRFunctions.StringPivot" was not found with the same signature in the updated assembly.
-        // Called from SQL Server only
-        private static void PiecesWithContextAsSQLRow(Object ob, out SqlInt32 pieceorderNo, out SqlString previousPiece, out SqlString piece, out SqlString nextPiece)
-        {
-            var pieceContext = ob as PiecesWithContextRecord;
-            pieceorderNo = pieceContext.pieceOrderNo;
-            previousPiece = pieceContext.previousPiece;
-            piece = pieceContext.piece;
-            nextPiece = pieceContext.nextPiece;
         }
 
         public class PiecesWithContextRecord
@@ -163,7 +195,7 @@ namespace MySQLCLRFunctions
           * 
           **************************************************************************************************************************************************************************************/
         [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true, FillRowMethodName = nameof(PieceWithMatchesAsSQLRow)
-            , TableDefinition ="pieceOrderNo int, previousPiece NVARCHAR(MAX), string matchAtStartOfPiece NVARCHAR(MAX), piece NVARCHAR(MAX), matchAtEndOfPiece NVARCHAR(MAX), nextPiece NVARCHAR(MAX)")]
+            , TableDefinition ="pieceOrderNo int, previousPiece NVARCHAR(MAX), matchAtStartOfPiece NVARCHAR(MAX), piece NVARCHAR(MAX), matchAtEndOfPiece NVARCHAR(MAX), nextPiece NVARCHAR(MAX)")]
          public static IEnumerable PiecesWithMatchesX(string input, string pattern)
         {
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
@@ -250,7 +282,8 @@ namespace MySQLCLRFunctions
          *      Jacob       Jake
          * 
          **************************************************************************************************************************************************************************************/
-        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true, FillRowMethodName = nameof(KeyValuePairsWithMultiValuesAsSQLRow))]
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true, FillRowMethodName = nameof(KeyValuePairsWithMultiValuesAsSQLRow)
+            , TableDefinition = "pieceOrderNo int, key NVARCHAR(MAX), value int")]
         public static IEnumerable KeyValuePairsWithMultiValuesS(string input, string betweeneachkeyvaluepair, string betweenkeyandvalue, string betweensubvalues)
         {
             if (betweeneachkeyvaluepair == null) betweeneachkeyvaluepair = new string('\n', 1);
@@ -303,7 +336,8 @@ namespace MySQLCLRFunctions
          *      Capture the actual Group match in the regex match, not the whole match itself.
          *
          *****************************************************************************************************************************************************************/
-        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true, FillRowMethodName = nameof(CapturesAsSQLRow))]
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true, FillRowMethodName = nameof(CapturesAsSQLRow)
+            , TableDefinition = "matchOrderNo int, match NVARCHAR(MAX), capturedMatchStartsAt int")]
         public static IEnumerable CapturesX(string input, string pattern)
         {
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;
@@ -369,7 +403,8 @@ namespace MySQLCLRFunctions
           *      Like Match, but instead returns the context of the string matched, like a lucene search.  good for search for emails or mail references in sql text.
           *
           *****************************************************************************************************************************************************************/
-        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true, FillRowMethodName = nameof(NearAsSQLRow))]
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true, FillRowMethodName = nameof(NearAsSQLRow)
+            , TableDefinition = "matchOrderNo int, match NVARCHAR(MAX), capturedMatchStartsAt int, capturedMatchContextStartsAt int, capturedMatchContextEndsAt int, capturedMatchContext NVARCHAR(MAX)")]
         public static IEnumerable NearX(string input, string pattern)
         {
             if (StringTest.IsNullOrWhiteSpaceOrEmpty(input)) return input;

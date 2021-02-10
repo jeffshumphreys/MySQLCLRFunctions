@@ -27,19 +27,28 @@ namespace MySQLCLRFunctions.Tests
         [Fact]
         public void TrimEndTest()
         {
-            Assert.False(true);
+            const string input = "input";
+            const string validoutput = input + "not implemented";
+            var output = "not implemented yet";
+            Assert.Equal(expected: validoutput, output);
         }
 
         [Fact]
         public void TrimLeftNTest()
         {
-            Assert.False(true);
+            const string input = "input";
+            const string validoutput = input + "not implemented";
+            var output = "not implemented yet";
+            Assert.Equal(expected: validoutput, output);
         }
 
         [Fact]
         public void BlankOutTest()
         {
-            Assert.False(true);
+            const string input = "input";
+            const string validoutput = input + "not implemented";
+            var output = "not implemented yet";
+            Assert.Equal(expected: validoutput, output);
         }
 
         [Fact]

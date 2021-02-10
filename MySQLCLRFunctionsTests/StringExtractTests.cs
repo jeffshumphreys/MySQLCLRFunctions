@@ -19,7 +19,7 @@ namespace MySQLCLRFunctions.Tests
         public void LeftOfNthSTest()
         {
             const string input = "I,JJJJ,K";
-            const string validoutput = "I,JJJJ";
+            const string validoutput = "JJJJ";
             var output = LeftOfNthS(input, ",", 2);
             Assert.Equal(expected: validoutput, output);
         }
@@ -235,6 +235,26 @@ END
         public void ExtractPersonsNameTest(string input, string validoutput)
         {
             var output = ExtractPersonsName(input);
+            Assert.Equal(expected: validoutput, output);
+        }
+
+        [Theory]
+        [InlineData(@"use [JRS_Data];
+go
+/****** Object:  StoredProcedure [pdm].[Update_Specification_History]    Script Date: 9/13/2017 1:34:09 PM ******/
+set ansi_nulls on;
+go
+set quoted_identifier on;
+go
+-- pdm.UpdateSpecificationHistory
+", @"go
+"
+, 3
+, @"-- pdm.UpdateSpecificationHistory
+")]
+        public void EverythingAfterNthSTest(string input, string marker, int howmany, string validoutput)
+        {
+            var output = EverythingAfterNthS(input, marker, howmany);
             Assert.Equal(expected: validoutput, output);
         }
     }

@@ -51,15 +51,14 @@ namespace MySQLCLRFunctions
             int previous_i = NOT_FOUND;
             for (int j = 1; j < n; j++)
             {
-                if (i == input.IndexOfLastC()) return input;
-                previous_i = i;
+                previous_i = i + marker.Length;
                 i = input.IndexOf(marker, i + marker.Length);
                 if (i == NOT_FOUND) return input;
             }
             if (i >= input.IndexOfLastC()) return string.Empty;
             if (i == NOT_FOUND) return input;
-            int seglen = i - (previous_i + marker.Length);
-            return input.Substring(previous_i + marker.Length, seglen);
+            int seglen = i - (previous_i);
+            return input.Substring(previous_i, seglen);
         }
 
         /***************************************************************************************************************************************************************************************************
@@ -378,6 +377,26 @@ namespace MySQLCLRFunctions
 
         /***************************************************************************************************************************************************************************************************
         * 
+        * Extract everything after n occurrences of a specific string
+        * 
+        ***************************************************************************************************************************************************************************************************/
+        [SqlFunction(DataAccess = DataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
+        public static string EverythingAfterNthS(string input, string marker, int howmany)
+        {
+            if (IsNullOrWhiteSpaceOrEmpty(input)) return input;
+            if (IsNullOrWhiteSpaceOrEmpty(marker)) return input;
+
+            int i = 0;
+            for (int l= 0;l < howmany; l++)   {
+                i = input.FindIndexOfSAfterN(marker, i+1);
+                if (i == -1) return string.Empty;
+                if (i + marker.Length > input.Length) return string.Empty;
+            }
+            return input.Substring(i + marker.Length);
+        }
+
+        /***************************************************************************************************************************************************************************************************
+        * 
         * Extract everything after a specific string
         * 
         ***************************************************************************************************************************************************************************************************/
@@ -515,6 +534,11 @@ namespace MySQLCLRFunctions
         public static int FindIndexOf(this string input, string marker)
         {
             return input.IndexOf(marker);
+        }
+
+        public static int FindIndexOfSAfterN(this string input, string marker, int startat)
+        {
+            return input.IndexOf(marker, startIndex: startat);
         }
 
         private static int IndexOfLastC(this String input)
